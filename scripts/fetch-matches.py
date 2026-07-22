@@ -362,7 +362,7 @@ def reverse_geocode(lat, lng, cache):
         addr = result.get('address', {})
         cc2  = addr.get('country_code', '').upper()
         cc3  = _ISO2_TO_3.get(cc2, cc2 or '')
-        county = addr.get('state', '') or addr.get('county', '')
+        county = addr.get('state', '') or addr.get('county', '') or addr.get('municipality', '')
         cache[key] = {'country': cc3, 'county': county}
         return cache[key]
     except HTTPError as e:

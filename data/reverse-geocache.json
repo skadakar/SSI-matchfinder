@@ -1655,10 +1655,6 @@
     "country": "NLD",
     "county": "Zuid-Holland"
   },
-  "59.93968,10.66500": {
-    "country": "NOR",
-    "county": ""
-  },
   "60.91150,24.36469": {
     "country": "FIN",
     "county": "Kanta-Häme"
@@ -1851,10 +1847,6 @@
     "country": "SWE",
     "county": "Västra Götalands län"
   },
-  "59.91000,10.75000": {
-    "country": "NOR",
-    "county": ""
-  },
   "63.39503,30.03817": {
     "country": "FIN",
     "county": "Pohjois-Karjala"
@@ -1946,10 +1938,6 @@
   "59.56000,9.26000": {
     "country": "NOR",
     "county": "Telemark"
-  },
-  "59.92754,10.74098": {
-    "country": "NOR",
-    "county": ""
   },
   "55.63563,12.55420": {
     "country": "DNK",
@@ -2058,10 +2046,6 @@
   "58.03000,7.46000": {
     "country": "NOR",
     "county": "Agder"
-  },
-  "59.97273,10.75825": {
-    "country": "NOR",
-    "county": ""
   },
   "64.47000,11.49000": {
     "country": "NOR",
@@ -2175,10 +2159,6 @@
     "country": "FIN",
     "county": "Kanta-Häme"
   },
-  "59.92741,10.73934": {
-    "country": "NOR",
-    "county": ""
-  },
   "58.43000,12.73000": {
     "country": "SWE",
     "county": "Västra Götalands län"
@@ -2211,14 +2191,6 @@
     "country": "SWE",
     "county": "Norrbottens län"
   },
-  "59.74000,10.20000": {
-    "country": "NOR",
-    "county": ""
-  },
-  "59.92727,10.73934": {
-    "country": "NOR",
-    "county": ""
-  },
   "55.43000,13.82000": {
     "country": "SWE",
     "county": "Skåne län"
@@ -2246,10 +2218,6 @@
   "64.82362,28.86101": {
     "country": "FIN",
     "county": "Kainuu"
-  },
-  "59.92735,10.73938": {
-    "country": "NOR",
-    "county": ""
   },
   "60.03674,24.36883": {
     "country": "FIN",

@@ -402,7 +402,7 @@ async function reverseGeocode(lat, lng, cache) {
     const addr   = result?.address ?? {};
     const cc2    = (addr.country_code ?? '').toUpperCase();
     const cc3    = ISO2_TO_3[cc2] ?? (cc2 || '');
-    const county = addr.state || addr.county || '';
+    const county = addr.state || addr.county || addr.municipality || '';
     cache[key] = { country: cc3, county };
     return cache[key];
   } catch (err) {
