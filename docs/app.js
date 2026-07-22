@@ -11,6 +11,7 @@ const COLUMNS = [
   { key: 'level',               label: 'Level',        defaultVisible: false, sortable: true  },
   { key: 'country',             label: 'Country',      defaultVisible: true,  sortable: true  },
   { key: 'county',              label: 'County',       defaultVisible: true,  sortable: true  },
+  { key: 'region',              label: 'Region',       defaultVisible: true,  sortable: true  },
   { key: 'registrationDeadline',label: 'Reg. deadline',defaultVisible: false, sortable: true  },
   { key: 'registrationStarts',  label: 'Reg. opens',   defaultVisible: false, sortable: true  },
   { key: 'participants',        label: 'Participants', defaultVisible: true,  sortable: true  },
@@ -20,7 +21,7 @@ const COLUMNS = [
 const DEFAULT_COLS      = COLUMNS.filter(c => c.defaultVisible).map(c => c.key);
 const DEFAULT_SORT      = 'date';
 
-const FILTERABLE_COLS = new Set(['organizer', 'discipline', 'level', 'country', 'county', 'registration']);
+const FILTERABLE_COLS = new Set(['organizer', 'discipline', 'level', 'country', 'county', 'region', 'registration']);
 const DEFAULT_DIR       = 'asc';
 const TODAY = new Date().toISOString().slice(0, 10);
 
@@ -66,6 +67,7 @@ function buildDefaultState() {
     organizer:  [],
     countries:  [...DEFAULT_COUNTRIES],
     regions:    [],
+    broadRegions: [],
     regOpen:    true,
     from:       TODAY,
     to:         '',
@@ -88,6 +90,7 @@ function readStateFromURL() {
     organizer:  p.get('organizer')  ? p.get('organizer').split(',').filter(Boolean)  : [],
     countries:  p.get('countries')  ? p.get('countries').split(',').filter(Boolean) : [...DEFAULT_COUNTRIES],
     regions:    p.get('regions')    ? p.get('regions').split(',').filter(Boolean)    : [],
+    broadRegions: p.get('broad')    ? p.get('broad').split(',').filter(Boolean)       : [],
     regOpen:    p.has('regOpen') ? p.get('regOpen') !== '0' : true,
     from:       p.get('from') !== null ? p.get('from') : TODAY,
     to:         p.get('to')         || '',
@@ -106,6 +109,7 @@ function writeStateToURL() {
   if (state.organizer.length)                       p.set('organizer',  state.organizer.join(','));
   if (!countriesMatchDefault(state.countries))      p.set('countries',  state.countries.join(','));
   if (state.regions.length)                         p.set('regions',    state.regions.join(','));
+  if (state.broadRegions.length)                    p.set('broad',      state.broadRegions.join(','));
   if (!state.regOpen)                                p.set('regOpen',    '0');
   if (state.from && state.from !== TODAY)             p.set('from',       state.from);
   if (state.to)                                     p.set('to',         state.to);
@@ -135,6 +139,10 @@ function applyFilters(matches) {
     )) return false;
     if (state.countries.length && m.country && !state.countries.includes(m.country)) return false;
     if (state.regions.length && m.county && !state.regions.includes(m.county)) return false;
+    if (state.broadRegions.length) {
+      const r = countyToRegion(m);
+      if (r && !state.broadRegions.includes(r)) return false;
+    }
     if (state.discipline.length && !state.discipline.includes(m.discipline)) return false;
     if (state.level.length      && !state.level.includes(m.level))           return false;
     if (state.organizer.length  && !state.organizer.includes(m.organizer))   return false;
@@ -291,6 +299,7 @@ function getCellFilterValue(key, m) {
     case 'level':        return (m.level && m.level !== '--') ? m.level : null;
     case 'country':      return m.country || null;
     case 'county':       return m.county || null;
+    case 'region':       return countyToRegion(m) || null;
     case 'registration': return m.registrationOpen === true ? 'open' : null;
     default:             return null;
   }
@@ -303,6 +312,7 @@ function isCellActive(key, m) {
     case 'level':        return !!(m.level && m.level !== '--' && state.level.includes(m.level));
     case 'country':      return !countriesMatchDefault(state.countries) && state.countries.includes(m.country);
     case 'county':       return !!(m.county && state.regions.includes(m.county));
+    case 'region':       return !!(countyToRegion(m) && state.broadRegions.includes(countyToRegion(m)));
     case 'registration': return m.registrationOpen === true && state.regOpen;
     default:             return false;
   }
@@ -332,6 +342,11 @@ function toggleCellFilter(key, m) {
     case 'county':
       if (m.county) toggle(state.regions, m.county);
       break;
+    case 'region': {
+      const r = countyToRegion(m);
+      if (r) toggle(state.broadRegions, r);
+      break;
+    }
     case 'registration':
       state.regOpen = !state.regOpen;
       break;
@@ -393,6 +408,9 @@ function appendCellContent(td, key, m) {
       break;
     case 'county':
       td.textContent = m.county || '';
+      break;
+    case 'region':
+      td.textContent = countyToRegion(m);
       break;
     case 'registration': {
       const span = document.createElement('span');
