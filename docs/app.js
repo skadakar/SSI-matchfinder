@@ -11,10 +11,10 @@ const COLUMNS = [
   { key: 'level',               label: 'Level',        defaultVisible: false, sortable: true  },
   { key: 'country',             label: 'Country',      defaultVisible: false, sortable: true  },
   { key: 'county',              label: 'Region',       defaultVisible: true,  sortable: true  },
-  { key: 'registration',        label: 'Registration', defaultVisible: true,  sortable: false },
   { key: 'registrationDeadline',label: 'Reg. deadline',defaultVisible: false, sortable: true  },
   { key: 'registrationStarts',  label: 'Reg. opens',   defaultVisible: false, sortable: true  },
   { key: 'participants',        label: 'Participants', defaultVisible: true,  sortable: true  },
+  { key: 'registration',        label: 'Registration', defaultVisible: true,  sortable: false },
 ];
 
 const DEFAULT_COLS      = COLUMNS.filter(c => c.defaultVisible).map(c => c.key);
