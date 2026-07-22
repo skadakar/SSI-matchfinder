@@ -71,7 +71,7 @@ function buildDefaultState() {
     newMatch:    false,
     newMatchDays: 7,
     regOpen:    true,
-    from:       TODAY,
+    from:       '',
     to:         '',
     cols:       [...DEFAULT_COLS],
     sort:       DEFAULT_SORT,
@@ -96,7 +96,7 @@ function readStateFromURL() {
     newMatch:    p.get('newMatch') === '1',
     newMatchDays: p.has('newMatchDays') ? Math.min(14, Math.max(1, parseInt(p.get('newMatchDays'), 10))) : 7,
     regOpen:    p.has('regOpen') ? p.get('regOpen') !== '0' : true,
-    from:       p.get('from') !== null ? p.get('from') : TODAY,
+    from:       p.get('from') || '',
     to:         p.get('to')         || '',
     cols:       colsParam ? colsParam.split(',').filter(Boolean) : [...DEFAULT_COLS],
     sort:       p.get('sort')       || DEFAULT_SORT,
@@ -117,7 +117,7 @@ function writeStateToURL() {
   if (state.newMatch)                               p.set('newMatch',   '1');
   if (state.newMatch && state.newMatchDays !== 7)   p.set('newMatchDays', String(state.newMatchDays));
   if (!state.regOpen)                                p.set('regOpen',    '0');
-  if (state.from && state.from !== TODAY)             p.set('from',       state.from);
+  if (state.from)                                    p.set('from',       state.from);
   if (state.to)                                     p.set('to',         state.to);
   if (!colsMatchDefault(state.cols))                p.set('cols',       state.cols.join(','));
   if (state.sort !== DEFAULT_SORT)                  p.set('sort',       state.sort);
