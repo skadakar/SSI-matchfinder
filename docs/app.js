@@ -144,10 +144,10 @@ function applyFilters(matches) {
       f => (f || '').toLowerCase().includes(q)
     )) return false;
     if (state.countries.length && m.country && !state.countries.includes(m.country)) return false;
-    if (state.regions.length && m.county && !state.regions.includes(m.county)) return false;
+    if (state.regions.length && (!m.county || !state.regions.includes(m.county))) return false;
     if (state.broadRegions.length) {
       const r = countyToRegion(m);
-      if (r && !state.broadRegions.includes(r)) return false;
+      if (!r || !state.broadRegions.includes(r)) return false;
     }
     if (state.newMatch) {
       const cutoff = new Date();
