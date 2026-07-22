@@ -9,7 +9,7 @@ const COLUMNS = [
   { key: 'organizer',           label: 'Club',         defaultVisible: true,  sortable: true  },
   { key: 'discipline',          label: 'Discipline',   defaultVisible: true,  sortable: true  },
   { key: 'level',               label: 'Level',        defaultVisible: false, sortable: true  },
-  { key: 'country',             label: 'Country',      defaultVisible: false, sortable: true  },
+  { key: 'country',             label: 'Country',      defaultVisible: true,  sortable: true  },
   { key: 'county',              label: 'Region',       defaultVisible: true,  sortable: true  },
   { key: 'registrationDeadline',label: 'Reg. deadline',defaultVisible: false, sortable: true  },
   { key: 'registrationStarts',  label: 'Reg. opens',   defaultVisible: false, sortable: true  },
