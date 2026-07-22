@@ -2274,5 +2274,21 @@
   "63.24000,9.94000": {
     "country": "NOR",
     "county": "Trøndelag"
+  },
+  "62.83683,28.04757": {
+    "country": "FIN",
+    "county": "Pohjois-Savo"
+  },
+  "60.72408,24.33082": {
+    "country": "FIN",
+    "county": "Kanta-Häme"
+  },
+  "59.87104,23.22233": {
+    "country": "FIN",
+    "county": "Uusimaa"
+  },
+  "59.10590,-3.34144": {
+    "country": "GBR",
+    "county": "Alba / Scotland"
   }
 }
