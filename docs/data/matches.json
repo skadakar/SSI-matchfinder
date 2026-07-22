@@ -1,6 +1,6 @@
 {
-  "generated": "2026-07-22T12:21:09.670Z",
-  "count": 92,
+  "generated": "2026-07-22T14:55:11Z",
+  "count": 93,
   "matches": [
     {
       "id": "28740",
@@ -392,9 +392,9 @@
       "registrationOpen": true,
       "registrationStarts": "2026-05-17",
       "registrationDeadline": "2026-07-22",
-      "participants": 12,
+      "participants": 14,
       "maxParticipants": 20,
-      "waitingCount": 2,
+      "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/22/28481/",
       "geocodeSource": "manual"
     },
@@ -541,7 +541,7 @@
       "country": "FIN",
       "city": "",
       "venue": "",
-      "lat": 63,
+      "lat": 63.0,
       "lng": 22.3167,
       "registrationOpen": false,
       "registrationStarts": "2026-07-19",
@@ -2025,6 +2025,28 @@
       "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/22/29131/",
       "geocodeSource": "unknown"
+    },
+    {
+      "id": "29126",
+      "name": "ADS Styrke 10 HG",
+      "date": "2026-08-01",
+      "endDate": "2026-08-02",
+      "organizer": "Averøy Dynamiske Sportsskyttere",
+      "discipline": "IPSC Handgun & PCC",
+      "level": "Level II",
+      "country": "NOR",
+      "city": "",
+      "venue": "",
+      "lat": 62.98003,
+      "lng": 7.22245,
+      "registrationOpen": true,
+      "registrationStarts": "2026-07-15",
+      "registrationDeadline": "2026-07-31",
+      "participants": 14,
+      "maxParticipants": 30,
+      "waitingCount": 0,
+      "url": "https://shootnscoreit.com/event/22/29126/",
+      "geocodeSource": "api"
     }
   ]
 }

@@ -63,6 +63,7 @@ NOMINATIM_DELAY = 1.25  # seconds — stay under the 1 req/s limit
 
 GEOCACHE_PATH        = ROOT / 'data' / 'organizer-geocache.json'
 MANUAL_COORDS_PATH   = ROOT / 'data' / 'manual-coords.json'
+EXTRA_IDS_PATH       = ROOT / 'data' / 'extra-event-ids.json'
 OUTPUT_PATH          = ROOT / 'docs' / 'data' / 'matches.json'
 
 # ISO 3166-1 alpha-3 → alpha-2 for Nominatim's countrycodes param
@@ -135,6 +136,19 @@ query GetEvents($after: String!, $before: String!) {
 }
 '''
 
+_EVENT_Q = '''
+query GetEvent($ct: Int!, $id: String!) {
+  event(content_type: $ct, id: $id) {
+    id name starts ends rule sub_rule
+    venue lat lng
+    registration registration_starts registration_closes is_registration_possible
+    competitors_count max_competitors number_of_mainmatch_competitors_waiting
+    get_content_type_key get_full_rule_display get_full_level_display
+    organizer { name city country lat lng }
+  }
+}
+'''
+
 def fetch_all_matches():
     print('Authenticating via refresh token...')
     jwt = get_jwt()
@@ -162,6 +176,27 @@ def fetch_all_matches():
 
     events = result['data']['events']
     print(f'Fetched {len(events)} events')
+
+    # Fetch extra events not returned by the list query (e.g. those with organizer=null)
+    extra_ids = load_json(EXTRA_IDS_PATH, [])
+    if extra_ids:
+        existing_ids = {str(e['id']) for e in events}
+        print(f'Fetching {len(extra_ids)} extra event(s) by ID...')
+        for entry in extra_ids:
+            ct  = entry['content_type']
+            eid = str(entry['id'])
+            if eid in existing_ids:
+                continue
+            r = post_gql(_EVENT_Q, {'ct': ct, 'id': eid}, auth=auth, api_key=API_KEY)
+            if 'errors' in r or not (r.get('data') or {}).get('event'):
+                print(f'  Warning: could not fetch extra event {eid}', file=sys.stderr)
+                continue
+            ev = r['data']['event']
+            if ev.get('organizer') is None:
+                ev['organizer'] = entry.get('organizer_override') or {}
+            events.append(ev)
+            print(f'  Added extra event {eid}: {ev.get("name", "")}')
+
     return events
 
 

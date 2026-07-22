@@ -71,6 +71,7 @@ const NOMINATIM_DELAY_MS = 1250;
 
 const GEOCACHE_PATH = resolve(ROOT, 'data', 'organizer-geocache.json');
 const MANUAL_COORDS_PATH = resolve(ROOT, 'data', 'manual-coords.json');
+const EXTRA_IDS_PATH = resolve(ROOT, 'data', 'extra-event-ids.json');
 const OUTPUT_PATH   = resolve(ROOT, 'docs', 'data', 'matches.json');
 
 // ISO 3166-1 alpha-3 → alpha-2 for Nominatim's countrycodes param
@@ -108,6 +109,12 @@ async function postGql(query, variables, auth, apiKey) {
     const body = await res.text().catch(() => '');
     throw new Error(`HTTP ${res.status} ${res.statusText} → ${GQL_ENDPOINT}\n${body.slice(0, 300)}`);
   }
+  return res.json();
+}
+
+async function getJson(url, headers = {}) {
+  const res = await fetch(url, { headers });
+  if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText} → ${url}`);
   return res.json();
 }
 
@@ -152,6 +159,19 @@ const EVENTS_Q = `
   }
 `;
 
+const EVENT_Q = `
+  query GetEvent($ct: Int!, $id: String!) {
+    event(content_type: $ct, id: $id) {
+      id name starts ends rule sub_rule
+      venue lat lng
+      registration registration_starts registration_closes is_registration_possible
+      competitors_count max_competitors number_of_mainmatch_competitors_waiting
+      get_content_type_key get_full_rule_display get_full_level_display
+      organizer { name city country lat lng }
+    }
+  }
+`;
+
 async function fetchAllMatches() {
   console.log('Authenticating via refresh token...');
   const jwt = await getJwt();
@@ -184,6 +204,29 @@ async function fetchAllMatches() {
 
   const events = result.data.events;
   console.log(`Fetched ${events.length} events`);
+
+  // Fetch extra events not returned by the list query (e.g. those with organizer=null)
+  const extraIds = loadJson(EXTRA_IDS_PATH, []);
+  if (extraIds.length > 0) {
+    const existingIds = new Set(events.map(e => String(e.id)));
+    console.log(`Fetching ${extraIds.length} extra event(s) by ID...`);
+    for (const entry of extraIds) {
+      const eid = String(entry.id);
+      if (existingIds.has(eid)) continue;
+      const r = await postGql(EVENT_Q, { ct: entry.content_type, id: eid }, auth, API_KEY);
+      if (r.errors || !r.data?.event) {
+        console.warn(`  Warning: could not fetch extra event ${eid}`);
+        continue;
+      }
+      const ev = r.data.event;
+      if (ev.organizer == null) {
+        ev.organizer = entry.organizer_override ?? {};
+      }
+      events.push(ev);
+      console.log(`  Added extra event ${eid}: ${ev.name ?? ''}`);
+    }
+  }
+
   return events;
 }
 
@@ -245,7 +288,7 @@ async function geocodeOrganizer(name, country, cache, manual) {
   await sleep(NOMINATIM_DELAY_MS);
 
   try {
-    const results = await fetchJson(`${NOMINATIM_BASE}?${params}`, {
+    const results = await getJson(`${NOMINATIM_BASE}?${params}`, {
       'User-Agent': 'SSI-MatchFinder/1.0 (https://github.com/your-username/SSI-matchfinder)',
     });
 
