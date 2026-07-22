@@ -630,5 +630,22 @@
   "hjortebanen løvenskjold": {
     "lat": null,
     "lng": null
+  },
+  "skaraborgs flygflottilj f7": {
+    "lat": null,
+    "lng": null
+  },
+  "kristianstads pk": {
+    "lat": 55.9410036,
+    "lng": 14.2020504,
+    "display": "Nolato Solpark, Kristianstads kommun, Skåne län, Sverige"
+  },
+  "borås pistolskyttar": {
+    "lat": null,
+    "lng": null
+  },
+  "skytte smedjan (matchorg)": {
+    "lat": null,
+    "lng": null
   }
 }

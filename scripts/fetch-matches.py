@@ -51,8 +51,8 @@ if not API_KEY:
     sys.exit(1)
 
 GQL_ENDPOINT    = 'https://shootnscoreit.com/graphql/'
-LOOKBACK_DAYS   = 365
-LOOKAHEAD_DAYS  = 365
+LOOKBACK_DAYS   = 90
+LOOKAHEAD_DAYS  = 180
 
 # Comma-separated ISO-3 country codes, e.g. "NOR,SWE". Empty = all countries.
 _countries_env = os.environ.get('SSI_COUNTRIES', '')
@@ -175,27 +175,27 @@ def fetch_all_matches():
                 sys.exit(1)
         return result['data']['events']
 
-    # 1. Upcoming events in 4-day chunks to stay under the API result cap (~100/query)
+    # 1. Upcoming events in 3-day chunks to stay under the API result cap (~100/query)
     print('Fetching events from SSI GraphQL API...')
     look_ahead_end = today + timedelta(days=LOOKAHEAD_DAYS)
     chunk_start = today
     future_chunks = 0
     while chunk_start < look_ahead_end:
-        chunk_end = min(chunk_start + timedelta(days=4), look_ahead_end)
+        chunk_end = min(chunk_start + timedelta(days=3), look_ahead_end)
         new_evs = query_window(chunk_start.isoformat(), chunk_end.isoformat())
         added = sum(1 for ev in new_evs if str(ev['id']) not in all_events)
         for ev in new_evs:
             all_events.setdefault(str(ev['id']), ev)
         future_chunks += 1
         chunk_start = chunk_end
-    print(f'  Future {LOOKAHEAD_DAYS}d ({future_chunks} 4-day chunks): {len(all_events)} events')
+    print(f'  Future {LOOKAHEAD_DAYS}d ({future_chunks} 3-day chunks): {len(all_events)} events')
 
-    # 2. Past year in 4-day chunks to stay under the API result cap (~100/query)
+    # 2. Past events in 3-day chunks to stay under the API result cap (~100/query)
     look_back_start = today - timedelta(days=LOOKBACK_DAYS)
     chunk_end = today
     past_chunks = 0
     while chunk_end > look_back_start:
-        chunk_start = max(chunk_end - timedelta(days=4), look_back_start)
+        chunk_start = max(chunk_end - timedelta(days=3), look_back_start)
         new_evs = query_window(chunk_start.isoformat(), chunk_end.isoformat())
         added = sum(1 for ev in new_evs if str(ev['id']) not in all_events)
         for ev in new_evs:
@@ -203,7 +203,7 @@ def fetch_all_matches():
         past_chunks += 1
         print(f'  chunk {past_chunks:3d}: {chunk_start} → {chunk_end}  ({len(new_evs):3d} events, {added} new)', flush=True)
         chunk_end = chunk_start
-    print(f'  Past {LOOKBACK_DAYS}d ({past_chunks} 4-day chunks): {len(all_events)} unique events total')
+    print(f'  Past {LOOKBACK_DAYS}d ({past_chunks} 3-day chunks): {len(all_events)} unique events total')
 
     events = list(all_events.values())
     print(f'Fetched {len(events)} events')
@@ -378,6 +378,28 @@ def reverse_geocode(lat, lng, cache):
         return cache[key]
 
 
+def inherit_organizer_coords(matches):
+    """Where an organizer has at least one event with precise API coordinates
+    (the actual range), inherit those coords for their other events that fell
+    back to Nominatim / geocache (city-centre approximations)."""
+    api_coords = {}
+    for m in matches:
+        if m['geocodeSource'] == 'api' and m['lat'] is not None and m['lng'] is not None:
+            api_coords[m['organizer'].lower()] = (m['lat'], m['lng'])
+
+    inherited = 0
+    for m in matches:
+        if m['geocodeSource'] in ('api', 'manual'):
+            continue
+        lat, lng = api_coords.get(m['organizer'].lower(), (None, None))
+        if lat is not None:
+            m['lat'], m['lng'] = lat, lng
+            m['geocodeSource'] = 'inherited'
+            inherited += 1
+    if inherited:
+        print(f'Inherited range coordinates for {inherited} event(s) from same organizer')
+
+
 def enrich_with_country(matches, cache):
     """Fill in missing country codes via reverse geocoding for events that have
     coordinates but no country (typically events with null organizer in SSI)."""
@@ -437,6 +459,8 @@ def main():
 
     # Forward-geocode events missing coordinates (organizer name or venue as query)
     enrich_with_coordinates(matches, geocache)
+    # Inherit precise range coords from sibling events by the same organizer
+    inherit_organizer_coords(matches)
     # Write geocache, filtering out in-run rate-limited markers (so they retry next run)
     clean_geocache = {k: v for k, v in geocache.items() if not v.get('rate_limited')}
     GEOCACHE_PATH.write_text(

@@ -483,6 +483,13 @@ td a:hover          { text-decoration: underline; }
 td.capacity-critical { color: var(--reg-closed);       font-weight: 600; }
 td.capacity-warning  { color: var(--capacity-warning); }
 td .waiting          { color: var(--reg-closed);        font-size: 0.8em; font-weight: 600; }
+
+td.filterable                  { cursor: pointer; }
+td.filterable:hover,
+td.filterable:hover > span     { text-decoration: underline; }
+td.filter-active               { background: var(--toggle-active-bg) !important; color: var(--toggle-active-text); }
+td.filter-active .reg-open,
+td.filter-active .reg-closed   { color: inherit; }
 .popup-participants  { font-size: 0.8rem; color: var(--muted); }
 
 /* ── Map popup ───────────────────────────────────── */

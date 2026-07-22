@@ -54,10 +54,10 @@ if (!API_KEY) {
 const GQL_ENDPOINT = 'https://shootnscoreit.com/graphql/';
 
 /** Days of past matches to include (0 = upcoming only). */
-const LOOKBACK_DAYS = 365;
+const LOOKBACK_DAYS = 90;
 
 /** Days ahead to fetch. */
-const LOOKAHEAD_DAYS = 365;
+const LOOKAHEAD_DAYS = 180;
 
 // Comma-separated ISO-3 country codes, e.g. "NOR,SWE". Empty = all countries.
 const _countriesEnv = process.env.SSI_COUNTRIES ?? '';
@@ -203,34 +203,34 @@ async function fetchAllMatches() {
     return result.data.events;
   }
 
-  // 1. Upcoming events in 4-day chunks to stay under the API result cap (~100/query)
+  // 1. Upcoming events in 3-day chunks to stay under the API result cap (~100/query)
   console.log('Fetching events from SSI GraphQL API...');
   const lookAheadEnd = new Date(today); lookAheadEnd.setDate(lookAheadEnd.getDate() + LOOKAHEAD_DAYS);
   let futureChunkStart = new Date(today);
   let futureChunks = 0;
   while (futureChunkStart < lookAheadEnd) {
-    const futureChunkEnd = new Date(Math.min(futureChunkStart.getTime() + 4 * 86400000, lookAheadEnd.getTime()));
+    const futureChunkEnd = new Date(Math.min(futureChunkStart.getTime() + 3 * 86400000, lookAheadEnd.getTime()));
     for (const ev of await queryWindow(futureChunkStart.toISOString().slice(0, 10), futureChunkEnd.toISOString().slice(0, 10))) {
       if (!allEvents.has(String(ev.id))) allEvents.set(String(ev.id), ev);
     }
     futureChunks++;
     futureChunkStart = futureChunkEnd;
   }
-  console.log(`  Future ${LOOKAHEAD_DAYS}d (${futureChunks} 4-day chunks): ${allEvents.size} events`);
+  console.log(`  Future ${LOOKAHEAD_DAYS}d (${futureChunks} 3-day chunks): ${allEvents.size} events`);
 
-  // 2. Past year in 4-day chunks to stay under the API result cap (~100/query)
+  // 2. Past events in 3-day chunks to stay under the API result cap (~100/query)
   const lookBackStart = new Date(today); lookBackStart.setDate(lookBackStart.getDate() - LOOKBACK_DAYS);
   let chunkEnd = new Date(today);
   let pastChunks = 0;
   while (chunkEnd > lookBackStart) {
-    const chunkStart = new Date(Math.max(chunkEnd - 4 * 86400000, lookBackStart));
+    const chunkStart = new Date(Math.max(chunkEnd - 3 * 86400000, lookBackStart));
     for (const ev of await queryWindow(chunkStart.toISOString().slice(0, 10), chunkEnd.toISOString().slice(0, 10))) {
       if (!allEvents.has(String(ev.id))) allEvents.set(String(ev.id), ev);
     }
     pastChunks++;
     chunkEnd = chunkStart;
   }
-  console.log(`  Past ${LOOKBACK_DAYS}d (${pastChunks} 4-day chunks): ${allEvents.size} unique events total`);
+  console.log(`  Past ${LOOKBACK_DAYS}d (${pastChunks} 3-day chunks): ${allEvents.size} unique events total`);
 
   const events = [...allEvents.values()];
   console.log(`Fetched ${events.length} events`);
@@ -412,6 +412,30 @@ async function reverseGeocode(lat, lng, cache) {
   }
 }
 
+function inheritOrganizerCoords(matches) {
+  /** Where an organizer has at least one event with precise API coordinates
+   * (the actual range), inherit those coords for their other events that fell
+   * back to Nominatim / geocache (city-centre approximations). */
+  const apiCoords = new Map(); // organizer_lower → {lat, lng}
+  for (const m of matches) {
+    if (m.geocodeSource === 'api' && m.lat != null && m.lng != null) {
+      apiCoords.set(m.organizer.toLowerCase(), { lat: m.lat, lng: m.lng });
+    }
+  }
+  let inherited = 0;
+  for (const m of matches) {
+    if (m.geocodeSource === 'api' || m.geocodeSource === 'manual') continue;
+    const coords = apiCoords.get(m.organizer.toLowerCase());
+    if (coords) {
+      m.lat = coords.lat;
+      m.lng = coords.lng;
+      m.geocodeSource = 'inherited';
+      inherited++;
+    }
+  }
+  if (inherited) console.log(`Inherited range coordinates for ${inherited} event(s) from same organizer`);
+}
+
 async function enrichWithCountry(matches, cache) {
   let hits = 0;
   for (const m of matches) {
@@ -464,6 +488,8 @@ async function main() {
 
   // Forward-geocode events missing coordinates (organizer name or venue as query)
   await enrichWithCoordinates(matches, geocache);
+  // Inherit precise range coords from sibling events by the same organizer
+  inheritOrganizerCoords(matches);
   // Write geocache, filtering out in-run rate-limited markers (so they retry next run)
   const cleanGeoCache = Object.fromEntries(Object.entries(geocache).filter(([, v]) => !v.rateLimited));
   writeFileSync(GEOCACHE_PATH, JSON.stringify(cleanGeoCache, null, 2) + '\n', 'utf8');

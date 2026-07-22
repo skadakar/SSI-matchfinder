@@ -1560,5 +1560,161 @@
   "58.96334,17.89488": {
     "country": "SWE",
     "county": "Stockholms län"
+  },
+  "59.08188,18.13235": {
+    "country": "SWE",
+    "county": "Stockholms län"
+  },
+  "61.47830,5.72990": {
+    "country": "NOR",
+    "county": "Vestland"
+  },
+  "60.36938,5.30827": {
+    "country": "NOR",
+    "county": "Vestland"
+  },
+  "59.04642,12.67637": {
+    "country": "SWE",
+    "county": "Västra Götalands län"
+  },
+  "55.94100,14.20205": {
+    "country": "SWE",
+    "county": "Skåne län"
+  },
+  "57.28006,16.43061": {
+    "country": "SWE",
+    "county": "Kalmar län"
+  },
+  "60.36901,5.30832": {
+    "country": "NOR",
+    "county": "Vestland"
+  },
+  "58.68312,8.80704": {
+    "country": "NOR",
+    "county": "Agder"
+  },
+  "63.37376,13.45696": {
+    "country": "SWE",
+    "county": "Jämtlands län"
+  },
+  "68.54684,17.60340": {
+    "country": "NOR",
+    "county": "Nordland"
+  },
+  "60.13491,15.11553": {
+    "country": "SWE",
+    "county": "Dalarnas län"
+  },
+  "56.68979,12.84282": {
+    "country": "SWE",
+    "county": "Hallands län"
+  },
+  "60.62466,16.72603": {
+    "country": "SWE",
+    "county": "Gävleborgs län"
+  },
+  "59.39770,13.33913": {
+    "country": "SWE",
+    "county": "Värmlands län"
+  },
+  "59.79403,11.73769": {
+    "country": "NOR",
+    "county": "Akershus"
+  },
+  "56.88012,14.90961": {
+    "country": "SWE",
+    "county": "Kronobergs län"
+  },
+  "60.13450,15.11509": {
+    "country": "SWE",
+    "county": "Dalarnas län"
+  },
+  "59.14100,9.82585": {
+    "country": "NOR",
+    "county": "Telemark"
+  },
+  "59.14098,9.82593": {
+    "country": "NOR",
+    "county": "Telemark"
+  },
+  "59.14098,9.82586": {
+    "country": "NOR",
+    "county": "Telemark"
+  },
+  "59.81704,9.81869": {
+    "country": "NOR",
+    "county": "Buskerud"
+  },
+  "59.58948,17.84073": {
+    "country": "SWE",
+    "county": "Stockholms län"
+  },
+  "59.04664,12.67596": {
+    "country": "SWE",
+    "county": "Västra Götalands län"
+  },
+  "59.39785,13.33890": {
+    "country": "SWE",
+    "county": "Värmlands län"
+  },
+  "68.22252,13.76366": {
+    "country": "NOR",
+    "county": "Nordland"
+  },
+  "65.64612,21.98092": {
+    "country": "SWE",
+    "county": "Norrbottens län"
+  },
+  "59.58997,17.84033": {
+    "country": "SWE",
+    "county": "Stockholms län"
+  },
+  "59.92754,10.74098": {
+    "country": "NOR",
+    "county": ""
+  },
+  "55.63186,13.05104": {
+    "country": "SWE",
+    "county": "Skåne län"
+  },
+  "55.63189,13.05107": {
+    "country": "SWE",
+    "county": "Skåne län"
+  },
+  "56.68978,12.84281": {
+    "country": "SWE",
+    "county": "Hallands län"
+  },
+  "58.35846,12.00020": {
+    "country": "SWE",
+    "county": "Västra Götalands län"
+  },
+  "59.89844,17.50881": {
+    "country": "SWE",
+    "county": "Uppsala län"
+  },
+  "59.54113,17.78234": {
+    "country": "SWE",
+    "county": "Stockholms län"
+  },
+  "59.36734,16.61503": {
+    "country": "SWE",
+    "county": "Södermanlands län"
+  },
+  "56.68979,12.84280": {
+    "country": "SWE",
+    "county": "Hallands län"
+  },
+  "59.30095,10.81314": {
+    "country": "NOR",
+    "county": "Østfold"
+  },
+  "65.64294,22.07396": {
+    "country": "SWE",
+    "county": "Norrbottens län"
+  },
+  "56.52478,13.08739": {
+    "country": "SWE",
+    "county": "Hallands län"
   }
 }
