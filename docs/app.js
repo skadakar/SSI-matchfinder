@@ -19,6 +19,8 @@ const COLUMNS = [
 const DEFAULT_COLS      = COLUMNS.filter(c => c.defaultVisible).map(c => c.key);
 const DEFAULT_SORT      = 'date';
 const DEFAULT_DIR       = 'asc';
+const TODAY = new Date().toISOString().slice(0, 10);
+
 const DEFAULT_COUNTRIES = ['NOR', 'SWE'];
 
 // ─── APP STATE ────────────────────────────────────────────────────────────────
@@ -37,7 +39,7 @@ function buildDefaultState() {
     level:      [],
     countries:  [...DEFAULT_COUNTRIES],
     regOpen:    true,
-    from:       '',
+    from:       TODAY,
     to:         '',
     cols:       [...DEFAULT_COLS],
     sort:       DEFAULT_SORT,
@@ -57,7 +59,7 @@ function readStateFromURL() {
     level:      p.get('level')      ? p.get('level').split(',').filter(Boolean)      : [],
     countries:  p.get('countries')  ? p.get('countries').split(',').filter(Boolean) : [...DEFAULT_COUNTRIES],
     regOpen:    p.get('regOpen') === '1',
-    from:       p.get('from')       || '',
+    from:       p.get('from') !== null ? p.get('from') : TODAY,
     to:         p.get('to')         || '',
     cols:       colsParam ? colsParam.split(',').filter(Boolean) : [...DEFAULT_COLS],
     sort:       p.get('sort')       || DEFAULT_SORT,
@@ -73,7 +75,7 @@ function writeStateToURL() {
   if (state.level.length)                           p.set('level',      state.level.join(','));
   if (!countriesMatchDefault(state.countries))      p.set('countries',  state.countries.join(','));
   if (state.regOpen)                                p.set('regOpen',    '1');
-  if (state.from)                                   p.set('from',       state.from);
+  if (state.from && state.from !== TODAY)             p.set('from',       state.from);
   if (state.to)                                     p.set('to',         state.to);
   if (!colsMatchDefault(state.cols))                p.set('cols',       state.cols.join(','));
   if (state.sort !== DEFAULT_SORT)                  p.set('sort',       state.sort);
@@ -532,7 +534,7 @@ function bindFilterEvents() {
   });
 
   on('btn-reset', 'click', () => {
-    Object.assign(state, { q: '', discipline: [], level: [], countries: [...DEFAULT_COUNTRIES], regOpen: true, from: '', to: '' });
+    Object.assign(state, { q: '', discipline: [], level: [], countries: [...DEFAULT_COUNTRIES], regOpen: true, from: TODAY, to: '' });
     syncFilterInputs();
     writeStateToURL();
     render();

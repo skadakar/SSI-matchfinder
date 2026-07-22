@@ -21,6 +21,7 @@ input[type=checkbox] { accent-color: var(--accent); }
   --row-hover:          #f1f5f9;
   --toggle-active-bg:   #dbeafe;
   --toggle-active-text: var(--accent-dark);
+  color-scheme: light;
 }
 
 [data-theme="dark"] {
@@ -37,6 +38,7 @@ input[type=checkbox] { accent-color: var(--accent); }
   --row-hover:          #263348;
   --toggle-active-bg:   #1e3a5f;
   --toggle-active-text: var(--accent);
+  color-scheme: dark;
 }
 
 [data-theme="gruvbox"] {
@@ -53,6 +55,7 @@ input[type=checkbox] { accent-color: var(--accent); }
   --row-hover:          #504945;
   --toggle-active-bg:   #d79921;
   --toggle-active-text: #282828;
+  color-scheme: dark;
 }
 
 html, body {
