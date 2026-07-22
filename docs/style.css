@@ -4,6 +4,8 @@
   padding: 0;
 }
 
+input[type=checkbox] { accent-color: var(--accent); }
+
 :root {
   --accent:             #2563eb;
   --accent-dark:        #1d4ed8;

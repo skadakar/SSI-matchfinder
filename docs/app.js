@@ -37,7 +37,7 @@ function buildDefaultState() {
     discipline: [],
     level:      [],
     countries:  [...DEFAULT_COUNTRIES],
-    regOpen:    false,
+    regOpen:    true,
     from:       '',
     to:         '',
     cols:       [...DEFAULT_COLS],
