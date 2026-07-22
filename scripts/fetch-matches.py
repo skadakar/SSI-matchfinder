@@ -175,11 +175,20 @@ def fetch_all_matches():
                 sys.exit(1)
         return result['data']['events']
 
-    # 1. Upcoming events: today → today + LOOKAHEAD_DAYS (single call)
+    # 1. Upcoming events in 4-day chunks to stay under the API result cap (~100/query)
     print('Fetching events from SSI GraphQL API...')
-    for ev in query_window(today.isoformat(), (today + timedelta(days=LOOKAHEAD_DAYS)).isoformat()):
-        all_events[str(ev['id'])] = ev
-    print(f'  Future: {len(all_events)} events')
+    look_ahead_end = today + timedelta(days=LOOKAHEAD_DAYS)
+    chunk_start = today
+    future_chunks = 0
+    while chunk_start < look_ahead_end:
+        chunk_end = min(chunk_start + timedelta(days=4), look_ahead_end)
+        new_evs = query_window(chunk_start.isoformat(), chunk_end.isoformat())
+        added = sum(1 for ev in new_evs if str(ev['id']) not in all_events)
+        for ev in new_evs:
+            all_events.setdefault(str(ev['id']), ev)
+        future_chunks += 1
+        chunk_start = chunk_end
+    print(f'  Future {LOOKAHEAD_DAYS}d ({future_chunks} 4-day chunks): {len(all_events)} events')
 
     # 2. Past year in 4-day chunks to stay under the API result cap (~100/query)
     look_back_start = today - timedelta(days=LOOKBACK_DAYS)

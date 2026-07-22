@@ -203,13 +203,20 @@ async function fetchAllMatches() {
     return result.data.events;
   }
 
-  // 1. Upcoming events: today → today + LOOKAHEAD_DAYS (single call)
+  // 1. Upcoming events in 4-day chunks to stay under the API result cap (~100/query)
   console.log('Fetching events from SSI GraphQL API...');
-  const futureDate = new Date(today); futureDate.setDate(futureDate.getDate() + LOOKAHEAD_DAYS);
-  for (const ev of await queryWindow(todayStr, futureDate.toISOString().slice(0, 10))) {
-    allEvents.set(String(ev.id), ev);
+  const lookAheadEnd = new Date(today); lookAheadEnd.setDate(lookAheadEnd.getDate() + LOOKAHEAD_DAYS);
+  let futureChunkStart = new Date(today);
+  let futureChunks = 0;
+  while (futureChunkStart < lookAheadEnd) {
+    const futureChunkEnd = new Date(Math.min(futureChunkStart.getTime() + 4 * 86400000, lookAheadEnd.getTime()));
+    for (const ev of await queryWindow(futureChunkStart.toISOString().slice(0, 10), futureChunkEnd.toISOString().slice(0, 10))) {
+      if (!allEvents.has(String(ev.id))) allEvents.set(String(ev.id), ev);
+    }
+    futureChunks++;
+    futureChunkStart = futureChunkEnd;
   }
-  console.log(`  Future: ${allEvents.size} events`);
+  console.log(`  Future ${LOOKAHEAD_DAYS}d (${futureChunks} 4-day chunks): ${allEvents.size} events`);
 
   // 2. Past year in 4-day chunks to stay under the API result cap (~100/query)
   const lookBackStart = new Date(today); lookBackStart.setDate(lookBackStart.getDate() - LOOKBACK_DAYS);
