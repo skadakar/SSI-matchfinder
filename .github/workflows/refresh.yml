@@ -54,6 +54,16 @@ jobs:
             echo "No changes to commit."
           else
             git commit -m "chore: refresh match data [$(date -u +%Y-%m-%dT%H:%M:%SZ)]"
-            git pull --rebase origin master
+            # Rebase onto any commits that landed while we were fetching.
+            # If there's a conflict (two runs overlapping), resolve by keeping
+            # our freshly-generated files and re-stamping the asset cache SHA.
+            if ! git pull --rebase origin master; then
+              git diff --name-only --diff-filter=U | xargs git checkout --theirs --
+              HASH=$(git rev-parse --short HEAD)
+              sed -i "s|app\.js[^\"]*|app.js?v=${HASH}|" docs/index.html
+              sed -i "s|style\.css[^\"]*|style.css?v=${HASH}|" docs/index.html
+              git add -f docs/data/matches.json docs/index.html data/organizer-geocache.json data/reverse-geocache.json
+              git rebase --continue
+            fi
             git push
           fi
