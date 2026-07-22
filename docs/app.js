@@ -14,7 +14,6 @@ const COLUMNS = [
   { key: 'registrationDeadline',label: 'Reg. deadline',defaultVisible: false, sortable: true  },
   { key: 'registrationStarts',  label: 'Reg. opens',   defaultVisible: false, sortable: true  },
   { key: 'participants',        label: 'Participants', defaultVisible: true,  sortable: true  },
-  { key: 'link',                label: 'SSI Link',     defaultVisible: true,  sortable: false },
 ];
 
 const DEFAULT_COLS      = COLUMNS.filter(c => c.defaultVisible).map(c => c.key);
@@ -274,7 +273,16 @@ function appendCellContent(td, key, m) {
       td.textContent = formatDate(m.endDate);
       break;
     case 'name':
-      td.textContent = m.name;
+      if (m.url) {
+        const a = document.createElement('a');
+        a.href   = m.url;
+        a.target = '_blank';
+        a.rel    = 'noopener noreferrer';
+        a.textContent = m.name;
+        td.appendChild(a);
+      } else {
+        td.textContent = m.name;
+      }
       break;
     case 'organizer':
       td.textContent = m.organizer;
@@ -330,16 +338,6 @@ function appendCellContent(td, key, m) {
       }
       break;
     }
-    case 'link':
-      if (m.url) {
-        const a = document.createElement('a');
-        a.href   = m.url;
-        a.target = '_blank';
-        a.rel    = 'noopener noreferrer';
-        a.textContent = 'View →';
-        td.appendChild(a);
-      }
-      break;
     default:
       td.textContent = m[key] ?? '';
   }
