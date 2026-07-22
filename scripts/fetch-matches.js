@@ -322,12 +322,13 @@ async function enrichWithCoordinates(matches, cache) {
       continue;
     }
 
-    if (!match.organizer) {
+    const query = match.organizer || match.venue || '';
+    if (!query) {
       match.geocodeSource = 'unknown';
       continue;
     }
 
-    const result = await geocodeOrganizer(match.organizer, match.country, cache, manual);
+    const result = await geocodeOrganizer(query, match.country, cache, manual);
     if (result) {
       match.lat          = result.lat;
       match.lng          = result.lng;
@@ -392,8 +393,15 @@ async function main() {
   const geocache = loadJson(GEOCACHE_PATH, {});
   let matches  = raw.map(normalizeMatch);
 
-  // Fill in country for events that have lat/lng but no country (null organizer)
+  // Pass 1: fill in country for events that already have lat/lng from the API
   const revCache = loadJson(REV_GEOCACHE_PATH, {});
+  await enrichWithCountry(matches, revCache);
+
+  // Forward-geocode events missing coordinates (organizer name or venue as query)
+  await enrichWithCoordinates(matches, geocache);
+  writeFileSync(GEOCACHE_PATH, JSON.stringify(geocache, null, 2) + '\n', 'utf8');
+
+  // Pass 2: fill in country for events that just received coordinates above
   await enrichWithCountry(matches, revCache);
   writeFileSync(REV_GEOCACHE_PATH, JSON.stringify(revCache, null, 2) + '\n', 'utf8');
 
@@ -402,11 +410,6 @@ async function main() {
     matches = matches.filter(m => COUNTRIES.has(m.country.toUpperCase()));
     console.log(`Country filter (${[...COUNTRIES].sort().join(', ')}): ${matches.length} of ${before} kept`);
   }
-
-  await enrichWithCoordinates(matches, geocache);
-
-  // Persist any new geocache entries
-  writeFileSync(GEOCACHE_PATH, JSON.stringify(geocache, null, 2) + '\n', 'utf8');
 
   const output = {
     generated: new Date().toISOString(),

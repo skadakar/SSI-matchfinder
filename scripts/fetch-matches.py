@@ -287,10 +287,11 @@ def enrich_with_coordinates(matches, cache):
         if m['lat'] is not None and m['lng'] is not None:
             m['geocodeSource'] = 'api'
             continue
-        if not m['organizer']:
+        query = m['organizer'] or m.get('venue', '')
+        if not query:
             m['geocodeSource'] = 'unknown'
             continue
-        result = geocode_organizer(m['organizer'], m['country'], cache, manual)
+        result = geocode_organizer(query, m['country'], cache, manual)
         if result:
             m['lat'] = result['lat']
             m['lng'] = result['lng']
@@ -361,8 +362,17 @@ def main():
     geocache = load_json(GEOCACHE_PATH, {})
     matches  = [normalize_match(r) for r in raw]
 
-    # Fill in country for events that have lat/lng but no country (null organizer)
+    # Pass 1: fill in country for events that already have lat/lng from the API
     rev_cache = load_json(REV_GEOCACHE_PATH, {})
+    enrich_with_country(matches, rev_cache)
+
+    # Forward-geocode events missing coordinates (organizer name or venue as query)
+    enrich_with_coordinates(matches, geocache)
+    GEOCACHE_PATH.write_text(
+        json.dumps(geocache, indent=2, ensure_ascii=False) + '\n', encoding='utf-8'
+    )
+
+    # Pass 2: fill in country for events that just received coordinates above
     enrich_with_country(matches, rev_cache)
     REV_GEOCACHE_PATH.write_text(
         json.dumps(rev_cache, indent=2, ensure_ascii=False) + '\n', encoding='utf-8'
@@ -372,12 +382,6 @@ def main():
         before  = len(matches)
         matches = [m for m in matches if m['country'].upper() in COUNTRIES]
         print(f'Country filter ({', '.join(sorted(COUNTRIES))}): {len(matches)} of {before} kept')
-
-    enrich_with_coordinates(matches, geocache)
-
-    GEOCACHE_PATH.write_text(
-        json.dumps(geocache, indent=2, ensure_ascii=False) + '\n', encoding='utf-8'
-    )
 
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     output = {
