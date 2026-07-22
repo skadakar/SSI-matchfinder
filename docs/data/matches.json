@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-22T17:23:36.452Z",
+  "generated": "2026-07-22T17:30:32.302Z",
   "count": 1242,
   "matches": [
     {
@@ -179,7 +179,7 @@
       "registrationOpen": true,
       "registrationStarts": "2026-07-20",
       "registrationDeadline": "",
-      "participants": 16,
+      "participants": 18,
       "maxParticipants": 30,
       "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/22/29220/",
@@ -846,7 +846,7 @@
       "registrationOpen": true,
       "registrationStarts": "2026-06-12",
       "registrationDeadline": "2026-07-25",
-      "participants": 34,
+      "participants": 35,
       "maxParticipants": 50,
       "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/22/25268/",
@@ -5096,8 +5096,8 @@
       "country": "FIN",
       "city": "",
       "venue": "Aittokosken ampumarata",
-      "lat": 85.05113,
-      "lng": -180,
+      "lat": 64.2247,
+      "lng": 27.7339,
       "registrationOpen": true,
       "registrationStarts": "2026-05-02",
       "registrationDeadline": "2026-08-28",
@@ -5105,8 +5105,8 @@
       "maxParticipants": 100,
       "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/22/27938/",
-      "county": "",
-      "geocodeSource": "api"
+      "county": "Kainuu",
+      "geocodeSource": "manual"
     },
     {
       "id": "26444",
@@ -6660,8 +6660,8 @@
       "country": "SWE",
       "city": "",
       "venue": "Stora Sätra, Livgardets Skjutfält",
-      "lat": 85.05113,
-      "lng": -180,
+      "lat": 59.66047,
+      "lng": 17.1031,
       "registrationOpen": false,
       "registrationStarts": "2026-08-15",
       "registrationDeadline": "2026-09-01",
@@ -6669,8 +6669,8 @@
       "maxParticipants": 96,
       "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/22/29166/",
-      "county": "",
-      "geocodeSource": "api"
+      "county": "Uppsala län",
+      "geocodeSource": "inherited"
     },
     {
       "id": "27256",
@@ -20506,8 +20506,8 @@
       "country": "NOR",
       "city": "",
       "venue": "",
-      "lat": 85.05113,
-      "lng": -180,
+      "lat": 63.24,
+      "lng": 9.94,
       "registrationOpen": false,
       "registrationStarts": "2026-06-09",
       "registrationDeadline": "",
@@ -20515,8 +20515,8 @@
       "maxParticipants": 20,
       "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/22/28751/",
-      "county": "",
-      "geocodeSource": "api"
+      "county": "Trøndelag",
+      "geocodeSource": "manual"
     },
     {
       "id": "2877",
