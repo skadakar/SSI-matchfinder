@@ -129,7 +129,7 @@ query GetEvents($after: String!, $before: String!) {
   events(starts_after: $after, starts_before: $before) {
     ... on EventInterface {
       id name starts ends rule sub_rule
-      venue lat lng
+      venue lat lng region
       registration registration_starts registration_closes is_registration_possible
       competitors_count max_competitors number_of_mainmatch_competitors_waiting
       get_content_type_key get_full_rule_display get_full_level_display
@@ -143,7 +143,7 @@ _EVENT_Q = '''
 query GetEvent($ct: Int!, $id: String!) {
   event(content_type: $ct, id: $id) {
     id name starts ends rule sub_rule
-    venue lat lng
+    venue lat lng region
     registration registration_starts registration_closes is_registration_possible
     competitors_count max_competitors number_of_mainmatch_competitors_waiting
     get_content_type_key get_full_rule_display get_full_level_display
@@ -215,7 +215,7 @@ def normalize_match(raw):
         'organizer':            org.get('name', ''),
         'discipline':           raw.get('get_full_rule_display') or raw.get('rule', ''),
         'level':                raw.get('get_full_level_display', ''),
-        'country':              org.get('country', ''),
+        'country':              org.get('country', '') or raw.get('region', ''),
         'city':                 org.get('city', ''),
         'venue':                raw.get('venue', ''),
         'lat':                  float(lat) if lat is not None else None,

@@ -154,7 +154,7 @@ const EVENTS_Q = `
     events(starts_after: $after, starts_before: $before) {
       ... on EventInterface {
         id name starts ends rule sub_rule
-        venue lat lng
+        venue lat lng region
         registration registration_starts registration_closes is_registration_possible
         competitors_count max_competitors number_of_mainmatch_competitors_waiting
         get_content_type_key get_full_rule_display get_full_level_display
@@ -168,7 +168,7 @@ const EVENT_Q = `
   query GetEvent($ct: Int!, $id: String!) {
     event(content_type: $ct, id: $id) {
       id name starts ends rule sub_rule
-      venue lat lng
+      venue lat lng region
       registration registration_starts registration_closes is_registration_possible
       competitors_count max_competitors number_of_mainmatch_competitors_waiting
       get_content_type_key get_full_rule_display get_full_level_display
@@ -247,7 +247,7 @@ function normalizeMatch(raw) {
     organizer:            org.name    ?? '',
     discipline:           raw.get_full_rule_display || raw.rule || '',
     level:                raw.get_full_level_display ?? '',
-    country:              org.country ?? '',
+    country:              org.country || raw.region || '',
     city:                 org.city    ?? '',
     venue:                raw.venue   ?? '',
     lat:                  lat != null ? parseFloat(lat) : null,
