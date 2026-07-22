@@ -231,10 +231,20 @@ def fetch_all_matches():
     return events
 
 
+def _valid_coords(lat, lng):
+    """Return False for SSI's 'no location' sentinel (85.05, -180) and any
+    other geometrically impossible values."""
+    if lat is None or lng is None:
+        return False
+    return abs(float(lng)) < 180 and abs(float(lat)) <= 85
+
+
 def normalize_match(raw):
     org = raw.get('organizer') or {}
     lat = raw.get('lat') if raw.get('lat') is not None else org.get('lat')
     lng = raw.get('lng') if raw.get('lng') is not None else org.get('lng')
+    if not _valid_coords(lat, lng):
+        lat, lng = None, None
     return {
         'id':                   str(raw.get('id', '')),
         'name':                 raw.get('name', ''),

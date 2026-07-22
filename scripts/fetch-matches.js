@@ -260,10 +260,18 @@ async function fetchAllMatches() {
   return events;
 }
 
+/** Return false for SSI's 'no location' sentinel (85.05, -180) and any
+ * other geometrically impossible values. */
+function validCoords(lat, lng) {
+  if (lat == null || lng == null) return false;
+  return Math.abs(parseFloat(lng)) < 180 && Math.abs(parseFloat(lat)) <= 85;
+}
+
 function normalizeMatch(raw) {
   const org = raw.organizer || {};
-  const lat = raw.lat != null ? raw.lat : org.lat;
-  const lng = raw.lng != null ? raw.lng : org.lng;
+  let lat = raw.lat != null ? raw.lat : org.lat;
+  let lng = raw.lng != null ? raw.lng : org.lng;
+  if (!validCoords(lat, lng)) { lat = null; lng = null; }
   return {
     id:                   String(raw.id ?? ''),
     name:                 raw.name ?? '',
