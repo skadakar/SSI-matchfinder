@@ -85,6 +85,16 @@ header {
   z-index: 10;
 }
 
+#logo {
+  height: 2rem;
+  width: auto;
+  flex-shrink: 0;
+  /* Invert in dark themes so the black silhouette shows on dark backgrounds */
+  filter: none;
+}
+[data-theme="dark"]    #logo { filter: invert(1); }
+[data-theme="gruvbox"] #logo { filter: invert(1) sepia(1) saturate(2) hue-rotate(5deg); }
+
 header h1 {
   font-size: 1.15rem;
   font-weight: 700;
