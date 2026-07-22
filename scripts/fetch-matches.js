@@ -211,19 +211,19 @@ async function fetchAllMatches() {
   }
   console.log(`  Future: ${allEvents.size} events`);
 
-  // 2. Past year in 7-day chunks to stay under the API result cap (~100/query)
+  // 2. Past year in 4-day chunks to stay under the API result cap (~100/query)
   const lookBackStart = new Date(today); lookBackStart.setDate(lookBackStart.getDate() - LOOKBACK_DAYS);
   let chunkEnd = new Date(today);
   let pastChunks = 0;
   while (chunkEnd > lookBackStart) {
-    const chunkStart = new Date(Math.max(chunkEnd - 7 * 86400000, lookBackStart));
+    const chunkStart = new Date(Math.max(chunkEnd - 4 * 86400000, lookBackStart));
     for (const ev of await queryWindow(chunkStart.toISOString().slice(0, 10), chunkEnd.toISOString().slice(0, 10))) {
       if (!allEvents.has(String(ev.id))) allEvents.set(String(ev.id), ev);
     }
     pastChunks++;
     chunkEnd = chunkStart;
   }
-  console.log(`  Past ${LOOKBACK_DAYS}d (${pastChunks} weekly chunks): ${allEvents.size} unique events total`);
+  console.log(`  Past ${LOOKBACK_DAYS}d (${pastChunks} 4-day chunks): ${allEvents.size} unique events total`);
 
   const events = [...allEvents.values()];
   console.log(`Fetched ${events.length} events`);

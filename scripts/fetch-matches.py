@@ -181,12 +181,12 @@ def fetch_all_matches():
         all_events[str(ev['id'])] = ev
     print(f'  Future: {len(all_events)} events')
 
-    # 2. Past year in 7-day chunks to stay under the API result cap (~100/query)
+    # 2. Past year in 4-day chunks to stay under the API result cap (~100/query)
     look_back_start = today - timedelta(days=LOOKBACK_DAYS)
     chunk_end = today
     past_chunks = 0
     while chunk_end > look_back_start:
-        chunk_start = max(chunk_end - timedelta(days=7), look_back_start)
+        chunk_start = max(chunk_end - timedelta(days=4), look_back_start)
         new_evs = query_window(chunk_start.isoformat(), chunk_end.isoformat())
         added = sum(1 for ev in new_evs if str(ev['id']) not in all_events)
         for ev in new_evs:
@@ -194,7 +194,7 @@ def fetch_all_matches():
         past_chunks += 1
         print(f'  chunk {past_chunks:3d}: {chunk_start} → {chunk_end}  ({len(new_evs):3d} events, {added} new)', flush=True)
         chunk_end = chunk_start
-    print(f'  Past {LOOKBACK_DAYS}d ({past_chunks} weekly chunks): {len(all_events)} unique events total')
+    print(f'  Past {LOOKBACK_DAYS}d ({past_chunks} 4-day chunks): {len(all_events)} unique events total')
 
     events = list(all_events.values())
     print(f'Fetched {len(events)} events')
