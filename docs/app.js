@@ -10,7 +10,7 @@ const COLUMNS = [
   { key: 'discipline',          label: 'Discipline',   defaultVisible: true,  sortable: true  },
   { key: 'level',               label: 'Level',        defaultVisible: false, sortable: true  },
   { key: 'country',             label: 'Country',      defaultVisible: false, sortable: true  },
-  { key: 'county',              label: 'Region',       defaultVisible: true,  sortable: true  },
+  { key: 'county',              label: 'Region',       defaultVisible: false, sortable: true  },
   { key: 'registration',        label: 'Registration', defaultVisible: true,  sortable: false },
   { key: 'registrationDeadline',label: 'Reg. deadline',defaultVisible: false, sortable: true  },
   { key: 'registrationStarts',  label: 'Reg. opens',   defaultVisible: false, sortable: true  },
@@ -499,60 +499,8 @@ function updateCountryBtn() {
   }
 }
 
-function populateRegionDropdown() {
-  const regionSet = new Set();
-  for (const m of allMatches) {
-    const r = countyToRegion(m);
-    if (r) regionSet.add(r);
-  }
-  // NOR regions in geographic order, then SWE counties alphabetically
-  const norRegions  = NOR_REGION_ORDER.filter(r => regionSet.has(r));
-  const sweCounties = [...regionSet].filter(r => !NOR_REGION_ORDER.includes(r)).sort();
-  const allRegions  = [...norRegions, ...sweCounties];
-
-  const panel = document.getElementById('region-panel');
-  panel.innerHTML = '';
-  for (const r of allRegions) {
-    const lbl = document.createElement('label');
-    const cb  = document.createElement('input');
-    cb.type    = 'checkbox';
-    cb.value   = r;
-    cb.checked = state.regions.includes(r);
-    cb.addEventListener('change', () => {
-      if (cb.checked) {
-        if (!state.regions.includes(r)) state.regions.push(r);
-      } else {
-        state.regions = state.regions.filter(x => x !== r);
-      }
-      updateRegionBtn();
-      writeStateToURL();
-      render();
-    });
-    lbl.appendChild(cb);
-    lbl.append(' ' + r);
-    panel.appendChild(lbl);
-  }
-  updateRegionBtn();
-}
-
-function updateRegionBtn() {
-  const btn = document.getElementById('region-btn');
-  const n   = state.regions.length;
-  if (n === 0) {
-    btn.textContent = 'All regions';
-    btn.classList.remove('has-selection');
-  } else if (n <= 3) {
-    btn.textContent = [...state.regions].join(', ');
-    btn.classList.add('has-selection');
-  } else {
-    btn.textContent = `${n} regions`;
-    btn.classList.add('has-selection');
-  }
-}
-
 function populateDropdowns() {
   populateCountryDropdown();
-  populateRegionDropdown();
 
   // Disciplines
   const disciplines = [...new Set(allMatches.map(m => m.discipline).filter(Boolean))].sort();
@@ -608,11 +556,6 @@ function syncFilterInputs() {
     cb.checked = state.countries.includes(cb.value);
   });
   updateCountryBtn();
-
-  document.querySelectorAll('#region-panel input[type=checkbox]').forEach(cb => {
-    cb.checked = state.regions.includes(cb.value);
-  });
-  updateRegionBtn();
 }
 
 function bindFilterEvents() {
@@ -642,21 +585,7 @@ function bindFilterEvents() {
     }
   });
 
-  // Region dropdown
-  const regionBtn   = document.getElementById('region-btn');
-  const regionPanel = document.getElementById('region-panel');
-  regionBtn.addEventListener('click', e => {
-    e.stopPropagation();
-    const opening = regionPanel.hidden;
-    regionPanel.hidden = !opening;
-    regionBtn.setAttribute('aria-expanded', String(opening));
-  });
-  document.addEventListener('click', e => {
-    if (!document.getElementById('region-wrap').contains(e.target)) {
-      regionPanel.hidden = true;
-      regionBtn.setAttribute('aria-expanded', 'false');
-    }
-  });
+  // Region dropdown — removed from sidebar; filter-active state kept for click-to-filter in table rows
 
   on('filter-reg-open', 'change', e => {
     state.regOpen = e.target.checked;
