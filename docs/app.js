@@ -525,33 +525,59 @@ function updateCountryBtn() {
 
 function populateDropdowns() {
   populateCountryDropdown();
+  refreshDisciplineLevelDropdowns();
+}
 
-  // Disciplines
-  const disciplines = [...new Set(allMatches.map(m => m.discipline).filter(Boolean))].sort();
-  const dSel = document.getElementById('filter-discipline');
-  dSel.innerHTML = '';
-  for (const d of disciplines) {
-    const opt = document.createElement('option');
-    opt.value       = d;
-    opt.textContent = d;
-    dSel.appendChild(opt);
-  }
+/** Repopulate discipline + level selects from the currently active filter subset,
+ *  excluding each dropdown's own filter so it shows what's available in context. */
+function refreshDisciplineLevelDropdowns() {
+  // For discipline: apply all filters EXCEPT discipline
+  const savedDisc = state.discipline;
+  state.discipline = [];
+  const subsetForDisc = applyFilters(allMatches);
+  state.discipline = savedDisc;
 
-  // Levels
-  const levels = [...new Set(allMatches.map(m => m.level).filter(l => l && l !== '--'))].sort();
-  const lSel = document.getElementById('filter-level');
-  lSel.innerHTML = '';
-  for (const l of levels) {
-    const opt = document.createElement('option');
-    opt.value = l; opt.textContent = l;
-    lSel.appendChild(opt);
-  }
+  // For level: apply all filters EXCEPT level
+  const savedLevel = state.level;
+  state.level = [];
+  const subsetForLevel = applyFilters(allMatches);
+  state.level = savedLevel;
 
-  // On mobile expand both selects so all options are visible without inner scroll
+  _repopulateSelect('filter-discipline', 'clear-discipline',
+    [...new Set(subsetForDisc.map(m => m.discipline).filter(Boolean))].sort(),
+    state.discipline);
+
+  _repopulateSelect('filter-level', 'clear-level',
+    [...new Set(subsetForLevel.map(m => m.level).filter(l => l && l !== '--'))].sort(),
+    state.level);
+
+  // Mobile: expand selects to show all options without inner scroll
   if (window.matchMedia('(max-width: 720px)').matches) {
+    const dSel = document.getElementById('filter-discipline');
+    const lSel = document.getElementById('filter-level');
     dSel.size = dSel.options.length || 1;
     lSel.size = lSel.options.length || 1;
   }
+}
+
+function _repopulateSelect(selId, clearBtnId, values, selected) {
+  const sel = document.getElementById(selId);
+  // Remove options no longer in the new value set, keep the rest
+  const existing = new Set([...sel.options].map(o => o.value));
+  const incoming = new Set(values);
+  // Remove stale options
+  for (const opt of [...sel.options]) {
+    if (!incoming.has(opt.value)) sel.removeChild(opt);
+  }
+  // Add new options (in sorted order — rebuild fully for correct sort)
+  sel.innerHTML = '';
+  for (const v of values) {
+    const opt = document.createElement('option');
+    opt.value = v; opt.textContent = v;
+    opt.selected = selected.includes(v);
+    sel.appendChild(opt);
+  }
+  if (clearBtnId) document.getElementById(clearBtnId).hidden = selected.length === 0;
 }
 
 function syncFilterInputs() {
@@ -564,17 +590,10 @@ function syncFilterInputs() {
   document.getElementById('new-match-days-label').textContent = state.newMatchDays;
   document.getElementById('new-match-slider-wrap').hidden     = !state.newMatch;
 
-  const dSel = document.getElementById('filter-discipline');
-  for (const opt of dSel.options) {
-    opt.selected = state.discipline.includes(opt.value);
-  }
+  // Discipline + level selects are repopulated by refreshDisciplineLevelDropdowns()
+  // which is called from render() — just update the clear-button visibility here
   document.getElementById('clear-discipline').hidden = state.discipline.length === 0;
-
-  const lSel = document.getElementById('filter-level');
-  for (const opt of lSel.options) {
-    opt.selected = state.level.includes(opt.value);
-  }
-  document.getElementById('clear-level').hidden = state.level.length === 0;
+  document.getElementById('clear-level').hidden      = state.level.length === 0;
 
   // Mobile filter toggle badge
   const dot = document.querySelector('#filter-toggle-btn .filter-active-dot');
@@ -731,6 +750,8 @@ function activateView() {
 function render() {
   const filtered = applyFilters(allMatches);
   const sorted   = sortMatches(filtered);
+
+  refreshDisciplineLevelDropdowns();
 
   const located = filtered.filter(m => m.lat != null).length;
   const locNote = state.view === 'map' && located < filtered.length
