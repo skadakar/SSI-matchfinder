@@ -1,0 +1,14 @@
+{
+  "name": "ssi-matchfinder",
+  "version": "1.0.0",
+  "description": "Static web frontend for finding SSI (Shoot N Score It) local matches",
+  "type": "module",
+  "scripts": {
+    "fetch": "node scripts/fetch-matches.js",
+    "fetch:dump": "node scripts/fetch-matches.js --dump",
+    "serve": "npx serve docs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

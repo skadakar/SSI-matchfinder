@@ -1,0 +1,42 @@
+name: Refresh Match Data
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'   # every 6 hours: 00:00, 06:00, 12:00, 18:00 UTC
+  workflow_dispatch:         # allow manual trigger from the Actions tab
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Fetch match data
+        env:
+          SSI_REFRESH_TOKEN: ${{ secrets.SSI_REFRESH_TOKEN }}
+          SSI_API_KEY:       ${{ secrets.SSI_API_KEY }}
+          SSI_COUNTRIES:     ${{ vars.SSI_COUNTRIES }}
+        run: node scripts/fetch-matches.js
+
+      - name: Commit updated data
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/data/matches.json data/organizer-geocache.json
+          # Only commit if something actually changed
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "chore: refresh match data [$(date -u +%Y-%m-%dT%H:%M:%SZ)]"
+            git push
+          fi

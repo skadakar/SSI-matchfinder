@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SSI Match Finder</title>
+
+  <!-- Leaflet map library -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="anonymous" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="anonymous"></script>
+
+  <!-- Marker clustering -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" crossorigin="anonymous" />
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" crossorigin="anonymous"></script>
+
+  <!-- Early theme init: must run before CSS to prevent flash of wrong theme -->
+  <script>
+    (function () {
+      var saved = localStorage.getItem('theme');
+      var pref  = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      document.documentElement.dataset.theme = saved || pref;
+    }());
+  </script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header>
+    <h1>SSI Match Finder</h1>
+    <span id="last-updated"></span>
+    <button id="btn-theme" aria-label="Switch to dark mode">🌙</button>
+  </header>
+
+  <div id="app">
+
+    <!-- ── Filter sidebar ── -->
+    <aside id="filters">
+      <div class="filter-group">
+        <label for="filter-search">Search</label>
+        <input type="text" id="filter-search" placeholder="Match name, club, city…" autocomplete="off" />
+      </div>
+
+      <div class="filter-group">
+        <label>Country</label>
+        <div class="multicheck-wrap" id="country-wrap">
+          <button type="button" id="country-btn" class="multicheck-btn" aria-haspopup="listbox" aria-expanded="false">
+            All countries
+          </button>
+          <div class="multicheck-panel" id="country-panel" hidden></div>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label class="checkbox-row">
+          <input type="checkbox" id="filter-reg-open" />
+          Open registration only
+        </label>
+      </div>
+
+      <div class="filter-group">
+        <label for="filter-discipline">Discipline <small>(ctrl+click multi-select)</small></label>
+        <select id="filter-discipline" multiple size="6"></select>
+      </div>
+
+      <div class="filter-group">
+        <label for="filter-level">Level <small>(ctrl+click multi-select)</small></label>
+        <select id="filter-level" multiple size="4"></select>
+      </div>
+
+      <div class="filter-group">
+        <label for="filter-from">From</label>
+        <input type="date" id="filter-from" />
+      </div>
+
+      <div class="filter-group">
+        <label for="filter-to">To</label>
+        <input type="date" id="filter-to" />
+      </div>
+
+      <div class="filter-actions">
+        <button id="btn-reset">Reset</button>
+        <button id="btn-copy-link">Copy link</button>
+      </div>
+
+      <div id="match-count"></div>
+    </aside>
+
+    <!-- ── Main area ── -->
+    <main id="main">
+
+      <div id="tabs">
+        <button class="tab-btn active" data-view="map">Map</button>
+        <button class="tab-btn" data-view="table">Table</button>
+      </div>
+
+      <!-- Map view -->
+      <div id="view-map" class="view active">
+        <div id="map"></div>
+      </div>
+
+      <!-- Table view -->
+      <div id="view-table" class="view">
+        <div id="col-toggles"></div>
+        <div id="table-wrapper">
+          <table id="matches-table">
+            <thead><tr id="table-header"></tr></thead>
+            <tbody id="table-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
