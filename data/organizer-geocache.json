@@ -3,5 +3,632 @@
     "lat": -25.9075202,
     "lng": 28.1632121,
     "display": "City, Freight Road, Tshwane Ward 78, Golden Fields Estate, City of Tshwane Metropolitan Municipality, Gauteng, 0061, South Africa"
+  },
+  "palovaara": {
+    "lat": 66.1382168,
+    "lng": 24.1426572,
+    "display": "Palovaara, Tornio, Kemi-Tornion seutukunta, Lappi, Manner-Suomi, Suomi / Finland"
+  },
+  "rockford sportsmans club": {
+    "lat": 42.1839362,
+    "lng": -89.0065041,
+    "display": "ROCKFORD SPORTSMANS CLUB INC, Thorne Ledge, Cherry Valley Township, Winnebago County, Illinois, United States"
+  },
+  "setesdalsvegen 4200, 4755 hovden": {
+    "lat": 59.5292492,
+    "lng": 7.3715227,
+    "display": "4200, Setesdalsvegen, Badstogsdalen, Hovden, Bykle, Agder, 4755, Norge"
+  },
+  "döderhults pk": {
+    "lat": 57.2646253,
+    "lng": 16.4308937,
+    "display": "Döderhultsvägen, Norrtorn, Oskarshamn, Oskarshamns kommun, Kalmar län, 572 21, Sverige"
+  },
+  "recoil scotland": {
+    "lat": 59.1058999,
+    "lng": -3.3414392,
+    "display": "Vickers pattern 3lb Recoil MK2 deck gun, Brockan Road, Birsay, Orkney Islands, Alba / Scotland, KW17 2ND, United Kingdom"
+  },
+  "lopen ampumarata": {
+    "lat": 60.7240771,
+    "lng": 24.3308164,
+    "display": "Lopen ampumarata, 769, Nummenrannantie, Loppi, Riihimäen seutukunta, Kanta-Häme, Manner-Suomi, 12700, Suomi / Finland"
+  },
+  "konttilantie 1214": {
+    "lat": 62.8368319,
+    "lng": 28.0475654,
+    "display": "Konttilantie, Vehmersalmi, Kuopio, Kuopion seutukunta, Pohjois-Savo, Manner-Suomi, Suomi / Finland"
+  },
+  "eksjö": {
+    "lat": 57.6674439,
+    "lng": 14.9735595,
+    "display": "Eksjö, Eksjö kommun, Jönköpings län, 575 31, Sverige"
+  },
+  "hukkavaara, nurmes": {
+    "lat": 63.5691392,
+    "lng": 29.0312475,
+    "display": "Hukkavaara, Nurmes, Pielisen Karjalan seutukunta, Pohjois-Karjala, Manner-Suomi, 75530, Suomi / Finland"
+  },
+  "malmö skyttegille": {
+    "lat": 55.6316706,
+    "lng": 13.0509331,
+    "display": "Malmö Skyttegille, 3, Barbaragatan, Spillepengen, Norr, Malmö kommun, Skåne län, 211 24, Sverige"
+  },
+  "slinfold": {
+    "lat": 51.0719165,
+    "lng": -0.4062535,
+    "display": "Slinfold, Horsham, West Sussex, England, United Kingdom"
+  },
+  "raahe, palokangas": {
+    "lat": 64.674542,
+    "lng": 24.5817313,
+    "display": "Palokangas, Maunula, Raahe, Raahen seutukunta, Pohjois-Pohjanmaa, Manner-Suomi, Suomi / Finland"
+  },
+  "oulu, hiukkavaara": {
+    "lat": 65.0117199,
+    "lng": 25.5949547,
+    "display": "Hiukkavaara, Oulu, Oulun seutukunta, Pohjois-Pohjanmaa, Manner-Suomi, 90670, Suomi / Finland"
+  },
+  "kristianstads pk snårarp": {
+    "lat": 55.9936364,
+    "lng": 14.1126982,
+    "display": "Snårarp, Killegårdarna, Kristianstad, Kristianstads kommun, Skåne län, 291 63, Sverige"
+  },
+  "nrof avd. sunnfjord og ytre sogn": {
+    "lat": null,
+    "lng": null
+  },
+  "stavanger sportsskytterlag": {
+    "lat": null,
+    "lng": null
+  },
+  "uppsala dynamiska skyttar": {
+    "lat": null,
+    "lng": null
+  },
+  "bergen pistolklubb, dynamisk gruppen": {
+    "lat": null,
+    "lng": null
+  },
+  "enköpings skyttesällskap": {
+    "lat": null,
+    "lng": null
+  },
+  "nrof avd. helgeland": {
+    "lat": null,
+    "lng": null
+  },
+  "p4 dynamiska skyttar": {
+    "lat": null,
+    "lng": null
+  },
+  "gyland sportsskyttere": {
+    "lat": null,
+    "lng": null
+  },
+  "etuna": {
+    "lat": null,
+    "lng": null
+  },
+  "trondheim dynamiske sportsskyttere": {
+    "lat": null,
+    "lng": null
+  },
+  "mölndals skytteförening": {
+    "lat": null,
+    "lng": null
+  },
+  "løvenskioldbanen (svingen)": {
+    "lat": null,
+    "lng": null
+  },
+  "lindesnes dynamiske sportskyttere": {
+    "lat": null,
+    "lng": null
+  },
+  "namdal sportsskytterlag": {
+    "lat": null,
+    "lng": null
+  },
+  "oslo og akershus langholdsklubb": {
+    "lat": null,
+    "lng": null
+  },
+  "nrof avd. gudbrandsdal": {
+    "lat": null,
+    "lng": null
+  },
+  "msps skytteklubb": {
+    "lat": null,
+    "lng": null
+  },
+  "kirkenes pistolklubb": {
+    "lat": null,
+    "lng": null
+  },
+  "nrof fosen": {
+    "lat": null,
+    "lng": null
+  },
+  "akadynamisk": {
+    "lat": null,
+    "lng": null
+  },
+  "hvetlanda skyttegille": {
+    "lat": null,
+    "lng": null
+  },
+  "österhaninge skytteförening": {
+    "lat": null,
+    "lng": null
+  },
+  "roslagens pistolskyttar": {
+    "lat": null,
+    "lng": null
+  },
+  "porsgrunn pistolklubb - dynamisk": {
+    "lat": null,
+    "lng": null
+  },
+  "sandvikens psk": {
+    "lat": null,
+    "lng": null
+  },
+  "ipsc ockelbo": {
+    "lat": null,
+    "lng": null
+  },
+  "hålogaland dynamiske sportsskytterklubb": {
+    "lat": null,
+    "lng": null
+  },
+  "northern lights shooting club": {
+    "lat": null,
+    "lng": null
+  },
+  "nrof avd. hedemarken": {
+    "lat": null,
+    "lng": null
+  },
+  "nrof avd. ringerike": {
+    "lat": null,
+    "lng": null
+  },
+  "stockholms militära & polisiära skf": {
+    "lat": null,
+    "lng": null
+  },
+  "boden sportskytteklubb": {
+    "lat": null,
+    "lng": null
+  },
+  "nrof avd. drammen": {
+    "lat": null,
+    "lng": null
+  },
+  "troms langhold klubb": {
+    "lat": null,
+    "lng": null
+  },
+  "skepplanda sf": {
+    "lat": null,
+    "lng": null
+  },
+  "laholms pistolskytteklubb": {
+    "lat": null,
+    "lng": null
+  },
+  "ystads dynamiska skf": {
+    "lat": null,
+    "lng": null
+  },
+  "stockholm mgc": {
+    "lat": null,
+    "lng": null
+  },
+  "överums skytteförening": {
+    "lat": null,
+    "lng": null
+  },
+  "farris sportsskyttere dynamisk": {
+    "lat": null,
+    "lng": null
+  },
+  "tofta skytteförening": {
+    "lat": null,
+    "lng": null
+  },
+  "ringerike pistolklubb": {
+    "lat": null,
+    "lng": null
+  },
+  "salten dynamiske sportsskyttere": {
+    "lat": null,
+    "lng": null
+  },
+  "lat: 59.733670 lng: 10.929200": {
+    "lat": null,
+    "lng": null
+  },
+  "norske officerers pistolklub": {
+    "lat": null,
+    "lng": null
+  },
+  "karlstads psk": {
+    "lat": null,
+    "lng": null
+  },
+  "alta sportskytterklubb": {
+    "lat": null,
+    "lng": null
+  },
+  "torups pistolklubb": {
+    "lat": null,
+    "lng": null
+  },
+  "notodden sportsskyttere": {
+    "lat": null,
+    "lng": null
+  },
+  "ishavsbyen dynamiske sportsskyttere": {
+    "lat": null,
+    "lng": null
+  },
+  "upplands väsby psk": {
+    "lat": null,
+    "lng": null
+  },
+  "rödöns jakt skytte klubb": {
+    "lat": null,
+    "lng": null
+  },
+  "førde pistolklubb": {
+    "lat": null,
+    "lng": null
+  },
+  "växjö pistolklubb": {
+    "lat": null,
+    "lng": null
+  },
+  "sevede skyttesällskap": {
+    "lat": null,
+    "lng": null
+  },
+  "edsvalla gunslingers": {
+    "lat": null,
+    "lng": null
+  },
+  "molde dynamiske skyttere": {
+    "lat": null,
+    "lng": null
+  },
+  "emmaboda skf": {
+    "lat": null,
+    "lng": null
+  },
+  "nrof nordmøre": {
+    "lat": null,
+    "lng": null
+  },
+  "gnesta skyttegille": {
+    "lat": null,
+    "lng": null
+  },
+  "enebakk pistolklubb": {
+    "lat": null,
+    "lng": null
+  },
+  "oslo kommunale tjenestemenns skytterlag": {
+    "lat": null,
+    "lng": null
+  },
+  "nrof lofoten": {
+    "lat": null,
+    "lng": null
+  },
+  "lillestrøm og omegn pistolklubb dss": {
+    "lat": null,
+    "lng": null
+  },
+  "västsvenska dynamiker": {
+    "lat": null,
+    "lng": null
+  },
+  "halden pistolklubb dynamiske skyttere": {
+    "lat": null,
+    "lng": null
+  },
+  "florø pistolklubb": {
+    "lat": null,
+    "lng": null
+  },
+  "s:t eskils skyttar, eskilstuna": {
+    "lat": null,
+    "lng": null
+  },
+  "hå sportskyttere.": {
+    "lat": null,
+    "lng": null
+  },
+  "stockholmsfrivilligaskarpskytteförening": {
+    "lat": null,
+    "lng": null
+  },
+  "västsvenska cupen": {
+    "lat": null,
+    "lng": null
+  },
+  "bergen sportskytterklubb": {
+    "lat": null,
+    "lng": null
+  },
+  "sundsvalls pk": {
+    "lat": 62.3778691,
+    "lng": 17.2730638,
+    "display": "Sundsvalls Gustav Adolfs distrikt, Sundsvalls kommun, Västernorrlands län, Sverige"
+  },
+  "veps": {
+    "lat": 69.9665684,
+    "lng": 23.3420064,
+    "display": "Vepsveien, Aronneskjosen, Nedre Aronnes, Alta, Finnmark, 9515, Norge"
+  },
+  "stockkumla skyttecentrum.": {
+    "lat": null,
+    "lng": null
+  },
+  "holmestrand pistolklubb": {
+    "lat": null,
+    "lng": null
+  },
+  "kristiansund dynamiske sportsskyttere": {
+    "lat": null,
+    "lng": null
+  },
+  "nordhordland pistolklubb": {
+    "lat": null,
+    "lng": null
+  },
+  "gävle pistolskytteklubb": {
+    "lat": null,
+    "lng": null
+  },
+  "åmåls pistolklubb": {
+    "lat": null,
+    "lng": null
+  },
+  "n59,175400 e 17,932434": {
+    "lat": null,
+    "lng": null
+  },
+  "din hemmabana": {
+    "lat": null,
+    "lng": null
+  },
+  "jämjö spk": {
+    "lat": null,
+    "lng": null
+  },
+  "ängelholms pistolskytteklubb": {
+    "lat": null,
+    "lng": null
+  },
+  "team rightbay kingshit": {
+    "lat": null,
+    "lng": null
+  },
+  "top-dss": {
+    "lat": null,
+    "lng": null
+  },
+  "varpsund arena dynamiska skyttar": {
+    "lat": null,
+    "lng": null
+  },
+  "kristiansand sportskyttere": {
+    "lat": null,
+    "lng": null
+  },
+  "vng pistolskytteklubb": {
+    "lat": null,
+    "lng": null
+  },
+  "🖤": {
+    "lat": null,
+    "lng": null
+  },
+  "råde pistollag [rpl]": {
+    "lat": null,
+    "lng": null
+  },
+  "hølonda sportsskyttere": {
+    "lat": null,
+    "lng": null
+  },
+  "løvenskioldbanen": {
+    "lat": 59.9628394,
+    "lng": 10.5759751,
+    "display": "Løvenskioldbanen, Dælimosen, Eiksmarka, Østerås, Bærum, Akershus, 1362, Norge"
+  },
+  "varpsund arena": {
+    "lat": null,
+    "lng": null
+  },
+  "överums sporthall": {
+    "lat": 57.9799675,
+    "lng": 16.3118752,
+    "display": "Överums slalombacke, Hållerstorpsvägen, Överums bruk, Överum, Västerviks kommun, Kalmar län, 594 72, Sverige"
+  },
+  "ballongbergets skytteförening": {
+    "lat": null,
+    "lng": null
+  },
+  "bekkevar skytebane, ski": {
+    "lat": null,
+    "lng": null
+  },
+  "lista sportsskyttere": {
+    "lat": null,
+    "lng": null
+  },
+  "björkö endurobana": {
+    "lat": null,
+    "lng": null
+  },
+  "södertörns sk": {
+    "lat": null,
+    "lng": null
+  },
+  "hamar praktiske skyttere": {
+    "lat": null,
+    "lng": null
+  },
+  "tyresö skytteförening": {
+    "lat": null,
+    "lng": null
+  },
+  "kristinehamns skytteförening": {
+    "lat": null,
+    "lng": null
+  },
+  "ängelholms pistolklubb": {
+    "lat": null,
+    "lng": null
+  },
+  "sportskytterlaget-stord": {
+    "lat": null,
+    "lng": null
+  },
+  "bjørkelangen pk": {
+    "lat": 59.8834497,
+    "lng": 11.5660867,
+    "display": "Bjørkelangen, Aurskog-Høland, Akershus, 1940, Norge"
+  },
+  "kongsvinger pistolklubb": {
+    "lat": null,
+    "lng": null
+  },
+  "tofta skjutbana varberg": {
+    "lat": null,
+    "lng": null
+  },
+  "lövåsen, bana e": {
+    "lat": null,
+    "lng": null
+  },
+  "enköping sneden": {
+    "lat": 59.6583466,
+    "lng": 17.1422287,
+    "display": "Enköpings skyttecenter, John Ericssons gata, Anneberg, Enköping, Enköpings kommun, Uppsala län, 749 40, Sverige"
+  },
+  "norges presisjonsrifleforbund": {
+    "lat": null,
+    "lng": null
+  },
+  "pistolklubben ena": {
+    "lat": null,
+    "lng": null
+  },
+  "askim pistol klubb / dynamisk": {
+    "lat": null,
+    "lng": null
+  },
+  "nordmarka dynamiske sportskytterklubb": {
+    "lat": null,
+    "lng": null
+  },
+  "vimmerby dynamiska": {
+    "lat": null,
+    "lng": null
+  },
+  "top-dss hula": {
+    "lat": null,
+    "lng": null
+  },
+  "lørenskog pistolklubb": {
+    "lat": null,
+    "lng": null
+  },
+  "arlanda skytteidrottsförening": {
+    "lat": null,
+    "lng": null
+  },
+  "ulvik pistolklubb": {
+    "lat": null,
+    "lng": null
+  },
+  "dynamisk sportsskyting arendal": {
+    "lat": null,
+    "lng": null
+  },
+  "hugelsta skyttecentrum k-vall": {
+    "lat": null,
+    "lng": null
+  },
+  "svaide": {
+    "lat": null,
+    "lng": null
+  },
+  "halmstad sportskytteklubb": {
+    "lat": null,
+    "lng": null
+  },
+  "59°35'46.7\"n 9°37'21.0\"e": {
+    "lat": 59.5946009,
+    "lng": 9.6219232,
+    "display": "Heistadmoen, Kongsberg, Buskerud, 3608, Norge"
+  },
+  "pistol landslaget norge": {
+    "lat": null,
+    "lng": null
+  },
+  "gissa!": {
+    "lat": null,
+    "lng": null
+  },
+  "gjøvik pistolklubb": {
+    "lat": null,
+    "lng": null
+  },
+  "lövåsen bana e": {
+    "lat": null,
+    "lng": null
+  },
+  "sportsskytterligaen": {
+    "lat": null,
+    "lng": null
+  },
+  "säve psk": {
+    "lat": null,
+    "lng": null
+  },
+  "försvarsutbildarna västmanlands skf": {
+    "lat": null,
+    "lng": null
+  },
+  "kongsberg pistolklubb": {
+    "lat": null,
+    "lng": null
+  },
+  "skytte smedjan (team 016)": {
+    "lat": null,
+    "lng": null
+  },
+  "løvenskiold": {
+    "lat": 60.1193285,
+    "lng": 10.8226682,
+    "display": "Løvenskiold, Greveveien, Burås, Hakadals verk, Løvstad, Nittedal, Akershus, 1488, Norge"
+  },
+  "sånnersta": {
+    "lat": 59.1302262,
+    "lng": 15.1763582,
+    "display": "Sånnersta, Kumla, Kumla kommun, Örebro län, 692 37, Sverige"
+  },
+  "lycksele dynamiska skyttars skjutbana": {
+    "lat": null,
+    "lng": null
+  },
+  "hjortebanen løvenskjold": {
+    "lat": null,
+    "lng": null
   }
 }

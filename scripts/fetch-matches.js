@@ -54,7 +54,7 @@ if (!API_KEY) {
 const GQL_ENDPOINT = 'https://shootnscoreit.com/graphql/';
 
 /** Days of past matches to include (0 = upcoming only). */
-const LOOKBACK_DAYS = 30;
+const LOOKBACK_DAYS = 365;
 
 /** Days ahead to fetch. */
 const LOOKAHEAD_DAYS = 365;
@@ -183,31 +183,49 @@ async function fetchAllMatches() {
   let auth = `JWT ${jwt}`;
 
   const today = new Date();
-  const from  = new Date(today); from.setDate(from.getDate() - LOOKBACK_DAYS);
-  const to    = new Date(today); to.setDate(to.getDate() + LOOKAHEAD_DAYS);
+  const todayStr = today.toISOString().slice(0, 10);
+  const allEvents = new Map(); // id → event, deduplicated across chunks
 
-  const variables = {
-    after:  from.toISOString().slice(0, 10),
-    before: to.toISOString().slice(0, 10),
-  };
-
-  console.log('Fetching events from SSI GraphQL API...');
-  let result = await postGql(EVENTS_Q, variables, auth, API_KEY);
-
-  // Fall back to Bearer prefix if JWT prefix is not recognised
-  if (result.errors) {
-    const msgs = result.errors.map(e => e.message);
-    if (msgs.some(m => m.toLowerCase().includes('authenticated'))) {
-      auth   = `Bearer ${jwt}`;
-      result = await postGql(EVENTS_Q, variables, auth, API_KEY);
-    }
+  async function queryWindow(after, before) {
+    const variables = { after, before };
+    let result = await postGql(EVENTS_Q, variables, auth, API_KEY);
     if (result.errors) {
-      console.error('Events query errors:', result.errors.map(e => e.message));
-      process.exit(1);
+      const msgs = result.errors.map(e => e.message);
+      if (msgs.some(m => m.toLowerCase().includes('authenticated'))) {
+        auth   = `Bearer ${jwt}`;
+        result = await postGql(EVENTS_Q, variables, auth, API_KEY);
+      }
+      if (result.errors) {
+        console.error('Events query errors:', result.errors.map(e => e.message));
+        process.exit(1);
+      }
     }
+    return result.data.events;
   }
 
-  const events = result.data.events;
+  // 1. Upcoming events: today → today + LOOKAHEAD_DAYS (single call)
+  console.log('Fetching events from SSI GraphQL API...');
+  const futureDate = new Date(today); futureDate.setDate(futureDate.getDate() + LOOKAHEAD_DAYS);
+  for (const ev of await queryWindow(todayStr, futureDate.toISOString().slice(0, 10))) {
+    allEvents.set(String(ev.id), ev);
+  }
+  console.log(`  Future: ${allEvents.size} events`);
+
+  // 2. Past year in 7-day chunks to stay under the API result cap (~100/query)
+  const lookBackStart = new Date(today); lookBackStart.setDate(lookBackStart.getDate() - LOOKBACK_DAYS);
+  let chunkEnd = new Date(today);
+  let pastChunks = 0;
+  while (chunkEnd > lookBackStart) {
+    const chunkStart = new Date(Math.max(chunkEnd - 7 * 86400000, lookBackStart));
+    for (const ev of await queryWindow(chunkStart.toISOString().slice(0, 10), chunkEnd.toISOString().slice(0, 10))) {
+      if (!allEvents.has(String(ev.id))) allEvents.set(String(ev.id), ev);
+    }
+    pastChunks++;
+    chunkEnd = chunkStart;
+  }
+  console.log(`  Past ${LOOKBACK_DAYS}d (${pastChunks} weekly chunks): ${allEvents.size} unique events total`);
+
+  const events = [...allEvents.values()];
   console.log(`Fetched ${events.length} events`);
 
   // Fetch extra events not returned by the list query (e.g. those with organizer=null)
@@ -279,7 +297,7 @@ async function geocodeOrganizer(name, country, cache, manual) {
 
   // 2. Geocache (includes cached failures stored as {lat:null})
   if (key in cache) {
-    if (cache[key].lat == null) return null;
+    if (cache[key].lat == null) return null;  // known failure or rate-limited this run
     return { lat: cache[key].lat, lng: cache[key].lng, source: 'cache' };
   }
 
@@ -293,9 +311,16 @@ async function geocodeOrganizer(name, country, cache, manual) {
   await sleep(NOMINATIM_DELAY_MS);
 
   try {
-    const results = await getJson(`${NOMINATIM_BASE}?${params}`, {
-      'User-Agent': 'SSI-MatchFinder/1.0 (https://github.com/your-username/SSI-matchfinder)',
+    const res = await fetch(`${NOMINATIM_BASE}?${params}`, {
+      headers: { 'User-Agent': 'SSI-MatchFinder/1.0 (https://github.com/your-username/SSI-matchfinder)' },
     });
+    if (res.status === 429) {
+      console.warn(`  Geocoding rate-limited for "${name}", will retry next run`);
+      cache[key] = { rateLimited: true };  // mark in-memory to skip retries this run; not persisted
+      return null;
+    }
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const results = await res.json();
 
     if (results.length > 0) {
       const { lat, lon, display_name } = results[0];
@@ -307,7 +332,7 @@ async function geocodeOrganizer(name, country, cache, manual) {
     console.warn(`  Geocoding failed for "${name}": ${err.message}`);
   }
 
-  // Cache the failure so we don’t retry on future runs
+  // Cache the failure (non-429) so we don't retry on future runs
   cache[key] = { lat: null, lng: null };
   return null;
 }
@@ -351,9 +376,15 @@ async function reverseGeocodeCountry(lat, lng, cache) {
   console.log(`  Reverse-geocoding (${lat.toFixed(4)}, ${lng.toFixed(4)})...`);
   await sleep(NOMINATIM_DELAY_MS);
   try {
-    const result = await getJson(url, {
-      'User-Agent': 'SSI-MatchFinder/1.0 (https://github.com/your-username/SSI-matchfinder)',
+    const res = await fetch(url, {
+      headers: { 'User-Agent': 'SSI-MatchFinder/1.0 (https://github.com/your-username/SSI-matchfinder)' },
     });
+    if (res.status === 429) {
+      console.warn(`  Reverse-geocode rate-limited for (${lat.toFixed(4)}, ${lng.toFixed(4)}), will retry`);
+      return '';  // do NOT cache — allow retry
+    }
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const result = await res.json();
     const cc2 = (result?.address?.country_code ?? '').toUpperCase();
     const cc3 = ISO2_TO_3[cc2] ?? (cc2 || '');
     cache[key] = cc3;
@@ -397,9 +428,19 @@ async function main() {
   const revCache = loadJson(REV_GEOCACHE_PATH, {});
   await enrichWithCountry(matches, revCache);
 
+  // Early filter: skip geocoding events we'll discard anyway.
+  // Events with blank country are kept — they may get a country via geocoding.
+  if (COUNTRIES.size > 0) {
+    const before = matches.length;
+    matches = matches.filter(m => !m.country || COUNTRIES.has(m.country.toUpperCase()));
+    console.log(`Early country filter: ${matches.length} of ${before} events to geocode`);
+  }
+
   // Forward-geocode events missing coordinates (organizer name or venue as query)
   await enrichWithCoordinates(matches, geocache);
-  writeFileSync(GEOCACHE_PATH, JSON.stringify(geocache, null, 2) + '\n', 'utf8');
+  // Write geocache, filtering out in-run rate-limited markers (so they retry next run)
+  const cleanGeoCache = Object.fromEntries(Object.entries(geocache).filter(([, v]) => !v.rateLimited));
+  writeFileSync(GEOCACHE_PATH, JSON.stringify(cleanGeoCache, null, 2) + '\n', 'utf8');
 
   // Pass 2: fill in country for events that just received coordinates above
   await enrichWithCountry(matches, revCache);

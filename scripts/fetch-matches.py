@@ -51,7 +51,7 @@ if not API_KEY:
     sys.exit(1)
 
 GQL_ENDPOINT    = 'https://shootnscoreit.com/graphql/'
-LOOKBACK_DAYS   = 30
+LOOKBACK_DAYS   = 365
 LOOKAHEAD_DAYS  = 365
 
 # Comma-separated ISO-3 country codes, e.g. "NOR,SWE". Empty = all countries.
@@ -158,26 +158,45 @@ def fetch_all_matches():
     auth = f'JWT {jwt}'
 
     today = date.today()
-    variables = {
-        'after':  (today - timedelta(days=LOOKBACK_DAYS)).isoformat(),
-        'before': (today + timedelta(days=LOOKAHEAD_DAYS)).isoformat(),
-    }
+    all_events = {}  # keyed by str(id) to deduplicate across chunks
 
-    print('Fetching events from SSI GraphQL API...')
-    result = post_gql(_EVENTS_Q, variables, auth=auth, api_key=API_KEY)
-
-    # Fall back to Bearer prefix if JWT prefix is not recognised
-    if 'errors' in result:
-        msgs = [e['message'] for e in result['errors']]
-        if any('authenticated' in m.lower() for m in msgs):
-            auth = f'Bearer {jwt}'
-            result = post_gql(_EVENTS_Q, variables, auth=auth, api_key=API_KEY)
+    def query_window(after, before):
+        """Fetch one time window, returning events list. Updates auth via closure."""
+        nonlocal auth
+        variables = {'after': after, 'before': before}
+        result = post_gql(_EVENTS_Q, variables, auth=auth, api_key=API_KEY)
         if 'errors' in result:
             msgs = [e['message'] for e in result['errors']]
-            print('Events query errors:', msgs, file=sys.stderr)
-            sys.exit(1)
+            if any('authenticated' in m.lower() for m in msgs):
+                auth = f'Bearer {jwt}'
+                result = post_gql(_EVENTS_Q, variables, auth=auth, api_key=API_KEY)
+            if 'errors' in result:
+                print('Events query errors:', [e['message'] for e in result['errors']], file=sys.stderr)
+                sys.exit(1)
+        return result['data']['events']
 
-    events = result['data']['events']
+    # 1. Upcoming events: today → today + LOOKAHEAD_DAYS (single call)
+    print('Fetching events from SSI GraphQL API...')
+    for ev in query_window(today.isoformat(), (today + timedelta(days=LOOKAHEAD_DAYS)).isoformat()):
+        all_events[str(ev['id'])] = ev
+    print(f'  Future: {len(all_events)} events')
+
+    # 2. Past year in 7-day chunks to stay under the API result cap (~100/query)
+    look_back_start = today - timedelta(days=LOOKBACK_DAYS)
+    chunk_end = today
+    past_chunks = 0
+    while chunk_end > look_back_start:
+        chunk_start = max(chunk_end - timedelta(days=7), look_back_start)
+        new_evs = query_window(chunk_start.isoformat(), chunk_end.isoformat())
+        added = sum(1 for ev in new_evs if str(ev['id']) not in all_events)
+        for ev in new_evs:
+            all_events.setdefault(str(ev['id']), ev)
+        past_chunks += 1
+        print(f'  chunk {past_chunks:3d}: {chunk_start} → {chunk_end}  ({len(new_evs):3d} events, {added} new)', flush=True)
+        chunk_end = chunk_start
+    print(f'  Past {LOOKBACK_DAYS}d ({past_chunks} weekly chunks): {len(all_events)} unique events total')
+
+    events = list(all_events.values())
     print(f'Fetched {len(events)} events')
 
     # Fetch extra events not returned by the list query (e.g. those with organizer=null)
@@ -246,7 +265,7 @@ def geocode_organizer(name, country, cache, manual):
     # 2. Geocache (includes cached failures stored as {lat: null})
     if key in cache:
         if cache[key].get('lat') is None:
-            return None  # known failure — skip re-querying
+            return None  # known failure (or rate-limited this run) — skip re-querying
         return {'lat': cache[key]['lat'], 'lng': cache[key]['lng'], 'source': 'cache'}
 
     # 3. Nominatim — use countrycodes param for better accuracy
@@ -272,10 +291,16 @@ def geocode_organizer(name, country, cache, manual):
             entry = {'lat': float(r['lat']), 'lng': float(r['lon']), 'display': r.get('display_name', '')}
             cache[key] = entry
             return {**entry, 'source': 'nominatim'}
+    except HTTPError as e:
+        if e.code == 429:
+            print(f'  Geocoding rate-limited for "{name}", will retry next run', file=sys.stderr)
+            cache[key] = {'rate_limited': True}  # mark in-memory to skip retries this run; not persisted
+            return None  # do NOT include in disk cache
+        print(f'  Geocoding failed for "{name}": {e}', file=sys.stderr)
     except Exception as e:
         print(f'  Geocoding failed for "{name}": {e}', file=sys.stderr)
 
-    # Cache the failure so we don’t retry on future runs
+    # Cache the failure (non-429) so we don't retry on future runs
     cache[key] = {'lat': None, 'lng': None}
     return None
 
@@ -324,6 +349,13 @@ def reverse_geocode_country(lat, lng, cache):
         cc3 = _ISO2_TO_3.get(cc2, cc2 or '')  # keep 2-letter if no 3-letter mapping
         cache[key] = cc3
         return cc3
+    except HTTPError as e:
+        if e.code == 429:
+            print(f'  Reverse-geocode rate-limited for ({lat:.4f}, {lng:.4f}), will retry', file=sys.stderr)
+            return ''  # do NOT cache — allow retry
+        print(f'  Reverse-geocode failed for ({lat:.4f}, {lng:.4f}): {e}', file=sys.stderr)
+        cache[key] = ''
+        return ''
     except Exception as e:
         print(f'  Reverse-geocode failed for ({lat:.4f}, {lng:.4f}): {e}', file=sys.stderr)
         cache[key] = ''
@@ -366,10 +398,19 @@ def main():
     rev_cache = load_json(REV_GEOCACHE_PATH, {})
     enrich_with_country(matches, rev_cache)
 
+    # Early filter: skip geocoding events we'll discard anyway.
+    # Events with blank country are kept — they may get a country via geocoding.
+    if COUNTRIES:
+        before  = len(matches)
+        matches = [m for m in matches if not m['country'] or m['country'].upper() in COUNTRIES]
+        print(f'Early country filter: {len(matches)} of {before} events to geocode')
+
     # Forward-geocode events missing coordinates (organizer name or venue as query)
     enrich_with_coordinates(matches, geocache)
+    # Write geocache, filtering out in-run rate-limited markers (so they retry next run)
+    clean_geocache = {k: v for k, v in geocache.items() if not v.get('rate_limited')}
     GEOCACHE_PATH.write_text(
-        json.dumps(geocache, indent=2, ensure_ascii=False) + '\n', encoding='utf-8'
+        json.dumps(clean_geocache, indent=2, ensure_ascii=False) + '\n', encoding='utf-8'
     )
 
     # Pass 2: fill in country for events that just received coordinates above
@@ -381,7 +422,7 @@ def main():
     if COUNTRIES:
         before  = len(matches)
         matches = [m for m in matches if m['country'].upper() in COUNTRIES]
-        print(f'Country filter ({', '.join(sorted(COUNTRIES))}): {len(matches)} of {before} kept')
+        print(f'Country filter ({", ".join(sorted(COUNTRIES))}): {len(matches)} of {before} kept')
 
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     output = {
