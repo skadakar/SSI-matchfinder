@@ -682,7 +682,7 @@ function bindFilterEvents() {
   });
 
   on('btn-reset', 'click', () => {
-    Object.assign(state, { q: '', discipline: [], level: [], organizer: [], countries: [...DEFAULT_COUNTRIES], regions: [], regOpen: true, from: TODAY, to: '' });
+    Object.assign(state, { q: '', discipline: [], level: [], organizer: [], countries: [...DEFAULT_COUNTRIES], regions: [], broadRegions: [], newMatch: false, newMatchDays: 7, regOpen: true, from: '', to: '' });
     syncFilterInputs();
     writeStateToURL();
     render();
