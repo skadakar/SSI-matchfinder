@@ -88,7 +88,7 @@ function readStateFromURL() {
     organizer:  p.get('organizer')  ? p.get('organizer').split(',').filter(Boolean)  : [],
     countries:  p.get('countries')  ? p.get('countries').split(',').filter(Boolean) : [...DEFAULT_COUNTRIES],
     regions:    p.get('regions')    ? p.get('regions').split(',').filter(Boolean)    : [],
-    regOpen:    p.get('regOpen') === '1',
+    regOpen:    p.has('regOpen') ? p.get('regOpen') !== '0' : true,
     from:       p.get('from') !== null ? p.get('from') : TODAY,
     to:         p.get('to')         || '',
     cols:       colsParam ? colsParam.split(',').filter(Boolean) : [...DEFAULT_COLS],
@@ -106,7 +106,7 @@ function writeStateToURL() {
   if (state.organizer.length)                       p.set('organizer',  state.organizer.join(','));
   if (!countriesMatchDefault(state.countries))      p.set('countries',  state.countries.join(','));
   if (state.regions.length)                         p.set('regions',    state.regions.join(','));
-  if (state.regOpen)                                p.set('regOpen',    '1');
+  if (!state.regOpen)                                p.set('regOpen',    '0');
   if (state.from && state.from !== TODAY)             p.set('from',       state.from);
   if (state.to)                                     p.set('to',         state.to);
   if (!colsMatchDefault(state.cols))                p.set('cols',       state.cols.join(','));
