@@ -23,6 +23,29 @@ const TODAY = new Date().toISOString().slice(0, 10);
 
 const DEFAULT_COUNTRIES = ['NOR', 'SWE'];
 
+// Norwegian county (fylke) → traditional region.
+// Includes both current (2024+) and pre-2024 merged county names.
+const NOR_COUNTY_TO_REGION = {
+  'Oslo': 'Østlandet', 'Akershus': 'Østlandet', 'Østfold': 'Østlandet',
+  'Buskerud': 'Østlandet', 'Innlandet': 'Østlandet',
+  'Vestfold': 'Østlandet', 'Telemark': 'Østlandet',
+  'Viken': 'Østlandet', 'Vestfold og Telemark': 'Østlandet',   // pre-2024 names
+  'Agder': 'Sørlandet',
+  'Rogaland': 'Vestlandet', 'Vestland': 'Vestlandet', 'Møre og Romsdal': 'Vestlandet',
+  'Trøndelag': 'Midt-Norge', 'Sør-Trøndelag': 'Midt-Norge', 'Nord-Trøndelag': 'Midt-Norge',
+  'Nordland': 'Nord-Norge', 'Troms og Finnmark': 'Nord-Norge',
+  'Troms': 'Nord-Norge', 'Finnmark': 'Nord-Norge',
+};
+const NOR_REGION_ORDER = ['Østlandet', 'Sørlandet', 'Vestlandet', 'Midt-Norge', 'Nord-Norge'];
+
+/** Maps a match's raw county to a display region (NOR → region, SWE → normalized county). */
+function countyToRegion(m) {
+  if (!m.county) return '';
+  if (m.country === 'NOR') return NOR_COUNTY_TO_REGION[m.county] || m.county;
+  // Sweden: strip trailing " läns" / "s lán" / " lán" suffix Nominatim adds
+  return m.county.replace(/\s+l[aä]ns?$/i, '').trim() || m.county;
+}
+
 // ─── APP STATE ────────────────────────────────────────────────────────────────
 
 let allMatches  = [];
@@ -38,6 +61,7 @@ function buildDefaultState() {
     discipline: [],
     level:      [],
     countries:  [...DEFAULT_COUNTRIES],
+    regions:    [],
     regOpen:    true,
     from:       TODAY,
     to:         '',
@@ -58,6 +82,7 @@ function readStateFromURL() {
     discipline: p.get('discipline') ? p.get('discipline').split(',').filter(Boolean) : [],
     level:      p.get('level')      ? p.get('level').split(',').filter(Boolean)      : [],
     countries:  p.get('countries')  ? p.get('countries').split(',').filter(Boolean) : [...DEFAULT_COUNTRIES],
+    regions:    p.get('regions')    ? p.get('regions').split(',').filter(Boolean)    : [],
     regOpen:    p.get('regOpen') === '1',
     from:       p.get('from') !== null ? p.get('from') : TODAY,
     to:         p.get('to')         || '',
@@ -74,6 +99,7 @@ function writeStateToURL() {
   if (state.discipline.length)                      p.set('discipline', state.discipline.join(','));
   if (state.level.length)                           p.set('level',      state.level.join(','));
   if (!countriesMatchDefault(state.countries))      p.set('countries',  state.countries.join(','));
+  if (state.regions.length)                         p.set('regions',    state.regions.join(','));
   if (state.regOpen)                                p.set('regOpen',    '1');
   if (state.from && state.from !== TODAY)             p.set('from',       state.from);
   if (state.to)                                     p.set('to',         state.to);
@@ -102,6 +128,10 @@ function applyFilters(matches) {
       f => (f || '').toLowerCase().includes(q)
     )) return false;
     if (state.countries.length && m.country && !state.countries.includes(m.country)) return false;
+    if (state.regions.length) {
+      const region = countyToRegion(m);
+      if (region && !state.regions.includes(region)) return false;
+    }
     if (state.discipline.length && !state.discipline.includes(m.discipline)) return false;
     if (state.level.length      && !state.level.includes(m.level))           return false;
     if (state.regOpen && m.registrationOpen !== true)                        return false;
@@ -395,8 +425,60 @@ function updateCountryBtn() {
   }
 }
 
+function populateRegionDropdown() {
+  const regionSet = new Set();
+  for (const m of allMatches) {
+    const r = countyToRegion(m);
+    if (r) regionSet.add(r);
+  }
+  // NOR regions in geographic order, then SWE counties alphabetically
+  const norRegions  = NOR_REGION_ORDER.filter(r => regionSet.has(r));
+  const sweCounties = [...regionSet].filter(r => !NOR_REGION_ORDER.includes(r)).sort();
+  const allRegions  = [...norRegions, ...sweCounties];
+
+  const panel = document.getElementById('region-panel');
+  panel.innerHTML = '';
+  for (const r of allRegions) {
+    const lbl = document.createElement('label');
+    const cb  = document.createElement('input');
+    cb.type    = 'checkbox';
+    cb.value   = r;
+    cb.checked = state.regions.includes(r);
+    cb.addEventListener('change', () => {
+      if (cb.checked) {
+        if (!state.regions.includes(r)) state.regions.push(r);
+      } else {
+        state.regions = state.regions.filter(x => x !== r);
+      }
+      updateRegionBtn();
+      writeStateToURL();
+      render();
+    });
+    lbl.appendChild(cb);
+    lbl.append(' ' + r);
+    panel.appendChild(lbl);
+  }
+  updateRegionBtn();
+}
+
+function updateRegionBtn() {
+  const btn = document.getElementById('region-btn');
+  const n   = state.regions.length;
+  if (n === 0) {
+    btn.textContent = 'All regions';
+    btn.classList.remove('has-selection');
+  } else if (n <= 3) {
+    btn.textContent = [...state.regions].join(', ');
+    btn.classList.add('has-selection');
+  } else {
+    btn.textContent = `${n} regions`;
+    btn.classList.add('has-selection');
+  }
+}
+
 function populateDropdowns() {
   populateCountryDropdown();
+  populateRegionDropdown();
 
   // Disciplines
   const disciplines = [...new Set(allMatches.map(m => m.discipline).filter(Boolean))].sort();
@@ -446,7 +528,7 @@ function syncFilterInputs() {
 
   // Mobile filter toggle badge
   const dot = document.querySelector('#filter-toggle-btn .filter-active-dot');
-  if (dot) dot.hidden = !(state.discipline.length || state.level.length || state.q || state.from || state.to);
+  if (dot) dot.hidden = !(state.discipline.length || state.level.length || state.regions.length || state.q || state.from || state.to);
 
   document.querySelectorAll('#country-panel input[type=checkbox]').forEach(cb => {
     cb.checked = state.countries.includes(cb.value);
@@ -478,6 +560,22 @@ function bindFilterEvents() {
     if (!document.getElementById('country-wrap').contains(e.target)) {
       countryPanel.hidden = true;
       countryBtn.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  // Region dropdown
+  const regionBtn   = document.getElementById('region-btn');
+  const regionPanel = document.getElementById('region-panel');
+  regionBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    const opening = regionPanel.hidden;
+    regionPanel.hidden = !opening;
+    regionBtn.setAttribute('aria-expanded', String(opening));
+  });
+  document.addEventListener('click', e => {
+    if (!document.getElementById('region-wrap').contains(e.target)) {
+      regionPanel.hidden = true;
+      regionBtn.setAttribute('aria-expanded', 'false');
     }
   });
 

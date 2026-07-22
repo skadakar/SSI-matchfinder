@@ -246,6 +246,7 @@ def normalize_match(raw):
         'maxParticipants':      raw.get('max_competitors'),  # 0 = unlimited
         'waitingCount':         raw.get('number_of_mainmatch_competitors_waiting'),
         'url':                  f'https://shootnscoreit.com/event/{raw.get("get_content_type_key", "")}/{raw.get("id", "")}/' if raw.get('get_content_type_key') and raw.get('id') else '',
+        'county':               '',
         'geocodeSource':        'api' if lat is not None else 'pending',
     }
 
@@ -329,13 +330,17 @@ def enrich_with_coordinates(matches, cache):
         print(f'Geocoded {nominatim_hits} new organizers via Nominatim')
 
 
-def reverse_geocode_country(lat, lng, cache):
-    """Return ISO-3 country code for a lat/lng pair using Nominatim reverse geocoding."""
+def reverse_geocode(lat, lng, cache):
+    """Return {'country': ISO3, 'county': state_name} from cache or Nominatim.
+    Migrates old string-only cache entries on first access."""
     key = f'{lat:.5f},{lng:.5f}'
     if key in cache:
+        val = cache[key]
+        if isinstance(val, str):  # migrate old format
+            cache[key] = {'country': val, 'county': ''}
         return cache[key]
     url = (f'https://nominatim.openstreetmap.org/reverse'
-           f'?lat={lat}&lon={lng}&format=json&zoom=3&addressdetails=1')
+           f'?lat={lat}&lon={lng}&format=json&addressdetails=1')
     print(f'  Reverse-geocoding ({lat:.4f}, {lng:.4f})...')
     time.sleep(NOMINATIM_DELAY)
     try:
@@ -345,21 +350,23 @@ def reverse_geocode_country(lat, lng, cache):
         })
         with urlopen(req, timeout=15) as resp:
             result = json.loads(resp.read().decode('utf-8'))
-        cc2 = result.get('address', {}).get('country_code', '').upper()
-        cc3 = _ISO2_TO_3.get(cc2, cc2 or '')  # keep 2-letter if no 3-letter mapping
-        cache[key] = cc3
-        return cc3
+        addr = result.get('address', {})
+        cc2  = addr.get('country_code', '').upper()
+        cc3  = _ISO2_TO_3.get(cc2, cc2 or '')
+        county = addr.get('state', '') or addr.get('county', '')
+        cache[key] = {'country': cc3, 'county': county}
+        return cache[key]
     except HTTPError as e:
         if e.code == 429:
             print(f'  Reverse-geocode rate-limited for ({lat:.4f}, {lng:.4f}), will retry', file=sys.stderr)
-            return ''  # do NOT cache — allow retry
+            return {'country': '', 'county': ''}  # do NOT cache — allow retry
         print(f'  Reverse-geocode failed for ({lat:.4f}, {lng:.4f}): {e}', file=sys.stderr)
-        cache[key] = ''
-        return ''
+        cache[key] = {'country': '', 'county': ''}
+        return cache[key]
     except Exception as e:
         print(f'  Reverse-geocode failed for ({lat:.4f}, {lng:.4f}): {e}', file=sys.stderr)
-        cache[key] = ''
-        return ''
+        cache[key] = {'country': '', 'county': ''}
+        return cache[key]
 
 
 def enrich_with_country(matches, cache):
@@ -369,12 +376,26 @@ def enrich_with_country(matches, cache):
     for m in matches:
         if m['country'] or m['lat'] is None or m['lng'] is None:
             continue
-        cc3 = reverse_geocode_country(m['lat'], m['lng'], cache)
-        if cc3:
-            m['country'] = cc3
+        result = reverse_geocode(m['lat'], m['lng'], cache)
+        if result['country']:
+            m['country'] = result['country']
             hits += 1
     if hits:
         print(f'Reverse-geocoded country for {hits} event(s)')
+
+
+def enrich_with_county(matches, cache):
+    """Fill in county for all events with coordinates (uses cached results)."""
+    hits = 0
+    for m in matches:
+        if m.get('county') or m['lat'] is None or m['lng'] is None:
+            continue
+        result = reverse_geocode(m['lat'], m['lng'], cache)
+        if result['county']:
+            m['county'] = result['county']
+            hits += 1
+    if hits:
+        print(f'Reverse-geocoded county for {hits} event(s)')
 
 
 # ─── MAIN ─────────────────────────────────────────────────────────────────────
@@ -415,6 +436,8 @@ def main():
 
     # Pass 2: fill in country for events that just received coordinates above
     enrich_with_country(matches, rev_cache)
+    # Pass 3: fill in county for all events with coordinates (mostly cache hits)
+    enrich_with_county(matches, rev_cache)
     REV_GEOCACHE_PATH.write_text(
         json.dumps(rev_cache, indent=2, ensure_ascii=False) + '\n', encoding='utf-8'
     )

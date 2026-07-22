@@ -279,6 +279,7 @@ function normalizeMatch(raw) {
     url:                  (raw.get_content_type_key && raw.id)
                             ? `https://shootnscoreit.com/event/${raw.get_content_type_key}/${raw.id}/`
                             : '',
+    county:               '',
     geocodeSource:        lat != null ? 'api' : 'pending',
   };
 }
@@ -369,10 +370,16 @@ async function enrichWithCoordinates(matches, cache) {
   }
 }
 
-async function reverseGeocodeCountry(lat, lng, cache) {
+async function reverseGeocode(lat, lng, cache) {
   const key = `${lat.toFixed(5)},${lng.toFixed(5)}`;
-  if (key in cache) return cache[key];
-  const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&zoom=3&addressdetails=1`;
+  if (key in cache) {
+    const val = cache[key];
+    if (typeof val === 'string') {   // migrate old string format
+      cache[key] = { country: val, county: '' };
+    }
+    return cache[key];
+  }
+  const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`;
   console.log(`  Reverse-geocoding (${lat.toFixed(4)}, ${lng.toFixed(4)})...`);
   await sleep(NOMINATIM_DELAY_MS);
   try {
@@ -381,18 +388,20 @@ async function reverseGeocodeCountry(lat, lng, cache) {
     });
     if (res.status === 429) {
       console.warn(`  Reverse-geocode rate-limited for (${lat.toFixed(4)}, ${lng.toFixed(4)}), will retry`);
-      return '';  // do NOT cache — allow retry
+      return { country: '', county: '' };  // do NOT cache — allow retry
     }
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const result = await res.json();
-    const cc2 = (result?.address?.country_code ?? '').toUpperCase();
-    const cc3 = ISO2_TO_3[cc2] ?? (cc2 || '');
-    cache[key] = cc3;
-    return cc3;
+    const addr   = result?.address ?? {};
+    const cc2    = (addr.country_code ?? '').toUpperCase();
+    const cc3    = ISO2_TO_3[cc2] ?? (cc2 || '');
+    const county = addr.state || addr.county || '';
+    cache[key] = { country: cc3, county };
+    return cache[key];
   } catch (err) {
     console.warn(`  Reverse-geocode failed for (${lat.toFixed(4)}, ${lng.toFixed(4)}): ${err.message}`);
-    cache[key] = '';
-    return '';
+    cache[key] = { country: '', county: '' };
+    return cache[key];
   }
 }
 
@@ -400,10 +409,20 @@ async function enrichWithCountry(matches, cache) {
   let hits = 0;
   for (const m of matches) {
     if (m.country || m.lat == null || m.lng == null) continue;
-    const cc3 = await reverseGeocodeCountry(m.lat, m.lng, cache);
-    if (cc3) { m.country = cc3; hits++; }
+    const result = await reverseGeocode(m.lat, m.lng, cache);
+    if (result.country) { m.country = result.country; hits++; }
   }
   if (hits > 0) console.log(`Reverse-geocoded country for ${hits} event(s)`);
+}
+
+async function enrichWithCounty(matches, cache) {
+  let hits = 0;
+  for (const m of matches) {
+    if (m.county || m.lat == null || m.lng == null) continue;
+    const result = await reverseGeocode(m.lat, m.lng, cache);
+    if (result.county) { m.county = result.county; hits++; }
+  }
+  if (hits > 0) console.log(`Reverse-geocoded county for ${hits} event(s)`);
 }
 
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
@@ -444,6 +463,8 @@ async function main() {
 
   // Pass 2: fill in country for events that just received coordinates above
   await enrichWithCountry(matches, revCache);
+  // Pass 3: fill in county for all events with coordinates (mostly cache hits)
+  await enrichWithCounty(matches, revCache);
   writeFileSync(REV_GEOCACHE_PATH, JSON.stringify(revCache, null, 2) + '\n', 'utf8');
 
   if (COUNTRIES.size > 0) {
