@@ -99,7 +99,7 @@ function applyFilters(matches) {
     if (q && ![m.name, m.organizer, m.city, m.venue].some(
       f => (f || '').toLowerCase().includes(q)
     )) return false;
-    if (state.countries.length && !state.countries.includes(m.country)) return false;
+    if (state.countries.length && m.country && !state.countries.includes(m.country)) return false;
     if (state.discipline.length && !state.discipline.includes(m.discipline)) return false;
     if (state.level.length      && !state.level.includes(m.level))           return false;
     if (state.regOpen && m.registrationOpen !== true)                        return false;
