@@ -52,7 +52,7 @@ if not API_KEY:
 
 GQL_ENDPOINT    = 'https://shootnscoreit.com/graphql/'
 LOOKBACK_DAYS   = 90
-LOOKAHEAD_DAYS  = 180
+LOOKAHEAD_DAYS  = 365
 
 # Comma-separated ISO-3 country codes, e.g. "NOR,SWE". Empty = all countries.
 _countries_env = os.environ.get('SSI_COUNTRIES', '')

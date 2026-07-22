@@ -39,7 +39,7 @@ Go to **Settings → Secrets and variables → Actions** and create:
 
 The workflow runs every 6 hours and pushes updated data; Pages re-deploys automatically.
 
-Each run fetches **3 months of past events** and **6 months of upcoming events** in 3-day chunks to stay under the SSI API's per-query result cap (~100 events).
+Each run fetches **3 months of past events** and **12 months of upcoming events** in 3-day chunks to stay under the SSI API's per-query result cap (~100 events).
 
 ### 4. Test locally
 

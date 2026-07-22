@@ -57,7 +57,7 @@ const GQL_ENDPOINT = 'https://shootnscoreit.com/graphql/';
 const LOOKBACK_DAYS = 90;
 
 /** Days ahead to fetch. */
-const LOOKAHEAD_DAYS = 180;
+const LOOKAHEAD_DAYS = 365;
 
 // Comma-separated ISO-3 country codes, e.g. "NOR,SWE". Empty = all countries.
 const _countriesEnv = process.env.SSI_COUNTRIES ?? '';

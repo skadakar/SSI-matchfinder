@@ -19,7 +19,7 @@ input[type=checkbox] { accent-color: var(--accent); }
   --capacity-warning:   #d97706;
   --sidebar-w:          230px;
   --row-hover:          #f1f5f9;
-  --toggle-active-bg:   #dbeafe;
+  --toggle-active-bg:   rgba(37, 99, 235, 0.07);
   --toggle-active-text: var(--accent-dark);
   color-scheme: light;
 }
@@ -36,7 +36,7 @@ input[type=checkbox] { accent-color: var(--accent); }
   --reg-closed:         #f87171;
   --capacity-warning:   #fbbf24;
   --row-hover:          #263348;
-  --toggle-active-bg:   #1e3a5f;
+  --toggle-active-bg:   rgba(96, 165, 250, 0.09);
   --toggle-active-text: var(--accent);
   color-scheme: dark;
 }
@@ -53,8 +53,8 @@ input[type=checkbox] { accent-color: var(--accent); }
   --reg-closed:         #fb4934;
   --capacity-warning:   #fe8019;
   --row-hover:          #504945;
-  --toggle-active-bg:   #d79921;
-  --toggle-active-text: #282828;
+  --toggle-active-bg:   rgba(215, 153, 33, 0.13);
+  --toggle-active-text: var(--accent);
   color-scheme: dark;
 }
 
@@ -487,7 +487,7 @@ td .waiting          { color: var(--reg-closed);        font-size: 0.8em; font-w
 td.filterable                  { cursor: pointer; }
 td.filterable:hover,
 td.filterable:hover > span     { text-decoration: underline; }
-td.filter-active               { background: var(--toggle-active-bg) !important; color: var(--toggle-active-text); }
+td.filter-active               { background: var(--toggle-active-bg) !important; box-shadow: inset 2px 0 0 var(--accent); color: var(--toggle-active-text); }
 td.filter-active .reg-open,
 td.filter-active .reg-closed   { color: inherit; }
 .popup-participants  { font-size: 0.8rem; color: var(--muted); }
