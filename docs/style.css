@@ -514,7 +514,7 @@ td .waiting          { color: var(--reg-closed);        font-size: 0.8em; font-w
     gap: 0.6rem;
   }
 
-  #filters.open  { display: flex; max-height: 65vh; overflow-y: auto; }
+  #filters.open  { display: flex; }
 
   #filter-toggle-btn { display: inline-flex; }
 

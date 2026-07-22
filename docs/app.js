@@ -416,6 +416,12 @@ function populateDropdowns() {
     opt.value = l; opt.textContent = l;
     lSel.appendChild(opt);
   }
+
+  // On mobile expand both selects so all options are visible without inner scroll
+  if (window.matchMedia('(max-width: 720px)').matches) {
+    dSel.size = dSel.options.length || 1;
+    lSel.size = lSel.options.length || 1;
+  }
 }
 
 function syncFilterInputs() {
