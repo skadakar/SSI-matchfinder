@@ -602,7 +602,7 @@ function syncFilterInputs() {
 
   // Mobile filter toggle badge
   const dot = document.querySelector('#filter-toggle-btn .filter-active-dot');
-  if (dot) dot.hidden = !(state.discipline.length || state.level.length || state.regions.length || state.q || state.from || state.to);
+  if (dot) dot.hidden = !(state.discipline.length || state.level.length || state.regions.length || state.organizer.length || state.q || state.from || state.to);
 
   document.querySelectorAll('#country-panel input[type=checkbox]').forEach(cb => {
     cb.checked = state.countries.includes(cb.value);
@@ -711,7 +711,7 @@ function bindFilterEvents() {
   });
 
   on('btn-reset', 'click', () => {
-    Object.assign(state, { q: '', discipline: [], level: [], countries: [...DEFAULT_COUNTRIES], regOpen: true, from: TODAY, to: '' });
+    Object.assign(state, { q: '', discipline: [], level: [], organizer: [], countries: [...DEFAULT_COUNTRIES], regions: [], regOpen: true, from: TODAY, to: '' });
     syncFilterInputs();
     writeStateToURL();
     render();
