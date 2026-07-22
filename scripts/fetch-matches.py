@@ -51,7 +51,7 @@ if not API_KEY:
     sys.exit(1)
 
 GQL_ENDPOINT    = 'https://shootnscoreit.com/graphql/'
-LOOKBACK_DAYS   = 7
+LOOKBACK_DAYS   = 30
 LOOKAHEAD_DAYS  = 365
 
 # Comma-separated ISO-3 country codes, e.g. "NOR,SWE". Empty = all countries.

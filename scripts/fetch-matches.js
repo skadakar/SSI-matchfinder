@@ -54,7 +54,7 @@ if (!API_KEY) {
 const GQL_ENDPOINT = 'https://shootnscoreit.com/graphql/';
 
 /** Days of past matches to include (0 = upcoming only). */
-const LOOKBACK_DAYS = 7;
+const LOOKBACK_DAYS = 30;
 
 /** Days ahead to fetch. */
 const LOOKAHEAD_DAYS = 365;
