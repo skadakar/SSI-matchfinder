@@ -10,7 +10,7 @@ const COLUMNS = [
   { key: 'discipline',          label: 'Discipline',   defaultVisible: true,  sortable: true  },
   { key: 'level',               label: 'Level',        defaultVisible: false, sortable: true  },
   { key: 'country',             label: 'Country',      defaultVisible: true,  sortable: true  },
-  { key: 'county',              label: 'Region',       defaultVisible: true,  sortable: true  },
+  { key: 'county',              label: 'County',       defaultVisible: true,  sortable: true  },
   { key: 'registrationDeadline',label: 'Reg. deadline',defaultVisible: false, sortable: true  },
   { key: 'registrationStarts',  label: 'Reg. opens',   defaultVisible: false, sortable: true  },
   { key: 'participants',        label: 'Participants', defaultVisible: true,  sortable: true  },
@@ -134,10 +134,7 @@ function applyFilters(matches) {
       f => (f || '').toLowerCase().includes(q)
     )) return false;
     if (state.countries.length && m.country && !state.countries.includes(m.country)) return false;
-    if (state.regions.length) {
-      const region = countyToRegion(m);
-      if (region && !state.regions.includes(region)) return false;
-    }
+    if (state.regions.length && m.county && !state.regions.includes(m.county)) return false;
     if (state.discipline.length && !state.discipline.includes(m.discipline)) return false;
     if (state.level.length      && !state.level.includes(m.level))           return false;
     if (state.organizer.length  && !state.organizer.includes(m.organizer))   return false;
@@ -293,7 +290,7 @@ function getCellFilterValue(key, m) {
     case 'discipline':   return m.discipline || null;
     case 'level':        return (m.level && m.level !== '--') ? m.level : null;
     case 'country':      return m.country || null;
-    case 'county':       return countyToRegion(m) || null;
+    case 'county':       return m.county || null;
     case 'registration': return m.registrationOpen === true ? 'open' : null;
     default:             return null;
   }
@@ -305,7 +302,7 @@ function isCellActive(key, m) {
     case 'discipline':   return state.discipline.includes(m.discipline);
     case 'level':        return !!(m.level && m.level !== '--' && state.level.includes(m.level));
     case 'country':      return !countriesMatchDefault(state.countries) && state.countries.includes(m.country);
-    case 'county':       return state.regions.includes(countyToRegion(m));
+    case 'county':       return !!(m.county && state.regions.includes(m.county));
     case 'registration': return m.registrationOpen === true && state.regOpen;
     default:             return false;
   }
@@ -332,11 +329,9 @@ function toggleCellFilter(key, m) {
         state.countries = [m.country];
       }
       break;
-    case 'county': {
-      const r = countyToRegion(m);
-      if (r) toggle(state.regions, r);
+    case 'county':
+      if (m.county) toggle(state.regions, m.county);
       break;
-    }
     case 'registration':
       state.regOpen = !state.regOpen;
       break;
@@ -397,7 +392,7 @@ function appendCellContent(td, key, m) {
       td.textContent = (m.level && m.level !== '--') ? m.level : '';
       break;
     case 'county':
-      td.textContent = countyToRegion(m);
+      td.textContent = m.county || '';
       break;
     case 'registration': {
       const span = document.createElement('span');
