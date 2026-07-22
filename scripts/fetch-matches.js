@@ -156,7 +156,7 @@ const EVENTS_Q = `
         id name starts ends rule sub_rule
         venue lat lng region
         registration registration_starts registration_closes is_registration_possible
-        competitors_count max_competitors number_of_mainmatch_competitors_waiting
+        competitors_count max_competitors number_of_mainmatch_competitors_registered number_of_mainmatch_competitors_waiting
         get_content_type_key get_full_rule_display get_full_level_display
         organizer { name city country lat lng }
       }
@@ -170,7 +170,7 @@ const EVENT_Q = `
       id name starts ends rule sub_rule
       venue lat lng region
       registration registration_starts registration_closes is_registration_possible
-      competitors_count max_competitors number_of_mainmatch_competitors_waiting
+      competitors_count max_competitors number_of_mainmatch_competitors_registered number_of_mainmatch_competitors_waiting
       get_content_type_key get_full_rule_display get_full_level_display
       organizer { name city country lat lng }
     }
@@ -289,6 +289,7 @@ function normalizeMatch(raw) {
     registrationStarts:   (raw.registration_starts ?? '').slice(0, 10),
     registrationDeadline: (raw.registration_closes  ?? '').slice(0, 10),
     participants:         raw.competitors_count ?? null,
+    mainMatchParticipants: raw.number_of_mainmatch_competitors_registered ?? null,
     maxParticipants:      raw.max_competitors ?? null,  // 0 = unlimited
     waitingCount:         raw.number_of_mainmatch_competitors_waiting ?? null,
     url:                  (raw.get_content_type_key && raw.id)

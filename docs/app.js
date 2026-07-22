@@ -447,6 +447,9 @@ function appendCellContent(td, key, m) {
       if (m.participants == null) { td.textContent = '—'; break; }
       const max  = m.maxParticipants;
       const wait = m.waitingCount;
+      const mainCount = m.mainMatchParticipants ?? null;
+      const preCount  = (mainCount != null && m.participants != null)
+                          ? Math.max(0, m.participants - mainCount) : null;
       let text   = String(m.participants);
       if (max && max > 0) {
         text = `${m.participants}\u202f/\u202f${max}`;
@@ -456,8 +459,9 @@ function appendCellContent(td, key, m) {
       }
       // Build tooltip
       const parts = [max && max > 0 ? `${m.participants} registered out of ${max} spots` : `${m.participants} registered`];
+      if (preCount > 0) parts.push(`${mainCount} main match + ${preCount} pre-match`);
+      else parts.push('includes pre-match registrations');
       if (wait && wait > 0) parts.push(`${wait} on the waiting list`);
-      parts.push('includes pre-match registrations');
       td.title = parts.join(' · ');
       td.textContent = text;
       if (wait && wait > 0) {

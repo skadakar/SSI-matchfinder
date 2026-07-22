@@ -131,7 +131,7 @@ query GetEvents($after: String!, $before: String!) {
       id name starts ends rule sub_rule
       venue lat lng region
       registration registration_starts registration_closes is_registration_possible
-      competitors_count max_competitors number_of_mainmatch_competitors_waiting
+      competitors_count max_competitors number_of_mainmatch_competitors_registered number_of_mainmatch_competitors_waiting
       get_content_type_key get_full_rule_display get_full_level_display
       organizer { name city country lat lng }
     }
@@ -145,7 +145,7 @@ query GetEvent($ct: Int!, $id: String!) {
     id name starts ends rule sub_rule
     venue lat lng region
     registration registration_starts registration_closes is_registration_possible
-    competitors_count max_competitors number_of_mainmatch_competitors_waiting
+    competitors_count max_competitors number_of_mainmatch_competitors_registered number_of_mainmatch_competitors_waiting
     get_content_type_key get_full_rule_display get_full_level_display
     organizer { name city country lat lng }
   }
@@ -262,6 +262,7 @@ def normalize_match(raw):
         'registrationStarts':   (raw.get('registration_starts') or '')[:10],
         'registrationDeadline': (raw.get('registration_closes') or '')[:10],
         'participants':         raw.get('competitors_count'),
+        'mainMatchParticipants': raw.get('number_of_mainmatch_competitors_registered'),
         'maxParticipants':      raw.get('max_competitors'),  # 0 = unlimited
         'waitingCount':         raw.get('number_of_mainmatch_competitors_waiting'),
         'url':                  f'https://shootnscoreit.com/event/{raw.get("get_content_type_key", "")}/{raw.get("id", "")}/' if raw.get('get_content_type_key') and raw.get('id') else '',
