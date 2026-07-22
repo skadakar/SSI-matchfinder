@@ -54,13 +54,17 @@ python3 -m http.server 8000 --directory docs
 
 ## Organizer geocoding
 
-When a match doesn't include coordinates, the fetch script resolves a location in this priority order:
+The fetch script resolves coordinates for each match in this priority order:
 
-1. `data/manual-coords.json` — hand-curated overrides, always wins
-2. `data/organizer-geocache.json` — Nominatim forward-geocode cache (organizer name → lat/lng)
-3. `data/reverse-geocache.json` — Nominatim reverse-geocode cache (lat/lng → country + county/region)
+1. **Event API coords** — coordinates attached directly to the event in SSI; always used as-is.
+2. **Inherited range coords** — if another event from the same organizer has API coordinates, those are inherited (the club's other events use the same range).
+3. **`data/manual-coords.json`** — hand-curated fallback for clubs where no event has ever had API coordinates.
+4. **`data/organizer-geocache.json`** — Nominatim forward-geocode cache (organizer name → lat/lng).
+5. **Nominatim live query** — called when none of the above apply; result is cached for future runs.
 
-**Manual overrides** – pin any organizer to a fixed location by adding an entry to `data/manual-coords.json`:
+Reverse geocoding (`data/reverse-geocache.json`) then maps each lat/lng to a country and county/region. The county lookup checks `state`, `county`, and `municipality` address fields from Nominatim, which correctly handles city-counties like Oslo that don't have a separate `state` field.
+
+**Manual overrides** – add an entry to `data/manual-coords.json` to pin a club that Nominatim can't find and that has no API coordinates in SSI:
 
 ```json
 {
@@ -69,8 +73,6 @@ When a match doesn't include coordinates, the fetch script resolves a location i
 ```
 
 The key is the organizer name in lowercase. `data/organizer-geocache.json` is committed to the repo and updated by the Actions workflow when new organizers are geocoded automatically.
-
-The fetch script also reverse-geocodes each match's coordinates to populate a `county` field (Norwegian fylke or Swedish län), which is displayed as the **Region** column and used by the region filter.
 
 ## Project structure
 
@@ -116,4 +118,4 @@ Pull requests are welcome! The most common contribution needed is **fixing wrong
 }
 ```
 
-This file takes the highest priority — it overrides both the API coordinates and the Nominatim geocache. Open a PR with your correction and a brief note on how you verified the coordinates (e.g. club website, Google Maps).
+This file takes the highest priority for clubs with no API coordinates — it overrides the Nominatim geocache. Open a PR with your correction and a brief note on how you verified the coordinates (e.g. club website, Google Maps).
