@@ -426,12 +426,14 @@ function inheritOrganizerCoords(matches) {
    * back to Nominatim / geocache (city-centre approximations). */
   const apiCoords = new Map(); // organizer_lower → {lat, lng}
   for (const m of matches) {
+    if (!m.organizer) continue;  // skip null-organizer events — they must not share coords
     if (m.geocodeSource === 'api' && m.lat != null && m.lng != null) {
       apiCoords.set(m.organizer.toLowerCase(), { lat: m.lat, lng: m.lng });
     }
   }
   let inherited = 0;
   for (const m of matches) {
+    if (!m.organizer) continue;  // skip null-organizer events
     if (m.geocodeSource === 'api' || m.geocodeSource === 'manual') continue;
     const coords = apiCoords.get(m.organizer.toLowerCase());
     if (coords) {
