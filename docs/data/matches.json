@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-22T17:03:29.809Z",
+  "generated": "2026-07-22T17:12:00.860Z",
   "count": 1242,
   "matches": [
     {
@@ -91,7 +91,7 @@
       "maxParticipants": 15,
       "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/22/29217/",
-      "county": "",
+      "county": "Oslo",
       "geocodeSource": "api"
     },
     {
@@ -452,7 +452,7 @@
       "venue": "",
       "lat": 58.3491,
       "lng": 11.9383,
-      "registrationOpen": true,
+      "registrationOpen": false,
       "registrationStarts": "2026-05-17",
       "registrationDeadline": "2026-07-22",
       "participants": 10,
@@ -521,7 +521,7 @@
       "venue": "",
       "lat": 61.4978,
       "lng": 23.7616,
-      "registrationOpen": true,
+      "registrationOpen": false,
       "registrationStarts": "2026-07-20",
       "registrationDeadline": "2026-07-22",
       "participants": 4,
@@ -1421,7 +1421,7 @@
       "registrationOpen": true,
       "registrationStarts": "2026-06-30",
       "registrationDeadline": "",
-      "participants": 26,
+      "participants": 27,
       "maxParticipants": 44,
       "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/22/26246/",
@@ -1602,10 +1602,10 @@
       "venue": "",
       "lat": 61.4978,
       "lng": 23.7616,
-      "registrationOpen": false,
+      "registrationOpen": true,
       "registrationStarts": "2026-07-22",
       "registrationDeadline": "",
-      "participants": 4,
+      "participants": 17,
       "maxParticipants": 20,
       "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/22/29221/",
@@ -2019,7 +2019,7 @@
       "registrationOpen": true,
       "registrationStarts": "2026-07-20",
       "registrationDeadline": "2026-07-31",
-      "participants": 81,
+      "participants": 82,
       "maxParticipants": 150,
       "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/22/29195/",
@@ -4162,7 +4162,7 @@
       "maxParticipants": 36,
       "waitingCount": 8,
       "url": "https://shootnscoreit.com/event/22/27352/",
-      "county": "",
+      "county": "Oslo",
       "geocodeSource": "manual"
     },
     {
@@ -4592,7 +4592,7 @@
       "venue": "",
       "lat": 60.15629,
       "lng": 14.20897,
-      "registrationOpen": false,
+      "registrationOpen": true,
       "registrationStarts": "2026-07-22",
       "registrationDeadline": "2026-08-21",
       "participants": 0,
@@ -5243,7 +5243,7 @@
       "maxParticipants": 50,
       "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/110/855/",
-      "county": "",
+      "county": "Oslo",
       "geocodeSource": "manual"
     },
     {
@@ -5975,7 +5975,7 @@
       "registrationOpen": true,
       "registrationStarts": "2026-07-22",
       "registrationDeadline": "2026-08-28",
-      "participants": 22,
+      "participants": 23,
       "maxParticipants": 36,
       "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/22/29136/",
@@ -6968,7 +6968,7 @@
       "maxParticipants": 196,
       "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/22/28375/",
-      "county": "",
+      "county": "Oslo",
       "geocodeSource": "api"
     },
     {
@@ -7014,7 +7014,7 @@
       "maxParticipants": 36,
       "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/22/27353/",
-      "county": "",
+      "county": "Oslo",
       "geocodeSource": "manual"
     },
     {
@@ -7198,7 +7198,7 @@
       "maxParticipants": 80,
       "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/22/29161/",
-      "county": "",
+      "county": "Oslo",
       "geocodeSource": "manual"
     },
     {
@@ -7750,7 +7750,7 @@
       "maxParticipants": 20,
       "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/110/875/",
-      "county": "",
+      "county": "Oslo",
       "geocodeSource": "manual"
     },
     {
@@ -14834,7 +14834,7 @@
       "maxParticipants": 60,
       "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/22/28890/",
-      "county": "",
+      "county": "Oslo",
       "geocodeSource": "api"
     },
     {
@@ -15593,7 +15593,7 @@
       "maxParticipants": 20,
       "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/110/874/",
-      "county": "",
+      "county": "Oslo",
       "geocodeSource": "manual"
     },
     {
@@ -15961,7 +15961,7 @@
       "maxParticipants": 15,
       "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/22/28957/",
-      "county": "",
+      "county": "Oslo",
       "geocodeSource": "api"
     },
     {
@@ -17065,7 +17065,7 @@
       "maxParticipants": 15,
       "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/22/28915/",
-      "county": "",
+      "county": "Oslo",
       "geocodeSource": "manual"
     },
     {
@@ -20308,7 +20308,7 @@
       "maxParticipants": 45,
       "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/22/28824/",
-      "county": "",
+      "county": "Oslo",
       "geocodeSource": "api"
     },
     {
@@ -20400,7 +20400,7 @@
       "maxParticipants": 15,
       "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/22/28835/",
-      "county": "",
+      "county": "Oslo",
       "geocodeSource": "manual"
     },
     {
@@ -21550,7 +21550,7 @@
       "maxParticipants": 25,
       "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/22/28697/",
-      "county": "",
+      "county": "Drammen",
       "geocodeSource": "manual"
     },
     {
@@ -22493,7 +22493,7 @@
       "maxParticipants": 45,
       "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/22/28454/",
-      "county": "",
+      "county": "Oslo",
       "geocodeSource": "api"
     },
     {
@@ -22723,7 +22723,7 @@
       "maxParticipants": 45,
       "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/22/28725/",
-      "county": "",
+      "county": "Oslo",
       "geocodeSource": "api"
     },
     {
@@ -23574,7 +23574,7 @@
       "maxParticipants": 20,
       "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/110/873/",
-      "county": "",
+      "county": "Oslo",
       "geocodeSource": "manual"
     },
     {
@@ -24770,7 +24770,7 @@
       "maxParticipants": 45,
       "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/22/28654/",
-      "county": "",
+      "county": "Oslo",
       "geocodeSource": "api"
     },
     {
@@ -25023,7 +25023,7 @@
       "maxParticipants": 45,
       "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/22/28658/",
-      "county": "",
+      "county": "Oslo",
       "geocodeSource": "manual"
     },
     {
@@ -26242,7 +26242,7 @@
       "maxParticipants": 36,
       "waitingCount": 5,
       "url": "https://shootnscoreit.com/event/22/27351/",
-      "county": "",
+      "county": "Oslo",
       "geocodeSource": "manual"
     },
     {
@@ -26472,7 +26472,7 @@
       "maxParticipants": 15,
       "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/22/28593/",
-      "county": "",
+      "county": "Oslo",
       "geocodeSource": "api"
     },
     {
@@ -27208,7 +27208,7 @@
       "maxParticipants": 45,
       "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/22/28546/",
-      "county": "",
+      "county": "Oslo",
       "geocodeSource": "api"
     },
     {

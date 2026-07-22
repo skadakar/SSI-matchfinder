@@ -2246,5 +2246,37 @@
   "59.38000,13.50000": {
     "country": "SWE",
     "county": "Värmlands län"
+  },
+  "59.93968,10.66500": {
+    "country": "NOR",
+    "county": "Oslo"
+  },
+  "59.91000,10.75000": {
+    "country": "NOR",
+    "county": "Oslo"
+  },
+  "59.92754,10.74098": {
+    "country": "NOR",
+    "county": "Oslo"
+  },
+  "59.97273,10.75825": {
+    "country": "NOR",
+    "county": "Oslo"
+  },
+  "59.92741,10.73934": {
+    "country": "NOR",
+    "county": "Oslo"
+  },
+  "59.74000,10.20000": {
+    "country": "NOR",
+    "county": "Drammen"
+  },
+  "59.92727,10.73934": {
+    "country": "NOR",
+    "county": "Oslo"
+  },
+  "59.92735,10.73938": {
+    "country": "NOR",
+    "county": "Oslo"
   }
 }
