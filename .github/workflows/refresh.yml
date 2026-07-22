@@ -44,5 +44,6 @@ jobs:
             echo "No changes to commit."
           else
             git commit -m "chore: refresh match data [$(date -u +%Y-%m-%dT%H:%M:%SZ)]"
+            git pull --rebase origin master
             git push
           fi
