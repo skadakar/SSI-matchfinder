@@ -38,11 +38,17 @@ jobs:
           SSI_COUNTRIES:     ${{ vars.SSI_COUNTRIES }}
         run: node scripts/fetch-matches.js
 
+      - name: Bust asset cache
+        run: |
+          HASH=$(git rev-parse --short HEAD)
+          sed -i "s|app\.js[^\"]*|app.js?v=${HASH}|" docs/index.html
+          sed -i "s|style\.css[^\"]*|style.css?v=${HASH}|" docs/index.html
+
       - name: Commit updated data
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -f docs/data/matches.json data/organizer-geocache.json data/reverse-geocache.json
+          git add -f docs/data/matches.json docs/index.html data/organizer-geocache.json data/reverse-geocache.json
           # Only commit if something actually changed
           if git diff --cached --quiet; then
             echo "No changes to commit."
