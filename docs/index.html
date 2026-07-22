@@ -18,8 +18,7 @@
   <script>
     (function () {
       var saved = localStorage.getItem('theme');
-      var pref  = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      document.documentElement.dataset.theme = saved || pref;
+      document.documentElement.dataset.theme = saved || 'gruvbox';
     }());
   </script>
   <link rel="stylesheet" href="style.css" />
