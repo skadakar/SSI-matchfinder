@@ -64,6 +64,7 @@ NOMINATIM_DELAY = 1.25  # seconds — stay under the 1 req/s limit
 GEOCACHE_PATH        = ROOT / 'data' / 'organizer-geocache.json'
 MANUAL_COORDS_PATH   = ROOT / 'data' / 'manual-coords.json'
 EXTRA_IDS_PATH       = ROOT / 'data' / 'extra-event-ids.json'
+REV_GEOCACHE_PATH    = ROOT / 'data' / 'reverse-geocache.json'
 OUTPUT_PATH          = ROOT / 'docs' / 'data' / 'matches.json'
 
 # ISO 3166-1 alpha-3 → alpha-2 for Nominatim's countrycodes param
@@ -74,35 +75,8 @@ _ISO3_TO_2 = {
     'CAN': 'ca', 'NZL': 'nz', 'LTU': 'lt', 'LVA': 'lv', 'SVN': 'si',
     'HRV': 'hr', 'ROU': 'ro', 'AUT': 'at', 'CHE': 'ch', 'BEL': 'be',
 }
-
-# Bounding boxes (lat_min, lat_max, lng_min, lng_max) for country-less events
-_COUNTRY_BBOX = {
-    'NOR': (57.0, 71.5,  4.0, 31.5),
-    'SWE': (55.0, 69.5, 10.0, 24.5),
-    'FIN': (59.5, 70.5, 19.0, 31.5),
-    'DNK': (54.5, 57.8,  8.0, 15.5),
-    'AUS': (-44.0, -10.0, 112.0, 154.0),
-    'NZL': (-47.5, -34.0, 166.0, 178.5),
-    'ZAF': (-35.0, -22.0,  16.5,  33.0),
-    'GBR': (49.5,  61.0,  -8.0,   2.0),
-    'IRL': (51.0,  55.5, -10.5,  -5.5),
-    'DEU': (47.0,  55.5,   5.5,  15.0),
-    'NLD': (50.5,  53.7,   3.0,   7.5),
-    'BEL': (49.5,  51.5,   2.5,   6.5),
-    'FRA': (41.0,  51.5,  -5.5,   9.5),
-    'ESP': (35.5,  43.8,  -9.5,   4.5),
-    'POL': (49.0,  55.0,  14.0,  24.5),
-    'EST': (57.5,  59.7,  21.5,  28.5),
-    'LVA': (55.5,  58.2,  20.5,  28.5),
-    'LTU': (53.5,  56.5,  20.5,  27.0),
-    'AUT': (46.5,  49.0,   9.5,  17.5),
-    'CHE': (45.5,  48.0,   5.5,  10.5),
-    'HRV': (42.0,  46.5,  13.0,  19.5),
-    'SVN': (45.5,  47.0,  13.0,  16.5),
-    'ROU': (43.5,  48.5,  21.5,  30.0),
-    'USA': (24.0,  71.5, -168.0, -66.0),
-    'CAN': (41.5,  83.5, -141.0, -52.0),
-}
+# Reverse: ISO 2-letter → ISO 3-letter (for reverse geocoding responses)
+_ISO2_TO_3 = {v.upper(): k for k, v in _ISO3_TO_2.items()}
 
 # ─── HELPERS ─────────────────────────────────────────────────────────────────
 
@@ -329,6 +303,47 @@ def enrich_with_coordinates(matches, cache):
         print(f'Geocoded {nominatim_hits} new organizers via Nominatim')
 
 
+def reverse_geocode_country(lat, lng, cache):
+    """Return ISO-3 country code for a lat/lng pair using Nominatim reverse geocoding."""
+    key = f'{lat:.5f},{lng:.5f}'
+    if key in cache:
+        return cache[key]
+    url = (f'https://nominatim.openstreetmap.org/reverse'
+           f'?lat={lat}&lon={lng}&format=json&zoom=3&addressdetails=1')
+    print(f'  Reverse-geocoding ({lat:.4f}, {lng:.4f})...')
+    time.sleep(NOMINATIM_DELAY)
+    try:
+        req = Request(url, headers={
+            'User-Agent': 'SSI-MatchFinder/1.0 (https://github.com/your-username/SSI-matchfinder)',
+            'Accept':     'application/json',
+        })
+        with urlopen(req, timeout=15) as resp:
+            result = json.loads(resp.read().decode('utf-8'))
+        cc2 = result.get('address', {}).get('country_code', '').upper()
+        cc3 = _ISO2_TO_3.get(cc2, cc2 or '')  # keep 2-letter if no 3-letter mapping
+        cache[key] = cc3
+        return cc3
+    except Exception as e:
+        print(f'  Reverse-geocode failed for ({lat:.4f}, {lng:.4f}): {e}', file=sys.stderr)
+        cache[key] = ''
+        return ''
+
+
+def enrich_with_country(matches, cache):
+    """Fill in missing country codes via reverse geocoding for events that have
+    coordinates but no country (typically events with null organizer in SSI)."""
+    hits = 0
+    for m in matches:
+        if m['country'] or m['lat'] is None or m['lng'] is None:
+            continue
+        cc3 = reverse_geocode_country(m['lat'], m['lng'], cache)
+        if cc3:
+            m['country'] = cc3
+            hits += 1
+    if hits:
+        print(f'Reverse-geocoded country for {hits} event(s)')
+
+
 # ─── MAIN ─────────────────────────────────────────────────────────────────────
 
 def main():
@@ -346,22 +361,16 @@ def main():
     geocache = load_json(GEOCACHE_PATH, {})
     matches  = [normalize_match(r) for r in raw]
 
+    # Fill in country for events that have lat/lng but no country (null organizer)
+    rev_cache = load_json(REV_GEOCACHE_PATH, {})
+    enrich_with_country(matches, rev_cache)
+    REV_GEOCACHE_PATH.write_text(
+        json.dumps(rev_cache, indent=2, ensure_ascii=False) + '\n', encoding='utf-8'
+    )
+
     if COUNTRIES:
         before  = len(matches)
-        # Pass-through events whose country is unknown (null organizer) if their
-        # coordinates fall within any of the requested countries' bounding boxes.
-        def _in_any_bbox(m):
-            lat, lng = m.get('lat'), m.get('lng')
-            if lat is None or lng is None:
-                return False
-            for c in COUNTRIES:
-                bb = _COUNTRY_BBOX.get(c)
-                if bb and bb[0] <= lat <= bb[1] and bb[2] <= lng <= bb[3]:
-                    return True
-            return False
-        matches = [m for m in matches if
-                   m['country'].upper() in COUNTRIES or
-                   (not m['country'] and _in_any_bbox(m))]
+        matches = [m for m in matches if m['country'].upper() in COUNTRIES]
         print(f'Country filter ({', '.join(sorted(COUNTRIES))}): {len(matches)} of {before} kept')
 
     enrich_with_coordinates(matches, geocache)
