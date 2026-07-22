@@ -64,6 +64,15 @@ The fetch script resolves coordinates for each match in this priority order:
 
 Reverse geocoding (`data/reverse-geocache.json`) then maps each lat/lng to a country and county/region. The county lookup checks `state`, `county`, and `municipality` address fields from Nominatim, which correctly handles city-counties like Oslo that don't have a separate `state` field.
 
+### `firstSeen` dating
+
+Each event gets a `firstSeen` date used by the "new in last X days" UI filter. It is set as the **earliest** of:
+
+1. The date the event was first observed in a fetch run (persisted across runs via the existing `matches.json`).
+2. `registrationStarts` — if the event has a past registration-open date, that's a better proxy for when it was announced.
+
+The SSI API does not expose a creation timestamp, so this is the best approximation available. Events that pre-date the project start will show `registrationStarts` (or today if that field is absent) as their `firstSeen`.
+
 **Manual overrides** – add an entry to `data/manual-coords.json` to pin a club that Nominatim can't find and that has no API coordinates in SSI:
 
 ```json

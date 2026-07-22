@@ -495,6 +495,10 @@ async function main() {
   }
   for (const m of matches) {
     m.firstSeen = firstSeenMap[m.id] || today;
+    // Backdate using registrationStarts if it's earlier — better proxy for "when announced"
+    if (m.registrationStarts && m.registrationStarts < m.firstSeen) {
+      m.firstSeen = m.registrationStarts;
+    }
   }
 
   // Pass 1: fill in country for events that already have lat/lng from the API
