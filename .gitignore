@@ -5,3 +5,8 @@ node_modules/
 docs/data/matches.json
 data/organizer-geocache.json
 data/reverse-geocache.json
+
+# Local debug / scratch scripts
+scripts/_*.py
+scripts/_*.log
+scripts/__pycache__/
