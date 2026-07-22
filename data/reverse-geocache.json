@@ -1,6 +1,12 @@
 {
-  "61.43733,23.40337": "FIN",
-  "-26.31363,28.07237": "ZAF",
+  "61.43733,23.40337": {
+    "country": "FIN",
+    "county": ""
+  },
+  "-26.31363,28.07237": {
+    "country": "ZAF",
+    "county": ""
+  },
   "62.98003,7.22245": {
     "country": "NOR",
     "county": "Møre og Romsdal"
@@ -1640,5 +1646,637 @@
   "56.52478,13.08739": {
     "country": "SWE",
     "county": "Hallands län"
+  },
+  "-37.70370,148.45550": {
+    "country": "AUS",
+    "county": "Victoria"
+  },
+  "52.05320,4.23480": {
+    "country": "NLD",
+    "county": "Zuid-Holland"
+  },
+  "59.93968,10.66500": {
+    "country": "NOR",
+    "county": ""
+  },
+  "60.91150,24.36469": {
+    "country": "FIN",
+    "county": "Kanta-Häme"
+  },
+  "66.50260,25.73040": {
+    "country": "FIN",
+    "county": "Lappi"
+  },
+  "62.31430,29.62760": {
+    "country": "FIN",
+    "county": "Pohjois-Karjala"
+  },
+  "60.37670,25.26860": {
+    "country": "FIN",
+    "county": "Uusimaa"
+  },
+  "61.86380,25.18970": {
+    "country": "FIN",
+    "county": "Keski-Suomi"
+  },
+  "61.31250,22.13570": {
+    "country": "FIN",
+    "county": "Satakunta"
+  },
+  "-25.74590,28.18790": {
+    "country": "ZAF",
+    "county": "Gauteng"
+  },
+  "61.49780,23.76160": {
+    "country": "FIN",
+    "county": "Pirkanmaa"
+  },
+  "61.48660,21.79720": {
+    "country": "FIN",
+    "county": "Satakunta"
+  },
+  "60.45160,22.26700": {
+    "country": "FIN",
+    "county": "Varsinais-Suomi"
+  },
+  "55.25537,9.91626": {
+    "country": "DNK",
+    "county": "Region Syddanmark"
+  },
+  "-25.90752,28.16321": {
+    "country": "ZAF",
+    "county": "Gauteng"
+  },
+  "-26.18523,27.93147": {
+    "country": "ZAF",
+    "county": "Gauteng"
+  },
+  "62.61720,22.39920": {
+    "country": "FIN",
+    "county": "Etelä-Pohjanmaa"
+  },
+  "59.86000,17.64000": {
+    "country": "SWE",
+    "county": "Uppsala län"
+  },
+  "62.05592,25.53671": {
+    "country": "FIN",
+    "county": "Keski-Suomi"
+  },
+  "67.51017,24.91081": {
+    "country": "FIN",
+    "county": "Lappi"
+  },
+  "60.06111,20.15697": {
+    "country": "FIN",
+    "county": "Landskapet Åland"
+  },
+  "63.11863,21.75775": {
+    "country": "FIN",
+    "county": "Österbotten"
+  },
+  "63.56446,29.02421": {
+    "country": "FIN",
+    "county": "Pohjois-Karjala"
+  },
+  "63.13207,22.99781": {
+    "country": "FIN",
+    "county": "Etelä-Pohjanmaa"
+  },
+  "42.18394,-89.00650": {
+    "country": "USA",
+    "county": "Illinois"
+  },
+  "58.97000,5.73000": {
+    "country": "NOR",
+    "county": "Rogaland"
+  },
+  "62.77494,22.33965": {
+    "country": "FIN",
+    "county": "Etelä-Pohjanmaa"
+  },
+  "66.31000,14.15000": {
+    "country": "NOR",
+    "county": "Nordland"
+  },
+  "65.02569,25.60935": {
+    "country": "FIN",
+    "county": "Pohjois-Pohjanmaa"
+  },
+  "65.02291,25.61098": {
+    "country": "FIN",
+    "county": "Pohjois-Pohjanmaa"
+  },
+  "66.41150,23.94561": {
+    "country": "FIN",
+    "county": "Lappi"
+  },
+  "55.84357,-3.76943": {
+    "country": "GBR",
+    "county": "Alba / Scotland"
+  },
+  "-26.31332,28.07245": {
+    "country": "ZAF",
+    "county": "Gauteng"
+  },
+  "64.78210,25.23452": {
+    "country": "FIN",
+    "county": "Pohjois-Pohjanmaa"
+  },
+  "64.16170,27.72783": {
+    "country": "FIN",
+    "county": "Kainuu"
+  },
+  "60.62000,16.77000": {
+    "country": "SWE",
+    "county": "Gävleborgs län"
+  },
+  "64.22470,27.73390": {
+    "country": "FIN",
+    "county": "Kainuu"
+  },
+  "60.16660,24.94350": {
+    "country": "FIN",
+    "county": "Uusimaa"
+  },
+  "69.65000,18.96000": {
+    "country": "NOR",
+    "county": "Troms"
+  },
+  "55.14058,10.53825": {
+    "country": "DNK",
+    "county": "Region Syddanmark"
+  },
+  "60.06106,20.15707": {
+    "country": "FIN",
+    "county": "Landskapet Åland"
+  },
+  "60.87175,23.06744": {
+    "country": "FIN",
+    "county": "Varsinais-Suomi"
+  },
+  "60.39000,5.32000": {
+    "country": "NOR",
+    "county": "Vestland"
+  },
+  "62.65015,23.80749": {
+    "country": "FIN",
+    "county": "Etelä-Pohjanmaa"
+  },
+  "59.31000,14.11000": {
+    "country": "SWE",
+    "county": "Värmlands län"
+  },
+  "59.35000,10.82000": {
+    "country": "NOR",
+    "county": "Østfold"
+  },
+  "60.06104,20.15711": {
+    "country": "FIN",
+    "county": "Landskapet Åland"
+  },
+  "60.88000,16.72000": {
+    "country": "SWE",
+    "county": "Gävleborgs län"
+  },
+  "60.19000,12.01000": {
+    "country": "NOR",
+    "county": "Innlandet"
+  },
+  "55.09950,14.70610": {
+    "country": "DNK",
+    "county": "Region Hovedstaden"
+  },
+  "57.66000,12.01000": {
+    "country": "SWE",
+    "county": "Västra Götalands län"
+  },
+  "59.91000,10.75000": {
+    "country": "NOR",
+    "county": ""
+  },
+  "63.39503,30.03817": {
+    "country": "FIN",
+    "county": "Pohjois-Karjala"
+  },
+  "61.12890,21.50390": {
+    "country": "FIN",
+    "county": "Satakunta"
+  },
+  "58.53191,23.93672": {
+    "country": "EST",
+    "county": "Pärnu maakond"
+  },
+  "66.47538,25.85496": {
+    "country": "FIN",
+    "county": "Lappi"
+  },
+  "55.84290,-3.76951": {
+    "country": "GBR",
+    "county": "Alba / Scotland"
+  },
+  "63.24103,29.17080": {
+    "country": "FIN",
+    "county": "Pohjois-Karjala"
+  },
+  "61.20428,26.10982": {
+    "country": "FIN",
+    "county": "Päijät-Häme"
+  },
+  "60.69163,23.58069": {
+    "country": "FIN",
+    "county": "Varsinais-Suomi"
+  },
+  "59.04000,17.31000": {
+    "country": "SWE",
+    "county": "Södermanlands län"
+  },
+  "60.72418,24.32815": {
+    "country": "FIN",
+    "county": "Kanta-Häme"
+  },
+  "59.64000,17.07000": {
+    "country": "SWE",
+    "county": "Uppsala län"
+  },
+  "58.56109,26.23202": {
+    "country": "EST",
+    "county": "Jõgeva maakond"
+  },
+  "59.05000,10.03000": {
+    "country": "NOR",
+    "county": "Vestfold"
+  },
+  "52.31917,0.17715": {
+    "country": "GBR",
+    "county": "England"
+  },
+  "55.87822,12.23825": {
+    "country": "DNK",
+    "county": "Region Hovedstaden"
+  },
+  "50.74477,7.05539": {
+    "country": "DEU",
+    "county": "Nordrhein-Westfalen"
+  },
+  "60.35777,25.36675": {
+    "country": "FIN",
+    "county": "Uusimaa"
+  },
+  "56.51000,13.04000": {
+    "country": "SWE",
+    "county": "Hallands län"
+  },
+  "57.77000,11.87000": {
+    "country": "SWE",
+    "county": "Västra Götalands län"
+  },
+  "55.14058,10.53827": {
+    "country": "DNK",
+    "county": "Region Syddanmark"
+  },
+  "60.06105,20.15702": {
+    "country": "FIN",
+    "county": "Landskapet Åland"
+  },
+  "66.74192,27.09932": {
+    "country": "FIN",
+    "county": "Lappi"
+  },
+  "59.56000,9.26000": {
+    "country": "NOR",
+    "county": "Telemark"
+  },
+  "59.92754,10.74098": {
+    "country": "NOR",
+    "county": ""
+  },
+  "55.63563,12.55420": {
+    "country": "DNK",
+    "county": "Region Hovedstaden"
+  },
+  "60.06109,20.15706": {
+    "country": "FIN",
+    "county": "Landskapet Åland"
+  },
+  "55.87819,12.24110": {
+    "country": "DNK",
+    "county": "Region Hovedstaden"
+  },
+  "53.50663,0.05768": {
+    "country": "GBR",
+    "county": "England"
+  },
+  "58.01000,12.26000": {
+    "country": "SWE",
+    "county": "Västra Götalands län"
+  },
+  "66.41152,23.94576": {
+    "country": "FIN",
+    "county": "Lappi"
+  },
+  "59.37000,16.51000": {
+    "country": "SWE",
+    "county": "Södermanlands län"
+  },
+  "63.43000,10.39000": {
+    "country": "NOR",
+    "county": "Trøndelag"
+  },
+  "55.63565,12.55428": {
+    "country": "DNK",
+    "county": "Region Hovedstaden"
+  },
+  "55.87939,12.23851": {
+    "country": "DNK",
+    "county": "Region Hovedstaden"
+  },
+  "64.94710,27.61010": {
+    "country": "FIN",
+    "county": "Kainuu"
+  },
+  "63.00000,22.31670": {
+    "country": "FIN",
+    "county": "Etelä-Pohjanmaa"
+  },
+  "63.11704,21.76538": {
+    "country": "FIN",
+    "county": "Österbotten"
+  },
+  "62.64985,23.80740": {
+    "country": "FIN",
+    "county": "Etelä-Pohjanmaa"
+  },
+  "59.37215,24.41454": {
+    "country": "EST",
+    "county": "Harju maakond"
+  },
+  "61.28933,22.15390": {
+    "country": "FIN",
+    "county": "Satakunta"
+  },
+  "60.99660,24.46510": {
+    "country": "FIN",
+    "county": "Kanta-Häme"
+  },
+  "60.88659,26.90716": {
+    "country": "FIN",
+    "county": "Kymenlaakso"
+  },
+  "61.68780,27.27320": {
+    "country": "FIN",
+    "county": "Etelä-Savo"
+  },
+  "67.77240,25.05530": {
+    "country": "FIN",
+    "county": "Lappi"
+  },
+  "58.55000,6.99000": {
+    "country": "NOR",
+    "county": "Agder"
+  },
+  "58.39000,13.84000": {
+    "country": "SWE",
+    "county": "Västra Götalands län"
+  },
+  "66.41146,23.94583": {
+    "country": "FIN",
+    "county": "Lappi"
+  },
+  "64.83250,28.85781": {
+    "country": "FIN",
+    "county": "Kainuu"
+  },
+  "60.91107,24.36525": {
+    "country": "FIN",
+    "county": "Kanta-Häme"
+  },
+  "63.98292,23.50874": {
+    "country": "FIN",
+    "county": "Keski-Pohjanmaa"
+  },
+  "58.03000,7.46000": {
+    "country": "NOR",
+    "county": "Agder"
+  },
+  "59.97273,10.75825": {
+    "country": "NOR",
+    "county": ""
+  },
+  "64.47000,11.49000": {
+    "country": "NOR",
+    "county": "Trøndelag"
+  },
+  "65.69578,25.12689": {
+    "country": "FIN",
+    "county": "Lappi"
+  },
+  "53.24795,-0.43108": {
+    "country": "GBR",
+    "county": "England"
+  },
+  "61.20582,26.10799": {
+    "country": "FIN",
+    "county": "Päijät-Häme"
+  },
+  "52.98621,-0.21638": {
+    "country": "GBR",
+    "county": "England"
+  },
+  "65.02587,25.61004": {
+    "country": "FIN",
+    "county": "Pohjois-Pohjanmaa"
+  },
+  "65.02568,25.61169": {
+    "country": "FIN",
+    "county": "Pohjois-Pohjanmaa"
+  },
+  "65.02806,25.60705": {
+    "country": "FIN",
+    "county": "Pohjois-Pohjanmaa"
+  },
+  "65.02805,25.60661": {
+    "country": "FIN",
+    "county": "Pohjois-Pohjanmaa"
+  },
+  "62.18691,25.71417": {
+    "country": "FIN",
+    "county": "Keski-Suomi"
+  },
+  "61.12000,10.46000": {
+    "country": "NOR",
+    "county": "Innlandet"
+  },
+  "64.76893,25.22689": {
+    "country": "FIN",
+    "county": "Pohjois-Pohjanmaa"
+  },
+  "69.73000,30.05000": {
+    "country": "NOR",
+    "county": "Finnmark"
+  },
+  "63.70000,9.60000": {
+    "country": "NOR",
+    "county": "Trøndelag"
+  },
+  "64.94710,27.61002": {
+    "country": "FIN",
+    "county": "Kainuu"
+  },
+  "60.42471,25.74650": {
+    "country": "FIN",
+    "county": "Uusimaa"
+  },
+  "59.09000,18.16000": {
+    "country": "SWE",
+    "county": "Stockholms län"
+  },
+  "59.76000,18.70000": {
+    "country": "SWE",
+    "county": "Stockholms län"
+  },
+  "59.14000,9.66000": {
+    "country": "NOR",
+    "county": "Telemark"
+  },
+  "65.85189,24.47296": {
+    "country": "FIN",
+    "county": "Lappi"
+  },
+  "63.64797,22.79361": {
+    "country": "FIN",
+    "county": "Österbotten"
+  },
+  "60.91138,24.36488": {
+    "country": "FIN",
+    "county": "Kanta-Häme"
+  },
+  "68.80000,16.54000": {
+    "country": "NOR",
+    "county": "Troms"
+  },
+  "65.58000,22.15000": {
+    "country": "SWE",
+    "county": "Norrbottens län"
+  },
+  "60.79000,11.07000": {
+    "country": "NOR",
+    "county": "Innlandet"
+  },
+  "60.17000,10.25000": {
+    "country": "NOR",
+    "county": "Buskerud"
+  },
+  "56.97035,9.90166": {
+    "country": "DNK",
+    "county": "Region Nordjylland"
+  },
+  "60.91122,24.36498": {
+    "country": "FIN",
+    "county": "Kanta-Häme"
+  },
+  "59.92741,10.73934": {
+    "country": "NOR",
+    "county": ""
+  },
+  "58.43000,12.73000": {
+    "country": "SWE",
+    "county": "Västra Götalands län"
+  },
+  "58.94452,25.83493": {
+    "country": "EST",
+    "county": "Järva maakond"
+  },
+  "60.35767,25.36667": {
+    "country": "FIN",
+    "county": "Uusimaa"
+  },
+  "64.77716,25.23242": {
+    "country": "FIN",
+    "county": "Pohjois-Pohjanmaa"
+  },
+  "66.41150,23.94579": {
+    "country": "FIN",
+    "county": "Lappi"
+  },
+  "55.01534,-3.83287": {
+    "country": "GBR",
+    "county": "Alba / Scotland"
+  },
+  "59.33000,18.07000": {
+    "country": "SWE",
+    "county": "Stockholms län"
+  },
+  "65.83000,21.69000": {
+    "country": "SWE",
+    "county": "Norrbottens län"
+  },
+  "59.74000,10.20000": {
+    "country": "NOR",
+    "county": ""
+  },
+  "59.92727,10.73934": {
+    "country": "NOR",
+    "county": ""
+  },
+  "55.43000,13.82000": {
+    "country": "SWE",
+    "county": "Skåne län"
+  },
+  "66.47447,25.85997": {
+    "country": "FIN",
+    "county": "Lappi"
+  },
+  "64.00431,24.67311": {
+    "country": "FIN",
+    "county": "Pohjois-Pohjanmaa"
+  },
+  "61.80620,27.75987": {
+    "country": "FIN",
+    "county": "Etelä-Savo"
+  },
+  "61.27609,23.06198": {
+    "country": "FIN",
+    "county": "Pirkanmaa"
+  },
+  "61.24112,28.89796": {
+    "country": "FIN",
+    "county": "Etelä-Karjala"
+  },
+  "64.82362,28.86101": {
+    "country": "FIN",
+    "county": "Kainuu"
+  },
+  "59.92735,10.73938": {
+    "country": "NOR",
+    "county": ""
+  },
+  "60.03674,24.36883": {
+    "country": "FIN",
+    "county": "Uusimaa"
+  },
+  "57.96000,16.31000": {
+    "country": "SWE",
+    "county": "Kalmar län"
+  },
+  "57.57000,18.38000": {
+    "country": "SWE",
+    "county": "Gotlands län"
+  },
+  "64.82369,28.86015": {
+    "country": "FIN",
+    "county": "Kainuu"
+  },
+  "67.28000,14.38000": {
+    "country": "NOR",
+    "county": "Nordland"
+  },
+  "63.67116,28.75741": {
+    "country": "FIN",
+    "county": "Pohjois-Karjala"
+  },
+  "59.38000,13.50000": {
+    "country": "SWE",
+    "county": "Värmlands län"
   }
 }
