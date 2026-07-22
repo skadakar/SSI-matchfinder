@@ -57,10 +57,6 @@
     "country": "SWE",
     "county": "Jönköpings län"
   },
-  "59.93968,10.66500": {
-    "country": "NOR",
-    "county": ""
-  },
   "59.77120,9.90950": {
     "country": "NOR",
     "county": "Buskerud"
@@ -160,10 +156,6 @@
   "57.68028,12.03211": {
     "country": "SWE",
     "county": "Västra Götalands län"
-  },
-  "59.97273,10.75825": {
-    "country": "NOR",
-    "county": ""
   },
   "64.59511,18.80944": {
     "country": "SWE",
@@ -305,10 +297,6 @@
     "country": "NOR",
     "county": "Innlandet"
   },
-  "59.92741,10.73934": {
-    "country": "NOR",
-    "county": ""
-  },
   "85.05113,-180.00000": {
     "country": "",
     "county": ""
@@ -365,10 +353,6 @@
     "country": "NOR",
     "county": "Akershus"
   },
-  "59.92727,10.73934": {
-    "country": "NOR",
-    "county": ""
-  },
   "57.14562,12.29198": {
     "country": "SWE",
     "county": "Hallands län"
@@ -408,10 +392,6 @@
   "68.78964,16.50389": {
     "country": "NOR",
     "county": "Troms"
-  },
-  "59.92735,10.73938": {
-    "country": "NOR",
-    "county": ""
   },
   "63.20983,14.72274": {
     "country": "SWE",
@@ -645,10 +625,6 @@
     "country": "NOR",
     "county": "Østfold"
   },
-  "59.59914,9.62744": {
-    "country": "NOR",
-    "county": ""
-  },
   "56.88041,14.91002": {
     "country": "SWE",
     "county": "Kronobergs län"
@@ -713,10 +689,6 @@
     "country": "NOR",
     "county": "Finnmark"
   },
-  "59.92734,10.73936": {
-    "country": "NOR",
-    "county": ""
-  },
   "63.44133,10.41072": {
     "country": "NOR",
     "county": "Trøndelag"
@@ -773,10 +745,6 @@
     "country": "NOR",
     "county": "Trøndelag"
   },
-  "59.81695,9.81869": {
-    "country": "NOR",
-    "county": ""
-  },
   "63.43948,10.40365": {
     "country": "NOR",
     "county": "Trøndelag"
@@ -796,10 +764,6 @@
   "63.44135,10.41076": {
     "country": "NOR",
     "county": "Trøndelag"
-  },
-  "59.93969,10.66500": {
-    "country": "NOR",
-    "county": ""
   },
   "57.14542,12.29087": {
     "country": "SWE",
@@ -981,10 +945,6 @@
     "country": "NOR",
     "county": "Østfold"
   },
-  "59.97201,10.75753": {
-    "country": "NOR",
-    "county": ""
-  },
   "58.96125,17.89364": {
     "country": "SWE",
     "county": "Stockholms län"
@@ -1028,10 +988,6 @@
   "59.13434,18.18916": {
     "country": "SWE",
     "county": "Stockholms län"
-  },
-  "60.00438,10.71251": {
-    "country": "NOR",
-    "county": ""
   },
   "60.37987,5.32318": {
     "country": "NOR",
@@ -1080,10 +1036,6 @@
   "57.78214,11.89513": {
     "country": "SWE",
     "county": "Västra Götalands län"
-  },
-  "59.97273,10.75823": {
-    "country": "NOR",
-    "county": ""
   },
   "68.79621,16.53392": {
     "country": "NOR",
@@ -1136,10 +1088,6 @@
   "56.10488,12.74324": {
     "country": "SWE",
     "county": "Skåne län"
-  },
-  "59.95787,10.75343": {
-    "country": "NOR",
-    "county": ""
   },
   "61.24127,6.15331": {
     "country": "NOR",
@@ -1353,10 +1301,6 @@
     "country": "NOR",
     "county": "Akershus"
   },
-  "59.95174,10.77175": {
-    "country": "NOR",
-    "county": ""
-  },
   "65.73993,13.18698": {
     "country": "NOR",
     "county": "Nordland"
@@ -1441,10 +1385,6 @@
     "country": "SWE",
     "county": "Dalarnas län"
   },
-  "59.97204,10.75753": {
-    "country": "NOR",
-    "county": ""
-  },
   "69.66323,30.00057": {
     "country": "NOR",
     "county": "Finnmark"
@@ -1472,10 +1412,6 @@
   "63.19314,14.82304": {
     "country": "SWE",
     "county": "Jämtlands län"
-  },
-  "60.24787,10.28698": {
-    "country": "NOR",
-    "county": ""
   },
   "59.96299,10.57461": {
     "country": "NOR",
@@ -1548,14 +1484,6 @@
   "63.91564,20.26875": {
     "country": "SWE",
     "county": "Västerbottens län"
-  },
-  "59.66707,9.47024": {
-    "country": "NOR",
-    "county": ""
-  },
-  "59.97199,10.75746": {
-    "country": "NOR",
-    "county": ""
   },
   "58.96334,17.89488": {
     "country": "SWE",
@@ -1668,10 +1596,6 @@
   "59.58997,17.84033": {
     "country": "SWE",
     "county": "Stockholms län"
-  },
-  "59.92754,10.74098": {
-    "country": "NOR",
-    "county": ""
   },
   "55.63186,13.05104": {
     "country": "SWE",
