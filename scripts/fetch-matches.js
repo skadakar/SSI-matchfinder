@@ -482,6 +482,21 @@ async function main() {
   const geocache = loadJson(GEOCACHE_PATH, {});
   let matches  = raw.map(normalizeMatch);
 
+  // Load existing output to preserve firstSeen dates for known events
+  const today = new Date().toISOString().slice(0, 10);
+  const firstSeenMap = {};
+  if (existsSync(OUTPUT_PATH)) {
+    try {
+      const existing = JSON.parse(readFileSync(OUTPUT_PATH, 'utf8'));
+      for (const m of (existing.matches || [])) {
+        if (m.id && m.firstSeen) firstSeenMap[m.id] = m.firstSeen;
+      }
+    } catch { /* ignore parse errors */ }
+  }
+  for (const m of matches) {
+    m.firstSeen = firstSeenMap[m.id] || today;
+  }
+
   // Pass 1: fill in country for events that already have lat/lng from the API
   const revCache = loadJson(REV_GEOCACHE_PATH, {});
   await enrichWithCountry(matches, revCache);

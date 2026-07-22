@@ -292,6 +292,13 @@ header h1 {
 }
 .checkbox-row input[type=checkbox] { accent-color: var(--accent); cursor: pointer; }
 
+#new-match-slider-wrap { padding: 0.4rem 0 0.1rem; }
+#new-match-slider {
+  width: 100%;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
 .filter-actions {
   display: flex;
   gap: 0.5rem;

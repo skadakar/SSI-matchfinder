@@ -68,6 +68,8 @@ function buildDefaultState() {
     countries:  [...DEFAULT_COUNTRIES],
     regions:    [],
     broadRegions: [],
+    newMatch:    false,
+    newMatchDays: 7,
     regOpen:    true,
     from:       TODAY,
     to:         '',
@@ -91,6 +93,8 @@ function readStateFromURL() {
     countries:  p.get('countries')  ? p.get('countries').split(',').filter(Boolean) : [...DEFAULT_COUNTRIES],
     regions:    p.get('regions')    ? p.get('regions').split(',').filter(Boolean)    : [],
     broadRegions: p.get('broad')    ? p.get('broad').split(',').filter(Boolean)       : [],
+    newMatch:    p.get('newMatch') === '1',
+    newMatchDays: p.has('newMatchDays') ? Math.min(14, Math.max(1, parseInt(p.get('newMatchDays'), 10))) : 7,
     regOpen:    p.has('regOpen') ? p.get('regOpen') !== '0' : true,
     from:       p.get('from') !== null ? p.get('from') : TODAY,
     to:         p.get('to')         || '',
@@ -110,6 +114,8 @@ function writeStateToURL() {
   if (!countriesMatchDefault(state.countries))      p.set('countries',  state.countries.join(','));
   if (state.regions.length)                         p.set('regions',    state.regions.join(','));
   if (state.broadRegions.length)                    p.set('broad',      state.broadRegions.join(','));
+  if (state.newMatch)                               p.set('newMatch',   '1');
+  if (state.newMatch && state.newMatchDays !== 7)   p.set('newMatchDays', String(state.newMatchDays));
   if (!state.regOpen)                                p.set('regOpen',    '0');
   if (state.from && state.from !== TODAY)             p.set('from',       state.from);
   if (state.to)                                     p.set('to',         state.to);
@@ -142,6 +148,11 @@ function applyFilters(matches) {
     if (state.broadRegions.length) {
       const r = countyToRegion(m);
       if (r && !state.broadRegions.includes(r)) return false;
+    }
+    if (state.newMatch) {
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - state.newMatchDays);
+      if (!m.firstSeen || m.firstSeen < cutoff.toISOString().slice(0, 10)) return false;
     }
     if (state.discipline.length && !state.discipline.includes(m.discipline)) return false;
     if (state.level.length      && !state.level.includes(m.level))           return false;
@@ -548,6 +559,10 @@ function syncFilterInputs() {
   document.getElementById('filter-from').value       = state.from;
   document.getElementById('filter-to').value         = state.to;
   document.getElementById('filter-reg-open').checked = state.regOpen;
+  document.getElementById('filter-new-match').checked = state.newMatch;
+  document.getElementById('new-match-slider').value   = state.newMatchDays;
+  document.getElementById('new-match-days-label').textContent = state.newMatchDays;
+  document.getElementById('new-match-slider-wrap').hidden     = !state.newMatch;
 
   const dSel = document.getElementById('filter-discipline');
   for (const opt of dSel.options) {
@@ -563,7 +578,7 @@ function syncFilterInputs() {
 
   // Mobile filter toggle badge
   const dot = document.querySelector('#filter-toggle-btn .filter-active-dot');
-  if (dot) dot.hidden = !(state.discipline.length || state.level.length || state.regions.length || state.organizer.length || state.q || state.from || state.to);
+  if (dot) dot.hidden = !(state.discipline.length || state.level.length || state.regions.length || state.organizer.length || state.q || state.from || state.to || state.newMatch);
 
   document.querySelectorAll('#country-panel input[type=checkbox]').forEach(cb => {
     cb.checked = state.countries.includes(cb.value);
@@ -602,6 +617,20 @@ function bindFilterEvents() {
 
   on('filter-reg-open', 'change', e => {
     state.regOpen = e.target.checked;
+    writeStateToURL();
+    render();
+  });
+
+  on('filter-new-match', 'change', e => {
+    state.newMatch = e.target.checked;
+    document.getElementById('new-match-slider-wrap').hidden = !state.newMatch;
+    writeStateToURL();
+    render();
+  });
+
+  on('new-match-slider', 'input', e => {
+    state.newMatchDays = parseInt(e.target.value, 10);
+    document.getElementById('new-match-days-label').textContent = state.newMatchDays;
     writeStateToURL();
     render();
   });
