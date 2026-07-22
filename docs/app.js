@@ -430,11 +430,17 @@ function syncFilterInputs() {
   for (const opt of dSel.options) {
     opt.selected = state.discipline.includes(opt.value);
   }
+  document.getElementById('clear-discipline').hidden = state.discipline.length === 0;
 
   const lSel = document.getElementById('filter-level');
   for (const opt of lSel.options) {
     opt.selected = state.level.includes(opt.value);
   }
+  document.getElementById('clear-level').hidden = state.level.length === 0;
+
+  // Mobile filter toggle badge
+  const dot = document.querySelector('#filter-toggle-btn .filter-active-dot');
+  if (dot) dot.hidden = !(state.discipline.length || state.level.length || state.q || state.from || state.to);
 
   document.querySelectorAll('#country-panel input[type=checkbox]').forEach(cb => {
     cb.checked = state.countries.includes(cb.value);
@@ -489,6 +495,26 @@ function bindFilterEvents() {
     render();
   });
 
+  on('clear-discipline', 'click', () => {
+    state.discipline = [];
+    writeStateToURL();
+    render();
+  });
+
+  on('clear-level', 'click', () => {
+    state.level = [];
+    writeStateToURL();
+    render();
+  });
+
+  const filterToggleBtn = document.getElementById('filter-toggle-btn');
+  filterToggleBtn.addEventListener('click', () => {
+    const panel = document.getElementById('filters');
+    const open  = panel.classList.toggle('open');
+    filterToggleBtn.classList.toggle('active', open);
+    filterToggleBtn.setAttribute('aria-expanded', String(open));
+  });
+
   on('filter-from', 'change', e => {
     state.from = e.target.value;
     writeStateToURL();
@@ -502,7 +528,7 @@ function bindFilterEvents() {
   });
 
   on('btn-reset', 'click', () => {
-    Object.assign(state, { q: '', discipline: [], level: [], countries: [...DEFAULT_COUNTRIES], regOpen: false, from: '', to: '' });
+    Object.assign(state, { q: '', discipline: [], level: [], countries: [...DEFAULT_COUNTRIES], regOpen: true, from: '', to: '' });
     syncFilterInputs();
     writeStateToURL();
     render();
@@ -559,6 +585,8 @@ function render() {
 
   document.getElementById('match-count').textContent =
     `${filtered.length} of ${allMatches.length} matches${locNote}`;
+
+  syncFilterInputs();
 
   if (state.view === 'map') {
     renderMap(sorted);

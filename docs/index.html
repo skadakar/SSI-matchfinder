@@ -59,12 +59,18 @@
       </div>
 
       <div class="filter-group">
-        <label for="filter-discipline">Discipline <small>(ctrl+click multi-select)</small></label>
+        <div class="filter-group-header">
+          <label for="filter-discipline">Discipline <small>(multi-select)</small></label>
+          <button type="button" class="filter-clear" id="clear-discipline" hidden>Clear</button>
+        </div>
         <select id="filter-discipline" multiple size="6"></select>
       </div>
 
       <div class="filter-group">
-        <label for="filter-level">Level <small>(ctrl+click multi-select)</small></label>
+        <div class="filter-group-header">
+          <label for="filter-level">Level <small>(multi-select)</small></label>
+          <button type="button" class="filter-clear" id="clear-level" hidden>Clear</button>
+        </div>
         <select id="filter-level" multiple size="4"></select>
       </div>
 
@@ -92,6 +98,7 @@
       <div id="tabs">
         <button class="tab-btn active" data-view="map">Map</button>
         <button class="tab-btn" data-view="table">Table</button>
+        <button id="filter-toggle-btn" aria-expanded="false">&#9776; Filters <span class="filter-active-dot" hidden></span></button>
       </div>
 
       <!-- Map view -->
