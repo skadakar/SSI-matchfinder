@@ -424,7 +424,7 @@ function inheritOrganizerCoords(matches) {
   }
   let inherited = 0;
   for (const m of matches) {
-    if (m.geocodeSource === 'api') continue;
+    if (m.geocodeSource === 'api' || m.geocodeSource === 'manual') continue;
     const coords = apiCoords.get(m.organizer.toLowerCase());
     if (coords) {
       m.lat = coords.lat;

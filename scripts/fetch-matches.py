@@ -389,7 +389,7 @@ def inherit_organizer_coords(matches):
 
     inherited = 0
     for m in matches:
-        if m['geocodeSource'] == 'api':
+        if m['geocodeSource'] in ('api', 'manual'):
             continue
         lat, lng = api_coords.get(m['organizer'].lower(), (None, None))
         if lat is not None:

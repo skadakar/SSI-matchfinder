@@ -57,8 +57,8 @@ python3 -m http.server 8000 --directory docs
 The fetch script resolves coordinates for each match in this priority order:
 
 1. **Event API coords** — coordinates attached directly to the event in SSI; always used as-is.
-2. **Inherited range coords** — if another event from the same organizer has API coordinates, those are inherited (the club's other events use the same range).
-3. **`data/manual-coords.json`** — hand-curated fallback for clubs where no event has ever had API coordinates.
+2. **`data/manual-coords.json`** — hand-curated overrides; wins over everything except an event's own API coords. Use this when SSI has wrong or missing coordinates for a club.
+3. **Inherited range coords** — if another event from the same organizer has API coordinates *and* no manual entry exists for that organizer, those coords are inherited.
 4. **`data/organizer-geocache.json`** — Nominatim forward-geocode cache (organizer name → lat/lng).
 5. **Nominatim live query** — called when none of the above apply; result is cached for future runs.
 
