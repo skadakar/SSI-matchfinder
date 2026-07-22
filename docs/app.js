@@ -457,6 +457,7 @@ function appendCellContent(td, key, m) {
       // Build tooltip
       const parts = [max && max > 0 ? `${m.participants} registered out of ${max} spots` : `${m.participants} registered`];
       if (wait && wait > 0) parts.push(`${wait} on the waiting list`);
+      parts.push('includes pre-match registrations');
       td.title = parts.join(' · ');
       td.textContent = text;
       if (wait && wait > 0) {
