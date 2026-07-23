@@ -32,6 +32,8 @@ Go to **Settings → Secrets and variables → Actions** and create:
 | Secret | `SSI_REFRESH_TOKEN` | Your SSI refresh token (used to obtain a short-lived JWT) |
 | Secret | `SSI_API_KEY` | Your SSI API key |
 | Variable | `SSI_COUNTRIES` | Comma-separated ISO-3 country codes to fetch, e.g. `NOR,SWE` |
+| Secret | `DISCORD_NOTIFY_CONFIG` | Optional: overrides [data/discord-notify-config.json](data/discord-notify-config.json) with a JSON string for the notifier |
+| Secret | `DISCORD_NOTIFY_WEBHOOKS` | Optional: JSON object mapping webhook names to URLs, e.g. `{"DISCORD_WEBHOOK_SWEDEN":"https://..."}` |
 
 ### 3. Enable GitHub Pages
 
@@ -136,10 +138,16 @@ A small notifier is available for posting newly discovered matches to Discord ba
 
 Edit [data/discord-notify-config.json](data/discord-notify-config.json) to define rules. Each rule can include:
 - `name`: a friendly label for the rule
-- `webhook`: either a direct Discord webhook URL or the name of an environment variable such as `DISCORD_WEBHOOK_SWEDEN`
+- `webhook`: either a direct Discord webhook URL or the name of an environment variable / secret such as `DISCORD_WEBHOOK_SWEDEN`
 - filters such as `countries`, `disciplines`, `levels`, `organizers`, `regions`, `from`, and `to`
+- `cutoffDays`: optional lookback window measured from the notifier's first run date; defaults to `14`
 
-In GitHub Actions, set the webhook value as a repository secret or variable named in the config, for example `DISCORD_WEBHOOK_SWEDEN`.
+In GitHub Actions, store webhook values as repository secrets (recommended) or variables. The workflow passes them into the notifier step as environment variables so they are available at runtime without being printed in the logs.
+
+The notifier also logs:
+- whether a rule resolved a webhook successfully
+- a safe preview of the payload content and which matches would be sent
+- a warning if a webhook reference is missing
 
 ### Run locally
 
