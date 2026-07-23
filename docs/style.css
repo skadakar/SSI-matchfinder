@@ -382,14 +382,9 @@ header h1 {
 /* Map */
 #map { flex: 1; width: 100%; }
 
-/* Warm tint on the Gruvbox map to echo the earthy palette */
+/* Subtle warm tint on the Gruvbox map to echo the earthy palette */
 [data-theme="gruvbox"] #map {
-  filter: sepia(30%) hue-rotate(5deg) brightness(0.95);
-}
-[data-theme="gruvbox"] #map .leaflet-marker-icon,
-[data-theme="gruvbox"] #map .leaflet-popup-content-wrapper,
-[data-theme="gruvbox"] #map .leaflet-popup-tip {
-  filter: sepia(0) hue-rotate(0deg) brightness(1);
+  filter: sepia(15%) brightness(0.97);
 }
 
 /* Table */
