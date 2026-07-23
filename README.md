@@ -142,7 +142,44 @@ Edit [data/discord-notify-config.json](data/discord-notify-config.json) to defin
 - filters such as `countries`, `disciplines`, `levels`, `organizers`, `regions`, `from`, and `to`
 - `cutoffDays`: optional lookback window measured from the notifier's first run date; defaults to `14`
 
-In GitHub Actions, store webhook values as repository secrets (recommended) or variables. You can either use the name from a rule's `webhook` field (for example `DISCORD_WEBHOOK_SWEDEN`) or provide a JSON webhook map via `DISCORD_NOTIFY_WEBHOOKS`, such as `{"DISCORD_WEBHOOK_SWEDEN":"https://..."}`. The workflow passes those values into the notifier at runtime, and the notifier logs only safe previews of the payload.
+In GitHub Actions, store webhook values as repository secrets (recommended) or variables. You can either use the name from a rule's `webhook` field (for example `DISCORD_WEBHOOK_SWEDEN`) or provide a JSON webhook map via `DISCORD_NOTIFY_WEBHOOKS`, such as:
+
+```json
+{
+  "DISCORD_WEBHOOK_SWEDEN": "https://discord.com/api/webhooks/your/secret",
+  "DISCORD_WEBHOOK_NORWAY": "https://discord.com/api/webhooks/your/other-secret"
+}
+```
+
+A matching rule would then look like this:
+
+```json
+{
+  "name": "sweden-handgun",
+  "webhook": "DISCORD_WEBHOOK_SWEDEN",
+  "countries": ["SWE"],
+  "disciplines": ["IPSC Handgun"]
+}
+```
+
+If you want the config file itself to be more self-documenting, you can also add comments in the JSON-like example used locally, for instance:
+
+```json
+{
+  "cutoffDays": 14,
+  "rules": [
+    {
+      "name": "sweden-handgun",
+      "webhook": "DISCORD_WEBHOOK_SWEDEN",
+      "countries": ["SWE"],
+      "disciplines": ["IPSC Handgun"],
+      "comment": "posts Swedish handgun matches to the Sweden Discord channel"
+    }
+  ]
+}
+```
+
+The workflow passes those values into the notifier at runtime, and the notifier logs only safe previews of the payload.
 
 The notifier also logs:
 - whether a rule resolved a webhook successfully
