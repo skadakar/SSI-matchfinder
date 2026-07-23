@@ -71,6 +71,7 @@ function buildDefaultState() {
     newMatch:    false,
     newMatchDays: 7,
     regOpen:    true,
+    futureOnly: true,
     from:       '',
     to:         '',
     cols:       [...DEFAULT_COLS],
@@ -96,6 +97,7 @@ function readStateFromURL() {
     newMatch:    p.get('newMatch') === '1',
     newMatchDays: p.has('newMatchDays') ? Math.min(14, Math.max(1, parseInt(p.get('newMatchDays'), 10))) : 7,
     regOpen:    p.has('regOpen') ? p.get('regOpen') !== '0' : true,
+    futureOnly: p.has('futureOnly') ? p.get('futureOnly') !== '0' : true,
     from:       p.get('from') || '',
     to:         p.get('to')         || '',
     cols:       colsParam ? colsParam.split(',').filter(Boolean) : [...DEFAULT_COLS],
@@ -117,6 +119,7 @@ function writeStateToURL() {
   if (state.newMatch)                               p.set('newMatch',   '1');
   if (state.newMatch && state.newMatchDays !== 7)   p.set('newMatchDays', String(state.newMatchDays));
   if (!state.regOpen)                                p.set('regOpen',    '0');
+  if (!state.futureOnly)                             p.set('futureOnly', '0');
   if (state.from)                                    p.set('from',       state.from);
   if (state.to)                                     p.set('to',         state.to);
   if (!colsMatchDefault(state.cols))                p.set('cols',       state.cols.join(','));
@@ -158,6 +161,7 @@ function applyFilters(matches) {
     if (state.level.length      && !state.level.includes(m.level))           return false;
     if (state.organizer.length  && !state.organizer.includes(m.organizer))   return false;
     if (state.regOpen && m.registrationOpen !== true)                        return false;
+    if (state.futureOnly && m.date < TODAY)                              return false;
     if (state.from       && m.date < state.from)                         return false;
     if (state.to         && m.date > state.to)                           return false;
     return true;
@@ -592,9 +596,8 @@ function _repopulateSelect(selId, clearBtnId, values, selected) {
 
 function syncFilterInputs() {
   document.getElementById('filter-search').value     = state.q;
-  document.getElementById('filter-from').value       = state.from;
-  document.getElementById('filter-to').value         = state.to;
   document.getElementById('filter-reg-open').checked = state.regOpen;
+  document.getElementById('filter-future-only').checked = state.futureOnly;
   document.getElementById('filter-new-match').checked = state.newMatch;
   document.getElementById('new-match-slider').value   = state.newMatchDays;
   document.getElementById('new-match-days-label').textContent = state.newMatchDays;
@@ -607,7 +610,7 @@ function syncFilterInputs() {
 
   // Mobile filter toggle badge
   const dot = document.querySelector('#filter-toggle-btn .filter-active-dot');
-  if (dot) dot.hidden = !(state.discipline.length || state.level.length || state.regions.length || state.organizer.length || state.q || state.from || state.to || state.newMatch);
+  if (dot) dot.hidden = !(state.discipline.length || state.level.length || state.regions.length || state.organizer.length || state.q || state.newMatch);
 
   document.querySelectorAll('#country-panel input[type=checkbox]').forEach(cb => {
     cb.checked = state.countries.includes(cb.value);
@@ -646,6 +649,12 @@ function bindFilterEvents() {
 
   on('filter-reg-open', 'change', e => {
     state.regOpen = e.target.checked;
+    writeStateToURL();
+    render();
+  });
+
+  on('filter-future-only', 'change', e => {
+    state.futureOnly = e.target.checked;
     writeStateToURL();
     render();
   });
@@ -698,20 +707,8 @@ function bindFilterEvents() {
     filterToggleBtn.setAttribute('aria-expanded', String(open));
   });
 
-  on('filter-from', 'change', e => {
-    state.from = e.target.value;
-    writeStateToURL();
-    render();
-  });
-
-  on('filter-to', 'change', e => {
-    state.to = e.target.value;
-    writeStateToURL();
-    render();
-  });
-
   on('btn-reset', 'click', () => {
-    Object.assign(state, { q: '', discipline: [], level: [], organizer: [], countries: [...DEFAULT_COUNTRIES], regions: [], broadRegions: [], newMatch: false, newMatchDays: 7, regOpen: true, from: '', to: '' });
+    Object.assign(state, { q: '', discipline: [], level: [], organizer: [], countries: [...DEFAULT_COUNTRIES], regions: [], broadRegions: [], newMatch: false, newMatchDays: 7, regOpen: true, futureOnly: true, from: '', to: '' });
     syncFilterInputs();
     writeStateToURL();
     render();

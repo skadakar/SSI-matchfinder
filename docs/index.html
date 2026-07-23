@@ -73,6 +73,13 @@
       </div>
 
       <div class="filter-group">
+        <label class="checkbox-row">
+          <input type="checkbox" id="filter-future-only" />
+          Only future events
+        </label>
+      </div>
+
+      <div class="filter-group">
         <div class="filter-group-header">
           <label for="filter-discipline">Discipline <small>(multi-select)</small></label>
           <button type="button" class="filter-clear" id="clear-discipline" hidden>Clear</button>
@@ -86,16 +93,6 @@
           <button type="button" class="filter-clear" id="clear-level" hidden>Clear</button>
         </div>
         <select id="filter-level" multiple size="4"></select>
-      </div>
-
-      <div class="filter-group">
-        <label for="filter-from">From</label>
-        <input type="date" id="filter-from" />
-      </div>
-
-      <div class="filter-group">
-        <label for="filter-to">To</label>
-        <input type="date" id="filter-to" />
       </div>
 
       <div class="filter-actions">
