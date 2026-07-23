@@ -166,6 +166,48 @@ header h1 {
   gap: 0.3rem;
 }
 
+.active-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding-bottom: 0.35rem;
+  margin-bottom: 0.1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.active-filters[hidden] {
+  display: none;
+}
+
+.active-filters-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.active-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.55rem;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  background: var(--toggle-active-bg);
+  color: var(--toggle-active-text);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.active-filter-chip:hover {
+  background: var(--border);
+}
+
+.active-filter-remove {
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
 .filter-group-header {
   display: flex;
   align-items: baseline;

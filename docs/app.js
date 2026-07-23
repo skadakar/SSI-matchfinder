@@ -21,7 +21,7 @@ const COLUMNS = [
 const DEFAULT_COLS      = COLUMNS.filter(c => c.defaultVisible).map(c => c.key);
 const DEFAULT_SORT      = 'date';
 
-const FILTERABLE_COLS = new Set(['organizer', 'discipline', 'level', 'country', 'county', 'region', 'registration']);
+const FILTERABLE_COLS = new Set(['organizer', 'discipline', 'country', 'county', 'region', 'registration']);
 const DEFAULT_DIR       = 'asc';
 const TODAY = new Date().toISOString().slice(0, 10);
 
@@ -64,7 +64,6 @@ function buildDefaultState() {
     view:       'map',
     q:          '',
     discipline: [],
-    level:      [],
     organizer:  [],
     countries:  [...DEFAULT_COUNTRIES],
     regions:    [],
@@ -90,7 +89,6 @@ function readStateFromURL() {
     view:       p.get('view')       || 'map',
     q:          p.get('q')          || '',
     discipline: p.get('discipline') ? p.get('discipline').split(',').filter(Boolean) : [],
-    level:      p.get('level')      ? p.get('level').split(',').filter(Boolean)      : [],
     organizer:  p.get('organizer')  ? p.get('organizer').split(',').filter(Boolean)  : [],
     countries:  p.get('countries')  ? p.get('countries').split(',').filter(Boolean) : [...DEFAULT_COUNTRIES],
     regions:    p.get('regions')    ? p.get('regions').split(',').filter(Boolean)    : [],
@@ -112,7 +110,6 @@ function writeStateToURL() {
   if (state.view !== 'map')                         p.set('view',       state.view);
   if (state.q)                                      p.set('q',          state.q);
   if (state.discipline.length)                      p.set('discipline', state.discipline.join(','));
-  if (state.level.length)                           p.set('level',      state.level.join(','));
   if (state.organizer.length)                       p.set('organizer',  state.organizer.join(','));
   if (!countriesMatchDefault(state.countries))      p.set('countries',  state.countries.join(','));
   if (state.regions.length)                         p.set('regions',    state.regions.join(','));
@@ -159,7 +156,6 @@ function applyFilters(matches) {
       if (!m.firstSeen || m.firstSeen < cutoff.toISOString().slice(0, 10)) return false;
     }
     if (state.discipline.length && !state.discipline.includes(m.discipline)) return false;
-    if (state.level.length      && !state.level.includes(m.level))           return false;
     if (state.organizer.length  && !state.organizer.includes(m.organizer))   return false;
     if (state.regOpen && m.registrationOpen !== true)                        return false;
     if (state.futureOnly && m.date < TODAY)                              return false;
@@ -327,7 +323,6 @@ function getCellFilterValue(key, m) {
   switch (key) {
     case 'organizer':    return m.organizer || null;
     case 'discipline':   return m.discipline || null;
-    case 'level':        return (m.level && m.level !== '--') ? m.level : null;
     case 'country':      return m.country || null;
     case 'county':       return m.county || null;
     case 'region':       return countyToRegion(m) || null;
@@ -340,7 +335,6 @@ function isCellActive(key, m) {
   switch (key) {
     case 'organizer':    return state.organizer.includes(m.organizer);
     case 'discipline':   return state.discipline.includes(m.discipline);
-    case 'level':        return !!(m.level && m.level !== '--' && state.level.includes(m.level));
     case 'country':      return !countriesMatchDefault(state.countries) && state.countries.includes(m.country);
     case 'county':       return !!(m.county && state.regions.includes(m.county));
     case 'region':       return !!(countyToRegion(m) && state.broadRegions.includes(countyToRegion(m)));
@@ -357,11 +351,6 @@ function toggleCellFilter(key, m) {
   switch (key) {
     case 'organizer':   toggle(state.organizer, m.organizer); break;
     case 'discipline':  if (m.discipline) toggle(state.discipline, m.discipline); break;
-    case 'level': {
-      const l = m.level && m.level !== '--' ? m.level : null;
-      if (l) toggle(state.level, l);
-      break;
-    }
     case 'country':
       if (!m.country) break;
       if (state.countries.length === 1 && state.countries[0] === m.country) {
@@ -555,38 +544,152 @@ function updateCountryBtn() {
 
 function populateDropdowns() {
   populateCountryDropdown();
-  refreshDisciplineLevelDropdowns();
+  refreshDisciplineDropdown();
 }
 
-/** Repopulate discipline + level selects from the currently active filter subset,
- *  excluding each dropdown's own filter so it shows what's available in context. */
-function refreshDisciplineLevelDropdowns() {
+function hasActiveFilters() {
+  return Boolean(
+    state.q ||
+    state.discipline.length ||
+    state.organizer.length ||
+    state.regions.length ||
+    state.broadRegions.length ||
+    (state.countries.length > 0 && !countriesMatchDefault(state.countries)) ||
+    state.newMatch ||
+    state.regOpen ||
+    state.futureOnly ||
+    state.from ||
+    state.to
+  );
+}
+
+function renderActiveFilters() {
+  const wrap = document.getElementById('active-filters');
+  const list = document.getElementById('active-filters-list');
+  const chips = [];
+
+  if (state.q) {
+    chips.push({
+      label: `Search: ${state.q}`,
+      remove: () => { state.q = ''; },
+    });
+  }
+
+  if (state.discipline.length) {
+    for (const value of state.discipline) {
+      chips.push({
+        label: `Discipline: ${value}`,
+        remove: () => { state.discipline = state.discipline.filter(v => v !== value); },
+      });
+    }
+  }
+
+  if (state.organizer.length) {
+    for (const value of state.organizer) {
+      chips.push({
+        label: `Club: ${value}`,
+        remove: () => { state.organizer = state.organizer.filter(v => v !== value); },
+      });
+    }
+  }
+
+  if (state.countries.length > 0 && !countriesMatchDefault(state.countries)) {
+    for (const value of [...state.countries].sort()) {
+      chips.push({
+        label: `Country: ${value}`,
+        remove: () => { state.countries = state.countries.filter(v => v !== value); },
+      });
+    }
+  }
+
+  if (state.regions.length) {
+    for (const value of [...state.regions].sort()) {
+      chips.push({
+        label: `County: ${value}`,
+        remove: () => { state.regions = state.regions.filter(v => v !== value); },
+      });
+    }
+  }
+
+  if (state.broadRegions.length) {
+    for (const value of [...state.broadRegions].sort()) {
+      chips.push({
+        label: `Region: ${value}`,
+        remove: () => { state.broadRegions = state.broadRegions.filter(v => v !== value); },
+      });
+    }
+  }
+
+  if (state.newMatch) {
+    const suffix = state.newMatchDays === 1 ? 'day' : 'days';
+    chips.push({
+      label: `New in last ${state.newMatchDays} ${suffix}`,
+      remove: () => { state.newMatch = false; },
+    });
+  }
+
+  if (state.regOpen) {
+    chips.push({
+      label: 'Open registration only',
+      remove: () => { state.regOpen = false; },
+    });
+  }
+
+  if (state.futureOnly) {
+    chips.push({
+      label: 'Only future events',
+      remove: () => { state.futureOnly = false; },
+    });
+  }
+
+  if (state.from) {
+    chips.push({
+      label: `From ${state.from}`,
+      remove: () => { state.from = ''; },
+    });
+  }
+
+  if (state.to) {
+    chips.push({
+      label: `To ${state.to}`,
+      remove: () => { state.to = ''; },
+    });
+  }
+
+  wrap.hidden = chips.length === 0;
+  list.innerHTML = '';
+
+  for (const chip of chips) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'active-filter-chip';
+    button.innerHTML = `${escHtml(chip.label)} <span class="active-filter-remove" aria-hidden="true">×</span>`;
+    button.addEventListener('click', () => {
+      chip.remove();
+      writeStateToURL();
+      render();
+    });
+    list.appendChild(button);
+  }
+}
+
+/** Repopulate discipline select from the currently active filter subset,
+ *  excluding its own filter so it shows what's available in context. */
+function refreshDisciplineDropdown() {
   // For discipline: apply all filters EXCEPT discipline
   const savedDisc = state.discipline;
   state.discipline = [];
   const subsetForDisc = applyFilters(allMatches);
   state.discipline = savedDisc;
 
-  // For level: apply all filters EXCEPT level
-  const savedLevel = state.level;
-  state.level = [];
-  const subsetForLevel = applyFilters(allMatches);
-  state.level = savedLevel;
-
   _repopulateSelect('filter-discipline', 'clear-discipline',
     [...new Set(subsetForDisc.map(m => m.discipline).filter(Boolean))].sort(),
     state.discipline);
 
-  _repopulateSelect('filter-level', 'clear-level',
-    [...new Set(subsetForLevel.map(m => m.level).filter(l => l && l !== '--'))].sort(),
-    state.level);
-
-  // Mobile: expand selects to show all options without inner scroll
+  // Mobile: expand select to show all options without inner scroll
   if (window.matchMedia('(max-width: 720px)').matches) {
     const dSel = document.getElementById('filter-discipline');
-    const lSel = document.getElementById('filter-level');
     dSel.size = dSel.options.length || 1;
-    lSel.size = lSel.options.length || 1;
   }
 }
 
@@ -619,14 +722,15 @@ function syncFilterInputs() {
   document.getElementById('new-match-days-label').textContent = state.newMatchDays;
   document.getElementById('new-match-slider-wrap').hidden     = !state.newMatch;
 
-  // Discipline + level selects are repopulated by refreshDisciplineLevelDropdowns()
+  // Discipline select is repopulated by refreshDisciplineDropdown()
   // which is called from render() — just update the clear-button visibility here
   document.getElementById('clear-discipline').hidden = state.discipline.length === 0;
-  document.getElementById('clear-level').hidden      = state.level.length === 0;
 
   // Mobile filter toggle badge
   const dot = document.querySelector('#filter-toggle-btn .filter-active-dot');
-  if (dot) dot.hidden = !(state.discipline.length || state.level.length || state.regions.length || state.organizer.length || state.q || state.newMatch);
+  if (dot) dot.hidden = !hasActiveFilters();
+
+  renderActiveFilters();
 
   document.querySelectorAll('#country-panel input[type=checkbox]').forEach(cb => {
     cb.checked = state.countries.includes(cb.value);
@@ -696,21 +800,8 @@ function bindFilterEvents() {
     render();
   });
 
-  on('filter-level', 'change', () => {
-    const sel = document.getElementById('filter-level');
-    state.level = Array.from(sel.selectedOptions).map(o => o.value);
-    writeStateToURL();
-    render();
-  });
-
   on('clear-discipline', 'click', () => {
     state.discipline = [];
-    writeStateToURL();
-    render();
-  });
-
-  on('clear-level', 'click', () => {
-    state.level = [];
     writeStateToURL();
     render();
   });
@@ -724,7 +815,7 @@ function bindFilterEvents() {
   });
 
   on('btn-reset', 'click', () => {
-    Object.assign(state, { q: '', discipline: [], level: [], organizer: [], countries: [...DEFAULT_COUNTRIES], regions: [], broadRegions: [], newMatch: false, newMatchDays: 7, regOpen: true, futureOnly: true, from: '', to: '' });
+    Object.assign(state, { q: '', discipline: [], organizer: [], countries: [...DEFAULT_COUNTRIES], regions: [], broadRegions: [], newMatch: false, newMatchDays: 7, regOpen: true, futureOnly: true, from: '', to: '' });
     syncFilterInputs();
     writeStateToURL();
     render();
@@ -774,7 +865,7 @@ function render() {
   const filtered = applyFilters(allMatches);
   const sorted   = sortMatches(filtered);
 
-  refreshDisciplineLevelDropdowns();
+  refreshDisciplineDropdown();
 
   const located = filtered.filter(m => m.lat != null).length;
   const locNote = state.view === 'map' && located < filtered.length

@@ -87,12 +87,11 @@
         <select id="filter-discipline" multiple size="6"></select>
       </div>
 
-      <div class="filter-group">
+      <div class="active-filters" id="active-filters" hidden>
         <div class="filter-group-header">
-          <label for="filter-level">Level <small>(multi-select)</small></label>
-          <button type="button" class="filter-clear" id="clear-level" hidden>Clear</button>
+          <label>Active filters</label>
         </div>
-        <select id="filter-level" multiple size="4"></select>
+        <div id="active-filters-list" class="active-filters-list"></div>
       </div>
 
       <div class="filter-actions">
