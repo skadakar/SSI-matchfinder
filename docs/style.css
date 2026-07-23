@@ -384,7 +384,7 @@ header h1 {
 
 /* Subtle warm tint on the Gruvbox map to echo the earthy palette */
 [data-theme="gruvbox"] #map {
-  filter: sepia(15%) brightness(0.97);
+  filter: sepia(30%) brightness(0.97);
 }
 
 /* Table */
