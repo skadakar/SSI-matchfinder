@@ -44,11 +44,21 @@ jobs:
           sed -i "s|app\.js[^\"]*|app.js?v=${HASH}|" docs/index.html
           sed -i "s|style\.css[^\"]*|style.css?v=${HASH}|" docs/index.html
 
+      - name: Notify Discord
+        env:
+          DISCORD_NOTIFY_CONFIG: ${{ vars.DISCORD_NOTIFY_CONFIG }}
+          DISCORD_NOTIFY_WEBHOOKS: ${{ vars.DISCORD_NOTIFY_WEBHOOKS }}
+        run: |
+          if [ -n "$DISCORD_NOTIFY_CONFIG" ]; then
+            echo "$DISCORD_NOTIFY_CONFIG" > data/discord-notify-config.json
+          fi
+          node scripts/discord-notify.js
+
       - name: Commit updated data
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -f docs/data/matches.json docs/index.html data/organizer-geocache.json data/reverse-geocache.json
+          git add -f docs/data/matches.json docs/index.html data/organizer-geocache.json data/reverse-geocache.json data/discord-notify-state.json data/discord-notify-config.json
           # Only commit if something actually changed
           if git diff --cached --quiet; then
             echo "No changes to commit."

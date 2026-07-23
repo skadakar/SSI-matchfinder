@@ -6,6 +6,7 @@
   "scripts": {
     "fetch": "node scripts/fetch-matches.js",
     "fetch:dump": "node scripts/fetch-matches.js --dump",
+    "notify": "node scripts/discord-notify.js",
     "serve": "npx serve docs"
   },
   "engines": {

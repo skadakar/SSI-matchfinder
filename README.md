@@ -122,6 +122,31 @@ scripts/fetch-matches.py        data pipeline (Python 3.10+, for local use)
 | `sort`       | `date`                    | Sort column key                           |
 | `dir`        | `asc` / `desc`            | Sort direction                            |
 
+## Discord notifications
+
+A small notifier is available for posting newly discovered matches to Discord based on saved filters.
+
+### How it works
+
+- The notifier reads the generated match data from [docs/data/matches.json](docs/data/matches.json)
+- It applies each rule from [data/discord-notify-config.json](data/discord-notify-config.json)
+- When a match matches a rule and was not seen before, it posts a message to the rule's Discord webhook
+
+### Configuration
+
+Edit [data/discord-notify-config.json](data/discord-notify-config.json) to define rules. Each rule can include:
+- `name`: a friendly label for the rule
+- `webhook`: either a direct Discord webhook URL or the name of an environment variable such as `DISCORD_WEBHOOK_SWEDEN`
+- filters such as `countries`, `disciplines`, `levels`, `organizers`, `regions`, `from`, and `to`
+
+In GitHub Actions, set the webhook value as a repository secret or variable named in the config, for example `DISCORD_WEBHOOK_SWEDEN`.
+
+### Run locally
+
+```bash
+npm run notify
+```
+
 ## Contributing
 
 Pull requests are welcome! The most common contribution needed is **fixing wrong or missing club coordinates**. If a match appears in the wrong location on the map, you can correct it by editing `data/manual-coords.json`:
