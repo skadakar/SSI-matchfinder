@@ -88,7 +88,6 @@ The key is the organizer name in lowercase. `data/organizer-geocache.json` is co
 
 ```
 .github/workflows/refresh.yml   GitHub Actions cron job (every 6 h)
-data/extra-event-ids.json       manually pinned event IDs fetched even when the API list omits them
 data/manual-coords.json         highest-priority coordinate overrides (~135 NOR/SWE clubs)
 data/organizer-geocache.json    Nominatim forward-geocode cache
 data/reverse-geocache.json      Nominatim reverse-geocode cache (lat/lng → country + county)
@@ -100,18 +99,6 @@ docs/                           GitHub Pages root
 scripts/fetch-matches.js        data pipeline (Node.js 20+, used by Actions)
 scripts/fetch-matches.py        data pipeline (Python 3.10+, for local use)
 ```
-
-### `data/extra-event-ids.json`
-
-The SSI list API silently drops events whose organizer is `null` (e.g. championship matches managed directly by SSI rather than a club). Add such events here so the fetch script retrieves them by ID regardless:
-
-```json
-[
-  { "content_type": 22, "id": "29126" }
-]
-```
-
-`content_type` is always `22` for matches. The `id` is the numeric SSI event ID visible in the match URL (`/event/22/<id>/`).
 
 ## URL filter reference
 

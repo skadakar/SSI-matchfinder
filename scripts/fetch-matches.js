@@ -71,7 +71,6 @@ const NOMINATIM_DELAY_MS = 1250;
 
 const GEOCACHE_PATH = resolve(ROOT, 'data', 'organizer-geocache.json');
 const MANUAL_COORDS_PATH = resolve(ROOT, 'data', 'manual-coords.json');
-const EXTRA_IDS_PATH = resolve(ROOT, 'data', 'extra-event-ids.json');
 const REV_GEOCACHE_PATH = resolve(ROOT, 'data', 'reverse-geocache.json');
 const OUTPUT_PATH   = resolve(ROOT, 'docs', 'data', 'matches.json');
 
@@ -234,28 +233,6 @@ async function fetchAllMatches() {
 
   const events = [...allEvents.values()];
   console.log(`Fetched ${events.length} events`);
-
-  // Fetch extra events not returned by the list query (e.g. those with organizer=null)
-  const extraIds = loadJson(EXTRA_IDS_PATH, []);
-  if (extraIds.length > 0) {
-    const existingIds = new Set(events.map(e => String(e.id)));
-    console.log(`Fetching ${extraIds.length} extra event(s) by ID...`);
-    for (const entry of extraIds) {
-      const eid = String(entry.id);
-      if (existingIds.has(eid)) continue;
-      const r = await postGql(EVENT_Q, { ct: entry.content_type, id: eid }, auth, API_KEY);
-      if (r.errors || !r.data?.event) {
-        console.warn(`  Warning: could not fetch extra event ${eid}`);
-        continue;
-      }
-      const ev = r.data.event;
-      if (ev.organizer == null) {
-        ev.organizer = {};
-      }
-      events.push(ev);
-      console.log(`  Added extra event ${eid}: ${ev.name ?? ''}`);
-    }
-  }
 
   return events;
 }
