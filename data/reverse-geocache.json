@@ -2290,5 +2290,9 @@
   "59.10590,-3.34144": {
     "country": "GBR",
     "county": "Alba / Scotland"
+  },
+  "59.17000,18.08000": {
+    "country": "SWE",
+    "county": "Stockholms län"
   }
 }
