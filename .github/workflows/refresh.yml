@@ -48,6 +48,10 @@ jobs:
         env:
           DISCORD_NOTIFY_CONFIG: ${{ secrets.DISCORD_NOTIFY_CONFIG != '' && secrets.DISCORD_NOTIFY_CONFIG || vars.DISCORD_NOTIFY_CONFIG }}
           DISCORD_NOTIFY_WEBHOOKS: ${{ secrets.DISCORD_NOTIFY_WEBHOOKS != '' && secrets.DISCORD_NOTIFY_WEBHOOKS || vars.DISCORD_NOTIFY_WEBHOOKS }}
+          DISCORD_WEBHOOK_SWEDEN: ${{ secrets.DISCORD_WEBHOOK_SWEDEN }}
+          DISCORD_WEBHOOK_NORWAY_RIFLE: ${{ secrets.DISCORD_WEBHOOK_NORWAY_RIFLE }}
+          DISCORD_WEBHOOK_NORWAY_HANDGUN_PCC: ${{ secrets.DISCORD_WEBHOOK_NORWAY_HANDGUN_PCC }}
+          DISCORD_WEBHOOK_NORWAY_PCC: ${{ secrets.DISCORD_WEBHOOK_NORWAY_PCC }}
         run: |
           if [ -n "$DISCORD_NOTIFY_CONFIG" ]; then
             echo "$DISCORD_NOTIFY_CONFIG" > data/discord-notify-config.json
