@@ -1,17 +1,41 @@
 {
   "cutoffDays": 14,
   "rules": [
-    {
-      "name": "example-sweden",
-      "webhook": "DISCORD_WEBHOOK_SWEDEN",
-      "countries": ["SWE"],
-      "disciplines": ["IPSC Handgun"],
+          {
+      "name": "Høkk riflematch",
+      "webhook": "DISCORD_HOKK_RIFLE_MATCH",
+      "countries": ["NOR"],
+      "disciplines": ["IPSC Rifle"],
       "levels": [],
       "organizers": [],
       "regions": [],
       "from": "",
       "to": "",
-      "comment": "posts Swedish handgun matches to the Sweden Discord channel"
+      "comment": "posts Norwegian rifle matches to the Norway Discord channel"
+    },
+        {
+      "name": "Høkk pistol",
+      "webhook": "DISCORD_HOKK_HANDGUN_MATCH",
+      "countries": ["NOR"],
+      "disciplines": ["IPSC Handgun", "IPSC Handgun & PCC"],
+      "levels": [],
+      "organizers": [],
+      "regions": [],
+      "from": "",
+      "to": "",
+      "comment": "posts Norwegian handgun and handgun+pcc matches to the Norway Discord channel"
+    },
+        {
+      "name": "Høkk PCC",
+      "webhook": "DISCORD_HOKK_PCC_MATCH",
+      "countries": ["NOR"],
+      "disciplines": ["IPSC PCC"],
+      "levels": [],
+      "organizers": [],
+      "regions": [],
+      "from": "",
+      "to": "",
+      "comment": "posts Norwegian PCC matches to the Norway Discord channel"
     }
   ]
 }
