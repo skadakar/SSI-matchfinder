@@ -142,7 +142,7 @@ Edit [data/discord-notify-config.json](data/discord-notify-config.json) to defin
 - filters such as `countries`, `disciplines`, `levels`, `organizers`, `regions`, `from`, and `to`
 - `cutoffDays`: optional lookback window measured from the notifier's first run date; defaults to `14`
 
-In GitHub Actions, store webhook values as repository secrets (recommended) or variables. The workflow passes them into the notifier step as environment variables so they are available at runtime without being printed in the logs.
+In GitHub Actions, store webhook values as repository secrets (recommended) or variables. You can either use the name from a rule's `webhook` field (for example `DISCORD_WEBHOOK_SWEDEN`) or provide a JSON webhook map via `DISCORD_NOTIFY_WEBHOOKS`, such as `{"DISCORD_WEBHOOK_SWEDEN":"https://..."}`. The workflow passes those values into the notifier at runtime, and the notifier logs only safe previews of the payload.
 
 The notifier also logs:
 - whether a rule resolved a webhook successfully
