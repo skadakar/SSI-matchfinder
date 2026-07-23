@@ -6,44 +6,12 @@
       "webhook": "DISCORD_WEBHOOK_SWEDEN",
       "countries": ["SWE"],
       "disciplines": ["IPSC Handgun"],
-      "levels": ["Level I"],
+      "levels": [""],
       "organizers": [],
       "regions": [],
       "from": "",
       "to": ""
-    },
-    // {
-    //   "name": "norway-ipsc-rifle",
-    //   "webhook": "DISCORD_WEBHOOK_NORWAY_RIFLE",
-    //   "countries": ["NOR"],
-    //   "disciplines": ["IPSC Rifle"],
-    //   "levels": [],
-    //   "organizers": [],
-    //   "regions": [],
-    //   "from": "",
-    //   "to": ""
-    // },
-    // {
-    //   "name": "norway-ipsc-handgun-and-pcc",
-    //   "webhook": "DISCORD_WEBHOOK_NORWAY_HANDGUN_PCC",
-    //   "countries": ["NOR"],
-    //   "disciplines": ["IPSC Handgun", "IPSC PCC"],
-    //   "levels": [],
-    //   "organizers": [],
-    //   "regions": [],
-    //   "from": "",
-    //   "to": ""
-    // },
-    // {
-    //   "name": "norway-ipsc-pcc-only",
-    //   "webhook": "DISCORD_WEBHOOK_NORWAY_PCC",
-    //   "countries": ["NOR"],
-    //   "disciplines": ["IPSC PCC"],
-    //   "levels": [],
-    //   "organizers": [],
-    //   "regions": [],
-    //   "from": "",
-    //   "to": ""
-    // }
+    }
+    
   ]
 }
