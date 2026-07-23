@@ -46,8 +46,8 @@ jobs:
 
       - name: Notify Discord
         env:
-          DISCORD_NOTIFY_CONFIG: ${{ vars.DISCORD_NOTIFY_CONFIG }}
-          DISCORD_NOTIFY_WEBHOOKS: ${{ vars.DISCORD_NOTIFY_WEBHOOKS }}
+          DISCORD_NOTIFY_CONFIG: ${{ secrets.DISCORD_NOTIFY_CONFIG != '' && secrets.DISCORD_NOTIFY_CONFIG || vars.DISCORD_NOTIFY_CONFIG }}
+          DISCORD_NOTIFY_WEBHOOKS: ${{ secrets.DISCORD_NOTIFY_WEBHOOKS != '' && secrets.DISCORD_NOTIFY_WEBHOOKS || vars.DISCORD_NOTIFY_WEBHOOKS }}
         run: |
           if [ -n "$DISCORD_NOTIFY_CONFIG" ]; then
             echo "$DISCORD_NOTIFY_CONFIG" > data/discord-notify-config.json

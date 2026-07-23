@@ -91,7 +91,7 @@ function isMatchIncluded(match, rule, cutoffDate = null) {
 function resolveWebhook(rule) {
   const raw = rule.webhook || '';
   if (!raw) return { webhook: null, source: 'none', reference: null, missing: false };
-  if (/^https?:\/\//i.test(raw)) return { webhook: raw, source: 'direct-url', reference: raw, missing: false };
+  if (/^https?:\/\//i.test(raw)) return { webhook: raw, source: 'direct-url', reference: '<direct-url>', missing: false };
   if (process.env[raw]) return { webhook: process.env[raw], source: 'env', reference: raw, missing: false };
   if (WEBHOOKS_MAP[raw]) return { webhook: WEBHOOKS_MAP[raw], source: 'webhook-map', reference: raw, missing: false };
   if (WEBHOOKS_MAP[rule.name]) return { webhook: WEBHOOKS_MAP[rule.name], source: 'webhook-map', reference: rule.name, missing: false };
@@ -120,15 +120,19 @@ async function postToDiscord(webhook, content, matches) {
     })),
   };
 
-  const response = await fetch(webhook, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
+  try {
+    const response = await fetch(webhook, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
 
-  if (!response.ok) {
-    const text = await response.text().catch(() => '');
-    throw new Error(`Discord webhook failed: ${response.status} ${response.statusText} ${text}`);
+    if (!response.ok) {
+      const text = await response.text().catch(() => '');
+      throw new Error(`Discord webhook failed with status ${response.status}`);
+    }
+  } catch (error) {
+    throw new Error('Discord webhook request failed. Check the webhook configuration.');
   }
 }
 
@@ -192,6 +196,6 @@ async function main() {
 }
 
 main().catch(err => {
-  console.error(err);
+  console.error(err.message || err);
   process.exit(1);
 });
