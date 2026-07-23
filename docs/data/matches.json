@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-23T14:05:55.236Z",
+  "generated": "2026-07-23T14:15:32.238Z",
   "count": 1220,
   "matches": [
     {
@@ -943,8 +943,8 @@
       "registrationOpen": true,
       "registrationStarts": "2026-07-20",
       "registrationDeadline": "",
-      "participants": 17,
-      "mainMatchParticipants": 17,
+      "participants": 18,
+      "mainMatchParticipants": 18,
       "maxParticipants": 20,
       "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/22/29177/",
@@ -1544,7 +1544,7 @@
       "registrationStarts": "2026-06-01",
       "registrationDeadline": "2026-07-26",
       "participants": 1,
-      "mainMatchParticipants": 8,
+      "mainMatchParticipants": 9,
       "maxParticipants": 120,
       "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/30/1262/",
@@ -7793,7 +7793,7 @@
       "registrationOpen": true,
       "registrationStarts": "2026-05-07",
       "registrationDeadline": "",
-      "participants": 188,
+      "participants": 189,
       "mainMatchParticipants": 203,
       "maxParticipants": 196,
       "waitingCount": 0,
