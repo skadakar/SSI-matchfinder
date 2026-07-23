@@ -166,6 +166,46 @@ header h1 {
   gap: 0.3rem;
 }
 
+.filter-group.filter-compact {
+  gap: 0.15rem;
+}
+
+.filter-compact-details {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.35rem 0.45rem;
+  background: var(--bg);
+}
+
+.filter-compact-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+  cursor: pointer;
+  list-style: none;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.filter-compact-summary::-webkit-details-marker {
+  display: none;
+}
+
+.filter-compact-details[open] > .filter-compact-summary {
+  color: var(--accent);
+  margin-bottom: 0.35rem;
+}
+
+.filter-compact-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
 .active-filters {
   display: flex;
   flex-direction: column;
@@ -212,6 +252,11 @@ header h1 {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
+}
+
+.compact-inline-header {
+  justify-content: flex-end;
+  min-height: 0.9rem;
 }
 
 .filter-clear {

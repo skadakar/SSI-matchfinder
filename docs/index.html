@@ -79,12 +79,34 @@
         </label>
       </div>
 
-      <div class="filter-group">
-        <div class="filter-group-header">
-          <label for="filter-discipline">Discipline <small>(multi-select)</small></label>
-          <button type="button" class="filter-clear" id="clear-discipline" hidden>Clear</button>
-        </div>
-        <select id="filter-discipline" multiple size="6"></select>
+      <div class="filter-group filter-compact">
+        <details class="filter-compact-details">
+          <summary class="filter-compact-summary">
+            <span>Discipline</span>
+            <small>(multi-select)</small>
+          </summary>
+          <div class="filter-compact-body">
+            <div class="filter-group-header compact-inline-header">
+              <button type="button" class="filter-clear" id="clear-discipline" hidden>Clear</button>
+            </div>
+            <select id="filter-discipline" multiple size="4"></select>
+          </div>
+        </details>
+      </div>
+
+      <div class="filter-group filter-compact">
+        <details class="filter-compact-details">
+          <summary class="filter-compact-summary">
+            <span>Level</span>
+            <small>(multi-select)</small>
+          </summary>
+          <div class="filter-compact-body">
+            <div class="filter-group-header compact-inline-header">
+              <button type="button" class="filter-clear" id="clear-level" hidden>Clear</button>
+            </div>
+            <select id="filter-level" multiple size="3"></select>
+          </div>
+        </details>
       </div>
 
       <div class="active-filters" id="active-filters" hidden>

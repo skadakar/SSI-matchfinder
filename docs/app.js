@@ -64,6 +64,7 @@ function buildDefaultState() {
     view:       'map',
     q:          '',
     discipline: [],
+    level:      [],
     organizer:  [],
     countries:  [...DEFAULT_COUNTRIES],
     regions:    [],
@@ -89,6 +90,7 @@ function readStateFromURL() {
     view:       p.get('view')       || 'map',
     q:          p.get('q')          || '',
     discipline: p.get('discipline') ? p.get('discipline').split(',').filter(Boolean) : [],
+    level:      p.get('level')      ? p.get('level').split(',').filter(Boolean)      : [],
     organizer:  p.get('organizer')  ? p.get('organizer').split(',').filter(Boolean)  : [],
     countries:  p.get('countries')  ? p.get('countries').split(',').filter(Boolean) : [...DEFAULT_COUNTRIES],
     regions:    p.get('regions')    ? p.get('regions').split(',').filter(Boolean)    : [],
@@ -110,6 +112,7 @@ function writeStateToURL() {
   if (state.view !== 'map')                         p.set('view',       state.view);
   if (state.q)                                      p.set('q',          state.q);
   if (state.discipline.length)                      p.set('discipline', state.discipline.join(','));
+  if (state.level.length)                           p.set('level',      state.level.join(','));
   if (state.organizer.length)                       p.set('organizer',  state.organizer.join(','));
   if (!countriesMatchDefault(state.countries))      p.set('countries',  state.countries.join(','));
   if (state.regions.length)                         p.set('regions',    state.regions.join(','));
@@ -156,6 +159,7 @@ function applyFilters(matches) {
       if (!m.firstSeen || m.firstSeen < cutoff.toISOString().slice(0, 10)) return false;
     }
     if (state.discipline.length && !state.discipline.includes(m.discipline)) return false;
+    if (state.level.length      && !state.level.includes(m.level))           return false;
     if (state.organizer.length  && !state.organizer.includes(m.organizer))   return false;
     if (state.regOpen && m.registrationOpen !== true)                        return false;
     if (state.futureOnly && m.date < TODAY)                              return false;
@@ -544,13 +548,14 @@ function updateCountryBtn() {
 
 function populateDropdowns() {
   populateCountryDropdown();
-  refreshDisciplineDropdown();
+  refreshFilterDropdowns();
 }
 
 function hasActiveFilters() {
   return Boolean(
     state.q ||
     state.discipline.length ||
+    state.level.length ||
     state.organizer.length ||
     state.regions.length ||
     state.broadRegions.length ||
@@ -580,6 +585,15 @@ function renderActiveFilters() {
       chips.push({
         label: `Discipline: ${value}`,
         remove: () => { state.discipline = state.discipline.filter(v => v !== value); },
+      });
+    }
+  }
+
+  if (state.level.length) {
+    for (const value of state.level) {
+      chips.push({
+        label: `Level: ${value}`,
+        remove: () => { state.level = state.level.filter(v => v !== value); },
       });
     }
   }
@@ -673,23 +687,33 @@ function renderActiveFilters() {
   }
 }
 
-/** Repopulate discipline select from the currently active filter subset,
- *  excluding its own filter so it shows what's available in context. */
-function refreshDisciplineDropdown() {
-  // For discipline: apply all filters EXCEPT discipline
+/** Repopulate discipline and level selects from the currently active filter subset,
+ *  excluding each dropdown's own filter so it shows what's available in context. */
+function refreshFilterDropdowns() {
   const savedDisc = state.discipline;
   state.discipline = [];
   const subsetForDisc = applyFilters(allMatches);
   state.discipline = savedDisc;
 
+  const savedLevel = state.level;
+  state.level = [];
+  const subsetForLevel = applyFilters(allMatches);
+  state.level = savedLevel;
+
   _repopulateSelect('filter-discipline', 'clear-discipline',
     [...new Set(subsetForDisc.map(m => m.discipline).filter(Boolean))].sort(),
     state.discipline);
 
-  // Mobile: expand select to show all options without inner scroll
+  _repopulateSelect('filter-level', 'clear-level',
+    [...new Set(subsetForLevel.map(m => m.level).filter(l => l && l !== '--'))].sort(),
+    state.level);
+
+  // Mobile: expand selects to show all options without inner scroll
   if (window.matchMedia('(max-width: 720px)').matches) {
     const dSel = document.getElementById('filter-discipline');
+    const lSel = document.getElementById('filter-level');
     dSel.size = dSel.options.length || 1;
+    lSel.size = lSel.options.length || 1;
   }
 }
 
@@ -722,9 +746,10 @@ function syncFilterInputs() {
   document.getElementById('new-match-days-label').textContent = state.newMatchDays;
   document.getElementById('new-match-slider-wrap').hidden     = !state.newMatch;
 
-  // Discipline select is repopulated by refreshDisciplineDropdown()
+  // Discipline and level selects are repopulated by refreshFilterDropdowns()
   // which is called from render() — just update the clear-button visibility here
   document.getElementById('clear-discipline').hidden = state.discipline.length === 0;
+  document.getElementById('clear-level').hidden      = state.level.length === 0;
 
   // Mobile filter toggle badge
   const dot = document.querySelector('#filter-toggle-btn .filter-active-dot');
@@ -800,8 +825,21 @@ function bindFilterEvents() {
     render();
   });
 
+  on('filter-level', 'change', () => {
+    const sel = document.getElementById('filter-level');
+    state.level = Array.from(sel.selectedOptions).map(o => o.value);
+    writeStateToURL();
+    render();
+  });
+
   on('clear-discipline', 'click', () => {
     state.discipline = [];
+    writeStateToURL();
+    render();
+  });
+
+  on('clear-level', 'click', () => {
+    state.level = [];
     writeStateToURL();
     render();
   });
@@ -815,7 +853,7 @@ function bindFilterEvents() {
   });
 
   on('btn-reset', 'click', () => {
-    Object.assign(state, { q: '', discipline: [], organizer: [], countries: [...DEFAULT_COUNTRIES], regions: [], broadRegions: [], newMatch: false, newMatchDays: 7, regOpen: true, futureOnly: true, from: '', to: '' });
+    Object.assign(state, { q: '', discipline: [], level: [], organizer: [], countries: [...DEFAULT_COUNTRIES], regions: [], broadRegions: [], newMatch: false, newMatchDays: 7, regOpen: true, futureOnly: true, from: '', to: '' });
     syncFilterInputs();
     writeStateToURL();
     render();
@@ -865,7 +903,7 @@ function render() {
   const filtered = applyFilters(allMatches);
   const sorted   = sortMatches(filtered);
 
-  refreshDisciplineDropdown();
+  refreshFilterDropdowns();
 
   const located = filtered.filter(m => m.lat != null).length;
   const locNote = state.view === 'map' && located < filtered.length
