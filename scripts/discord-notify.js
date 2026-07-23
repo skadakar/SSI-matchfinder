@@ -90,12 +90,12 @@ function isMatchIncluded(match, rule, cutoffDate = null) {
 
 function resolveWebhook(rule) {
   const raw = rule.webhook || '';
-  if (!raw) return null;
-  if (/^https?:\/\//i.test(raw)) return raw;
-  if (process.env[raw]) return process.env[raw];
-  if (WEBHOOKS_MAP[raw]) return WEBHOOKS_MAP[raw];
-  if (WEBHOOKS_MAP[rule.name]) return WEBHOOKS_MAP[rule.name];
-  return null;
+  if (!raw) return { webhook: null, source: 'none', reference: null, missing: false };
+  if (/^https?:\/\//i.test(raw)) return { webhook: raw, source: 'direct-url', reference: raw, missing: false };
+  if (process.env[raw]) return { webhook: process.env[raw], source: 'env', reference: raw, missing: false };
+  if (WEBHOOKS_MAP[raw]) return { webhook: WEBHOOKS_MAP[raw], source: 'webhook-map', reference: raw, missing: false };
+  if (WEBHOOKS_MAP[rule.name]) return { webhook: WEBHOOKS_MAP[rule.name], source: 'webhook-map', reference: rule.name, missing: false };
+  return { webhook: null, source: 'env', reference: raw, missing: true };
 }
 
 function resolveCutoffDays(config, rule) {
@@ -143,24 +143,36 @@ async function main() {
   const results = [];
 
   for (const rule of config.rules || []) {
-    const webhook = resolveWebhook(rule);
-    if (!webhook) continue;
+    const webhookInfo = resolveWebhook(rule);
+    if (!webhookInfo.webhook) {
+      if (webhookInfo.missing) {
+        console.warn(`Notifier rule "${rule.name || 'alert'}" is missing a webhook configuration. Expected env var or webhook map entry for "${webhookInfo.reference}".`);
+      }
+      continue;
+    }
+
     const cutoffDays = resolveCutoffDays(config, rule);
     const cutoffDate = new Date(firstRunAt);
     cutoffDate.setDate(cutoffDate.getDate() - cutoffDays);
     const filtered = matches.filter(match => isMatchIncluded(match, rule, cutoffDate));
     const newMatches = filtered.filter(match => !seenIds.has(`${rule.name || 'rule'}:${match.id}`));
+    const summary = `New matches for ${rule.name || 'alert'} (${newMatches.length})`;
+
+    console.log(`Notifier rule "${rule.name || 'alert'}": resolved webhook from ${webhookInfo.source}${webhookInfo.reference ? ` (${webhookInfo.reference})` : ''}`);
+    console.log(`Notifier rule "${rule.name || 'alert'}": payload preview -> content: ${summary}; matches: ${newMatches.slice(0, 5).map(match => match.name || match.id).join(', ') || 'none'}${newMatches.length > 5 ? ' …' : ''}`);
+
     if (newMatches.length) {
-      const summary = `New matches for ${rule.name || 'alert'} (${newMatches.length})`;
-      await postToDiscord(webhook, summary, newMatches);
+      await postToDiscord(webhookInfo.webhook, summary, newMatches);
       results.push({ rule: rule.name || 'alert', count: newMatches.length });
+    } else {
+      console.log(`Notifier rule "${rule.name || 'alert'}": no new matches to send.`);
     }
   }
 
   const nextSeen = [];
   for (const rule of config.rules || []) {
-    const webhook = resolveWebhook(rule);
-    if (!webhook) continue;
+    const webhookInfo = resolveWebhook(rule);
+    if (!webhookInfo.webhook) continue;
     const cutoffDays = resolveCutoffDays(config, rule);
     const cutoffDate = new Date(firstRunAt);
     cutoffDate.setDate(cutoffDate.getDate() - cutoffDays);
