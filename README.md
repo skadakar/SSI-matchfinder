@@ -11,7 +11,8 @@ A static web frontend for browsing [Shoot'N Score It](https://shootnscoreit.com)
 - **Participants column** – Shows registered / max spots (e.g. `12 / 20`). Cells turn amber (≥ 60 % full) or red (≥ 90 % full). Waiting-list entries appear as `+N` in red. Hover for a plain-text explanation.
 - **Level filter** – Filter by match level (Club, Regional, Level I / II / III, etc.) alongside the discipline filter.
 - **Shareable links** – All filters and column state are encoded in the URL so views can be bookmarked or shared.
-- **Three themes** – Light, dark, and Gruvbox; cycles via the button in the top-right corner.
+- **Future-events filter** – "Only future events" checkbox (on by default) hides matches whose date has already passed, keeping stale events with unclosed registration out of the list.
+- **Three themes** – Light, dark, and Gruvbox; cycles via the button in the top-right corner. Each theme uses a matching CartoDB tile layer (Positron / Voyager).
 
 ## Setup
 
@@ -87,6 +88,7 @@ The key is the organizer name in lowercase. `data/organizer-geocache.json` is co
 
 ```
 .github/workflows/refresh.yml   GitHub Actions cron job (every 6 h)
+data/extra-event-ids.json       manually pinned event IDs fetched even when the API list omits them
 data/manual-coords.json         highest-priority coordinate overrides (~135 NOR/SWE clubs)
 data/organizer-geocache.json    Nominatim forward-geocode cache
 data/reverse-geocache.json      Nominatim reverse-geocode cache (lat/lng → country + county)
@@ -99,6 +101,18 @@ scripts/fetch-matches.js        data pipeline (Node.js 20+, used by Actions)
 scripts/fetch-matches.py        data pipeline (Python 3.10+, for local use)
 ```
 
+### `data/extra-event-ids.json`
+
+The SSI list API silently drops events whose organizer is `null` (e.g. championship matches managed directly by SSI rather than a club). Add such events here so the fetch script retrieves them by ID regardless:
+
+```json
+[
+  { "content_type": 22, "id": "29126" }
+]
+```
+
+`content_type` is always `22` for matches. The `id` is the numeric SSI event ID visible in the match URL (`/event/22/<id>/`).
+
 ## URL filter reference
 
 | Param        | Example                   | Description                               |
@@ -108,11 +122,15 @@ scripts/fetch-matches.py        data pipeline (Python 3.10+, for local use)
 | `discipline` | `IPSC Handgun,IPSC Rifle` | Comma-separated disciplines               |
 | `level`      | `Level II,Regional`       | Comma-separated match levels              |
 | `countries`  | `NOR,SWE`                 | Comma-separated ISO-3 country codes       |
-| `region`     | `Viken,Trøndelag`         | Comma-separated Norwegian/Swedish regions |
+| `regions`    | `Viken,Trøndelag`         | Comma-separated Norwegian/Swedish counties |
 | `organizer`  | `bergen pistolklubb`      | Comma-separated organizer names           |
 | `regOpen`    | `1`                       | `1` = show only matches with open registration |
-| `from`       | `2026-08-01`              | Earliest match date (ISO 8601)            |
-| `to`         | `2026-12-31`              | Latest match date (ISO 8601)              |
+| `futureOnly` | `0`                       | Omit to keep the default (on); `0` to show past events too |
+| `newMatch`   | `1`                       | `1` = show only events first seen within `newMatchDays` days |
+| `newMatchDays` | `7`                     | Window (1–14) for the new-match filter (default `7`) |
+| `broad`      | `Østlandet,Vestlandet`    | Comma-separated broad Norwegian regions   |
+| `from`       | `2026-08-01`              | Earliest match date — URL only, no UI picker (ISO 8601) |
+| `to`         | `2026-12-31`              | Latest match date — URL only, no UI picker (ISO 8601)   |
 | `cols`       | `date,name,organizer`     | Visible table columns                     |
 | `sort`       | `date`                    | Sort column key                           |
 | `dir`        | `asc` / `desc`            | Sort direction                            |
