@@ -382,9 +382,9 @@ header h1 {
 /* Map */
 #map { flex: 1; width: 100%; }
 
-/* Subtle warm tint on the Gruvbox map to echo the earthy palette */
+/* Dim Voyager tiles for Gruvbox to fit the dark UI without colour-casting */
 [data-theme="gruvbox"] #map {
-  filter: sepia(30%) brightness(0.97);
+  filter: brightness(0.75) saturate(0.7);
 }
 
 /* Table */
