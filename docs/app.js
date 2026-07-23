@@ -52,9 +52,10 @@ function countyToRegion(m) {
 
 // ─── APP STATE ────────────────────────────────────────────────────────────────
 
-let allMatches  = [];
-let map         = null;
-let markerLayer = null;
+let allMatches   = [];
+let map          = null;
+let markerLayer  = null;
+let tileLayerRef = null;
 
 let state = buildDefaultState();
 
@@ -180,14 +181,29 @@ function sortMatches(matches) {
 
 // ─── MAP ──────────────────────────────────────────────────────────────────────
 
+const CARTO_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions" target="_blank">CARTO</a>';
+const TILE_LAYERS = {
+  light:   { url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',   attr: CARTO_ATTR },
+  dark:    { url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',    attr: CARTO_ATTR },
+  gruvbox: { url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',    attr: CARTO_ATTR },
+};
+
+function setMapThemeTiles(theme) {
+  if (!map) return;
+  const cfg = TILE_LAYERS[theme] || TILE_LAYERS.light;
+  if (tileLayerRef) map.removeLayer(tileLayerRef);
+  tileLayerRef = L.tileLayer(cfg.url, { attribution: cfg.attr, maxZoom: 19, detectRetina: true });
+  tileLayerRef.addTo(map);
+  // Move tile layer behind markers
+  tileLayerRef.bringToBack();
+}
+
 function initMap() {
   // Default view: Scandinavia
   map = L.map('map').setView([62, 15], 4);
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors',
-    maxZoom: 18,
-  }).addTo(map);
+  const theme = document.documentElement.dataset.theme || 'light';
+  setMapThemeTiles(theme);
 
   markerLayer = L.markerClusterGroup({ chunkedLoading: true });
   map.addLayer(markerLayer);
@@ -788,6 +804,7 @@ function initTheme() {
     document.documentElement.dataset.theme = next;
     localStorage.setItem('theme', next);
     updateThemeButton();
+    setMapThemeTiles(next);
   });
 }
 

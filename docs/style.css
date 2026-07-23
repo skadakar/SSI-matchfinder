@@ -382,19 +382,14 @@ header h1 {
 /* Map */
 #map { flex: 1; width: 100%; }
 
-/* Invert OSM tiles in dark / gruvbox mode for a dark map appearance */
-[data-theme="dark"] #map,
+/* Warm tint on the Gruvbox map to echo the earthy palette */
 [data-theme="gruvbox"] #map {
-  filter: invert(100%) hue-rotate(180deg) brightness(0.85) contrast(0.9);
+  filter: sepia(30%) hue-rotate(5deg) brightness(0.95);
 }
-/* But keep markers and popups the right way up */
-[data-theme="dark"] #map .leaflet-marker-icon,
-[data-theme="dark"] #map .leaflet-popup-content-wrapper,
-[data-theme="dark"] #map .leaflet-popup-tip,
 [data-theme="gruvbox"] #map .leaflet-marker-icon,
 [data-theme="gruvbox"] #map .leaflet-popup-content-wrapper,
 [data-theme="gruvbox"] #map .leaflet-popup-tip {
-  filter: invert(100%) hue-rotate(180deg);
+  filter: sepia(0) hue-rotate(0deg) brightness(1);
 }
 
 /* Table */
