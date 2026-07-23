@@ -6,7 +6,7 @@
       "webhook": "DISCORD_WEBHOOK_SWEDEN",
       "countries": ["SWE"],
       "disciplines": ["IPSC Handgun"],
-      "levels": [""],
+      "levels": [],
       "organizers": [],
       "regions": [],
       "from": "",

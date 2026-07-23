@@ -27,9 +27,12 @@ function parseWebhookMap(raw) {
   if (!raw) return {};
   try {
     const parsed = JSON.parse(raw);
-    return parsed && typeof parsed === 'object' ? parsed : {};
-  } catch {
-    return {};
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      throw new Error('DISCORD_NOTIFY_WEBHOOKS must be a JSON object mapping webhook names to URLs.');
+    }
+    return parsed;
+  } catch (error) {
+    throw new Error(`Invalid DISCORD_NOTIFY_WEBHOOKS JSON: ${error.message}`);
   }
 }
 
@@ -57,6 +60,12 @@ function parseDate(str) {
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
+function normalizeFilterValues(values) {
+  if (!values) return [];
+  if (!Array.isArray(values)) return [];
+  return values.map(value => String(value).trim()).filter(Boolean);
+}
+
 function isMatchIncluded(match, rule, cutoffDate = null) {
   const country = (match.country || '').toUpperCase();
   const discipline = (match.discipline || '').trim();
@@ -65,21 +74,26 @@ function isMatchIncluded(match, rule, cutoffDate = null) {
   const region = (match.county || '').trim();
   const date = match.date || '';
   const matchDate = parseDate(date);
+  const countries = normalizeFilterValues(rule.countries);
+  const disciplines = normalizeFilterValues(rule.disciplines);
+  const levels = normalizeFilterValues(rule.levels);
+  const organizers = normalizeFilterValues(rule.organizers);
+  const regions = normalizeFilterValues(rule.regions);
 
-  if (rule.countries?.length) {
-    if (!rule.countries.includes(country)) return false;
+  if (countries.length) {
+    if (!countries.includes(country)) return false;
   }
-  if (rule.disciplines?.length) {
-    if (!rule.disciplines.includes(discipline)) return false;
+  if (disciplines.length) {
+    if (!disciplines.includes(discipline)) return false;
   }
-  if (rule.levels?.length) {
-    if (!rule.levels.includes(level)) return false;
+  if (levels.length) {
+    if (!levels.includes(level)) return false;
   }
-  if (rule.organizers?.length) {
-    if (!rule.organizers.includes(organizer)) return false;
+  if (organizers.length) {
+    if (!organizers.includes(organizer)) return false;
   }
-  if (rule.regions?.length) {
-    if (!rule.regions.includes(region)) return false;
+  if (regions.length) {
+    if (!regions.includes(region)) return false;
   }
   if (rule.from && date < rule.from) return false;
   if (rule.to && date > rule.to) return false;
