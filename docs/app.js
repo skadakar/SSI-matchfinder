@@ -20,8 +20,10 @@ const COLUMNS = [
 
 const DEFAULT_COLS      = COLUMNS.filter(c => c.defaultVisible).map(c => c.key);
 const DEFAULT_SORT      = 'date';
+const MOBILE_BREAKPOINT  = 720;
 
 const FILTERABLE_COLS = new Set(['organizer', 'discipline', 'country', 'county', 'region', 'registration']);
+let hasExplicitColsParam = false;
 const DEFAULT_DIR       = 'asc';
 const TODAY = new Date().toISOString().slice(0, 10);
 
@@ -59,6 +61,16 @@ let tileLayerRef = null;
 
 let state = buildDefaultState();
 
+function isMobileViewport() {
+  return window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`).matches;
+}
+
+function getDefaultCols() {
+  const baseCols = [...DEFAULT_COLS];
+  if (!isMobileViewport()) return baseCols;
+  return baseCols.filter(k => !['discipline', 'level', 'country', 'registration'].includes(k));
+}
+
 function buildDefaultState() {
   return {
     view:       'map',
@@ -75,10 +87,22 @@ function buildDefaultState() {
     futureOnly: true,
     from:       '',
     to:         '',
-    cols:       [...DEFAULT_COLS],
+    cols:       [...getDefaultCols()],
     sort:       DEFAULT_SORT,
     dir:        DEFAULT_DIR,
   };
+}
+
+function applyViewportColumnDefaults() {
+  if (hasExplicitColsParam) return;
+  const nextCols = getDefaultCols();
+  const same = JSON.stringify([...state.cols].sort()) === JSON.stringify([...nextCols].sort());
+  if (!same) {
+    state.cols = nextCols;
+    if (document.getElementById('table-header')) {
+      render();
+    }
+  }
 }
 
 // ─── URL ←→ STATE ─────────────────────────────────────────────────────────────
@@ -86,6 +110,7 @@ function buildDefaultState() {
 function readStateFromURL() {
   const p = new URLSearchParams(location.search);
   const colsParam = p.get('cols');
+  hasExplicitColsParam = Boolean(colsParam);
   return {
     view:       p.get('view')       || 'map',
     q:          p.get('q')          || '',
@@ -101,7 +126,7 @@ function readStateFromURL() {
     futureOnly: p.has('futureOnly') ? p.get('futureOnly') !== '0' : true,
     from:       p.get('from') || '',
     to:         p.get('to')         || '',
-    cols:       colsParam ? colsParam.split(',').filter(Boolean) : [...DEFAULT_COLS],
+    cols:       colsParam ? colsParam.split(',').filter(Boolean) : [...getDefaultCols()],
     sort:       p.get('sort')       || DEFAULT_SORT,
     dir:        p.get('dir')        || DEFAULT_DIR,
   };
@@ -132,7 +157,7 @@ function writeStateToURL() {
 }
 
 function colsMatchDefault(cols) {
-  return JSON.stringify([...cols].sort()) === JSON.stringify([...DEFAULT_COLS].sort());
+  return JSON.stringify([...cols].sort()) === JSON.stringify([...getDefaultCols()].sort());
 }
 
 function countriesMatchDefault(countries) {
@@ -927,6 +952,9 @@ const THEMES = ['light', 'dark', 'gruvbox'];
 function initTheme() {
   // The <head> inline script already applied the saved/preferred theme.
   updateThemeButton();
+  window.addEventListener('resize', () => {
+    if (state.view === 'table') applyViewportColumnDefaults();
+  });
   document.getElementById('btn-theme').addEventListener('click', () => {
     const cur  = document.documentElement.dataset.theme;
     const next = THEMES[(THEMES.indexOf(cur) + 1) % THEMES.length];
