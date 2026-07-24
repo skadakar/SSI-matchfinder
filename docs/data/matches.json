@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-24T13:41:16.472Z",
+  "generated": "2026-07-24T13:56:50.281Z",
   "count": 1210,
   "matches": [
     {
@@ -2818,7 +2818,7 @@
       "registrationOpen": true,
       "registrationStarts": "2026-07-09",
       "registrationDeadline": "2026-08-08",
-      "participants": 138,
+      "participants": 139,
       "mainMatchParticipants": 104,
       "maxParticipants": 104,
       "waitingCount": 41,
@@ -4621,7 +4621,7 @@
       "participants": 18,
       "mainMatchParticipants": 19,
       "maxParticipants": 80,
-      "waitingCount": 2,
+      "waitingCount": 3,
       "url": "https://shootnscoreit.com/event/22/28818/",
       "county": "",
       "geocodeSource": "unknown",
@@ -6396,7 +6396,7 @@
       "participants": 301,
       "mainMatchParticipants": 240,
       "maxParticipants": 240,
-      "waitingCount": 35,
+      "waitingCount": 36,
       "url": "https://shootnscoreit.com/event/22/25653/",
       "county": "Gävleborgs län",
       "geocodeSource": "api",
