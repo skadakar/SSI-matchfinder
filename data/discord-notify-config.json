@@ -36,6 +36,18 @@
       "from": "",
       "to": "",
       "comment": "posts Norwegian PCC matches to the Norway Discord channel"
+    },
+        {
+      "name": "Høkk haglematch",
+      "webhook": "DISCORD_HOKK_SHOTGUN_MATCH",
+      "countries": ["NOR"],
+      "disciplines": ["IPSC Shotgun"],
+      "levels": [],
+      "organizers": [],
+      "regions": [],
+      "from": "",
+      "to": "",
+      "comment": "posts Norwegian shotgun matches to the Norway Discord channel"
     }
   ]
 }
