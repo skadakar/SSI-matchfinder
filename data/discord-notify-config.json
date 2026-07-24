@@ -17,7 +17,7 @@
       "name": "Høkk pistol",
       "webhook": "DISCORD_HOKK_HANDGUN_MATCH",
       "countries": ["NOR"],
-      "disciplines": ["IPSC Handgun", "IPSC Handgun & PCC"],
+      "disciplines": ["IPSC Handgun", "IPSC Handgun & PCC", "Handgun"],
       "levels": [],
       "organizers": [],
       "regions": [],
