@@ -767,6 +767,8 @@ function syncFilterInputs() {
   document.getElementById('filter-reg-open').checked = state.regOpen;
   document.getElementById('filter-future-only').checked = state.futureOnly;
   document.getElementById('filter-new-match').checked = state.newMatch;
+  document.getElementById('filter-from').value       = state.from;
+  document.getElementById('filter-to').value         = state.to;
   document.getElementById('new-match-slider').value   = state.newMatchDays;
   document.getElementById('new-match-days-label').textContent = state.newMatchDays;
   document.getElementById('new-match-slider-wrap').hidden     = !state.newMatch;
@@ -775,6 +777,7 @@ function syncFilterInputs() {
   // which is called from render() — just update the clear-button visibility here
   document.getElementById('clear-discipline').hidden = state.discipline.length === 0;
   document.getElementById('clear-level').hidden      = state.level.length === 0;
+  document.getElementById('clear-date-range').hidden = !state.from && !state.to;
 
   // Mobile filter toggle badge
   const dot = document.querySelector('#filter-toggle-btn .filter-active-dot');
@@ -857,6 +860,18 @@ function bindFilterEvents() {
     render();
   });
 
+  on('filter-from', 'change', e => {
+    state.from = e.target.value;
+    writeStateToURL();
+    render();
+  });
+
+  on('filter-to', 'change', e => {
+    state.to = e.target.value;
+    writeStateToURL();
+    render();
+  });
+
   on('clear-discipline', 'click', () => {
     state.discipline = [];
     writeStateToURL();
@@ -865,6 +880,13 @@ function bindFilterEvents() {
 
   on('clear-level', 'click', () => {
     state.level = [];
+    writeStateToURL();
+    render();
+  });
+
+  on('clear-date-range', 'click', () => {
+    state.from = '';
+    state.to = '';
     writeStateToURL();
     render();
   });
