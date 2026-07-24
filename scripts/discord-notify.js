@@ -118,9 +118,8 @@ function resolveCutoffDays(config, rule) {
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : 14;
 }
 
-async function postToDiscord(webhook, content, matches) {
-  const payload = {
-    content,
+function buildDiscordPayload(matches) {
+  return {
     embeds: matches.slice(0, 10).map(match => ({
       title: match.name,
       url: match.url,
@@ -133,6 +132,10 @@ async function postToDiscord(webhook, content, matches) {
       color: 0x2b6cb0,
     })),
   };
+}
+
+async function postToDiscord(webhook, matches) {
+  const payload = buildDiscordPayload(matches);
 
   try {
     const response = await fetch(webhook, {
@@ -174,13 +177,14 @@ async function main() {
     cutoffDate.setDate(cutoffDate.getDate() - cutoffDays);
     const filtered = matches.filter(match => isMatchIncluded(match, rule, cutoffDate));
     const newMatches = filtered.filter(match => !seenIds.has(`${rule.name || 'rule'}:${match.id}`));
-    const summary = `New matches for ${rule.name || 'alert'} (${newMatches.length})`;
+    const payload = buildDiscordPayload(newMatches);
+    const previewTitles = payload.embeds.map(embed => embed.title).join(', ') || 'none';
 
     console.log(`Notifier rule "${rule.name || 'alert'}": resolved webhook from ${webhookInfo.source}${webhookInfo.reference ? ` (${webhookInfo.reference})` : ''}`);
-    console.log(`Notifier rule "${rule.name || 'alert'}": payload preview -> content: ${summary}; matches: ${newMatches.slice(0, 5).map(match => match.name || match.id).join(', ') || 'none'}${newMatches.length > 5 ? ' …' : ''}`);
+    console.log(`Notifier rule "${rule.name || 'alert'}": payload preview -> embeds: ${previewTitles}${newMatches.length > 10 ? ' …' : ''}`);
 
     if (newMatches.length) {
-      await postToDiscord(webhookInfo.webhook, summary, newMatches);
+      await postToDiscord(webhookInfo.webhook, newMatches);
       results.push({ rule: rule.name || 'alert', count: newMatches.length });
     } else {
       console.log(`Notifier rule "${rule.name || 'alert'}": no new matches to send.`);
