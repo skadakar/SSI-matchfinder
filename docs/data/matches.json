@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-24T08:15:17.665Z",
+  "generated": "2026-07-24T08:35:35.359Z",
   "count": 1208,
   "matches": [
     {
@@ -244,7 +244,7 @@
       "registrationStarts": "2026-06-01",
       "registrationDeadline": "2026-07-26",
       "participants": 1,
-      "mainMatchParticipants": 10,
+      "mainMatchParticipants": 11,
       "maxParticipants": 120,
       "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/30/1262/",
@@ -918,8 +918,8 @@
       "registrationOpen": true,
       "registrationStarts": "2026-07-21",
       "registrationDeadline": "",
-      "participants": 2,
-      "mainMatchParticipants": 9,
+      "participants": 10,
+      "mainMatchParticipants": 10,
       "maxParticipants": 15,
       "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/22/29217/",
@@ -2796,7 +2796,7 @@
       "participants": 138,
       "mainMatchParticipants": 104,
       "maxParticipants": 104,
-      "waitingCount": 40,
+      "waitingCount": 41,
       "url": "https://shootnscoreit.com/event/22/26198/",
       "county": "Skåne län",
       "geocodeSource": "cache",
