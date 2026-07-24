@@ -23,7 +23,7 @@ const DATA_PATH = resolve(ROOT, 'docs', 'data', 'matches.json');
 const STATE_PATH = resolve(ROOT, 'data', 'discord-notify-state.json');
 const CONFIG_PATH = resolve(ROOT, 'data', 'discord-notify-config.json');
 
-function parseWebhookMap(raw) {
+function loadWebhookMap(raw) {
   if (!raw) return {};
   try {
     const parsed = JSON.parse(raw);
@@ -32,11 +32,18 @@ function parseWebhookMap(raw) {
     }
     return parsed;
   } catch (error) {
-    throw new Error(`Invalid DISCORD_NOTIFY_WEBHOOKS JSON: ${error.message}`);
+    console.warn(`Ignoring invalid DISCORD_NOTIFY_WEBHOOKS JSON: ${error.message}`);
+    return {};
   }
 }
 
-const WEBHOOKS_MAP = parseWebhookMap(process.env.DISCORD_NOTIFY_WEBHOOKS || '');
+let webhookMapCache = null;
+
+function getWebhookMap() {
+  if (webhookMapCache) return webhookMapCache;
+  webhookMapCache = loadWebhookMap(process.env.DISCORD_NOTIFY_WEBHOOKS || '');
+  return webhookMapCache;
+}
 
 function loadJson(path, fallback) {
   try { return JSON.parse(readFileSync(path, 'utf8')); }
@@ -103,12 +110,13 @@ function isMatchIncluded(match, rule, cutoffDate = null) {
 }
 
 function resolveWebhook(rule) {
+  const webhookMap = getWebhookMap();
   const raw = rule.webhook || '';
   if (!raw) return { webhook: null, source: 'none', reference: null, missing: false };
   if (/^https?:\/\//i.test(raw)) return { webhook: raw, source: 'direct-url', reference: '<direct-url>', missing: false };
   if (process.env[raw]) return { webhook: process.env[raw], source: 'env', reference: raw, missing: false };
-  if (WEBHOOKS_MAP[raw]) return { webhook: WEBHOOKS_MAP[raw], source: 'webhook-map', reference: raw, missing: false };
-  if (WEBHOOKS_MAP[rule.name]) return { webhook: WEBHOOKS_MAP[rule.name], source: 'webhook-map', reference: rule.name, missing: false };
+  if (webhookMap[raw]) return { webhook: webhookMap[raw], source: 'webhook-map', reference: raw, missing: false };
+  if (webhookMap[rule.name]) return { webhook: webhookMap[rule.name], source: 'webhook-map', reference: rule.name, missing: false };
   return { webhook: null, source: 'env', reference: raw, missing: true };
 }
 
