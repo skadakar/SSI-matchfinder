@@ -11,7 +11,7 @@
       "regions": [],
       "from": "",
       "to": "",
-      "comment": "posts Norwegian rifle matches to the Norway Discord channel"
+      "comment": "posts Norwegian rifle matches to the høkk dynamisk discord"
     },
         {
       "name": "Høkk pistol",
@@ -23,7 +23,7 @@
       "regions": [],
       "from": "",
       "to": "",
-      "comment": "posts Norwegian handgun and handgun+pcc matches to the Norway Discord channel"
+      "comment": "posts Norwegian handgun and handgun+pcc matches to the høkk dynamisk discord"
     },
         {
       "name": "Høkk PCC",
@@ -35,7 +35,7 @@
       "regions": [],
       "from": "",
       "to": "",
-      "comment": "posts Norwegian PCC matches to the Norway Discord channel"
+      "comment": "posts Norwegian PCC matches to the høkk dynamisk discord"
     },
         {
       "name": "Høkk haglematch",
@@ -47,7 +47,7 @@
       "regions": [],
       "from": "",
       "to": "",
-      "comment": "posts Norwegian shotgun matches to the Norway Discord channel"
+      "comment": "posts Norwegian shotgun matches to the høkk dynamisk discord"
     }
   ]
 }
