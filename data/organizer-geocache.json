@@ -912,5 +912,9 @@
   "borlänge ps": {
     "lat": null,
     "lng": null
+  },
+  "vikane skydeselskap": {
+    "lat": null,
+    "lng": null
   }
 }
