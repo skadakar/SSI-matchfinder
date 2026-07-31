@@ -2322,5 +2322,17 @@
   "61.34079,11.92789": {
     "country": "NOR",
     "county": "Innlandet"
+  },
+  "59.08186,18.13288": {
+    "country": "SWE",
+    "county": "Stockholms län"
+  },
+  "59.49000,17.20000": {
+    "country": "SWE",
+    "county": "Uppsala län"
+  },
+  "59.56358,17.72801": {
+    "country": "SWE",
+    "county": "Stockholms län"
   }
 }
