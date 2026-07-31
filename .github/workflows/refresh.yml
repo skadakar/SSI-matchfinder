@@ -32,7 +32,6 @@ jobs:
           node-version: '24'
 
       - name: Prepare SSI refresh token
-        continue-on-error: true
         env:
           SSI_REFRESH_TOKEN: ${{ secrets.SSI_REFRESH_TOKEN }}
           GH_TOKEN: ${{ secrets.SSI_REPO_ADMIN_TOKEN }}
@@ -56,11 +55,15 @@ jobs:
             exit 0
           fi
 
-          NEW_RT=$(node - <<'NODE'
+          ROTATE_LOG=$(mktemp)
+          NEW_RT=$(node - <<'NODE' 2>"$ROTATE_LOG"
           (async () => {
             const endpoint = 'https://shootnscoreit.com/graphql/';
             const rt = process.env.SSI_REFRESH_TOKEN;
-            if (!rt) return;
+            if (!rt) {
+              console.error('rotation: SSI_REFRESH_TOKEN input is empty');
+              process.exit(3);
+            }
 
             const query = `
               mutation Rotate($rt: String!) {
@@ -81,22 +84,42 @@ jobs:
               body: JSON.stringify({ query, variables: { rt } }),
             });
 
-            if (!res.ok) return;
+            if (!res.ok) {
+              console.error(`rotation: HTTP ${res.status} ${res.statusText}`);
+              process.exit(4);
+            }
             const data = await res.json();
-            if (data?.errors?.length) return;
+            if (data?.errors?.length) {
+              const msgs = data.errors.map(e => e?.message).filter(Boolean).join(' | ');
+              console.error(`rotation: GraphQL errors: ${msgs || 'unknown'}`);
+              process.exit(4);
+            }
 
             const payload = data?.data?.refresh_token;
-            if (!payload?.success) return;
+            if (!payload?.success) {
+              const errs = (payload?.errors || []).join(' | ');
+              console.error(`rotation: mutation unsuccessful: ${errs || 'unknown'}`);
+              process.exit(4);
+            }
 
             const next = payload?.refresh_token?.token;
-            if (!next) return;
+            if (!next) {
+              const expiresAt = payload?.refresh_token?.expires_at || 'unknown';
+              const isExpired = payload?.refresh_token?.is_expired;
+              console.error(`rotation: no replacement refresh token returned (is_expired=${isExpired}, expires_at=${expiresAt})`);
+              process.exit(5);
+            }
 
             process.stdout.write(next);
           })().catch(() => {
-            process.exit(0);
+            console.error('rotation: unexpected exception while rotating refresh token');
+            process.exit(6);
           });
           NODE
           )
+          ROTATE_RC=$?
+          cat "$ROTATE_LOG"
+          rm -f "$ROTATE_LOG"
 
           if [ -n "$NEW_RT" ]; then
             echo "::add-mask::$NEW_RT"
@@ -108,7 +131,19 @@ jobs:
               echo "Current run will continue with the previous token value."
             fi
           else
-            echo "Refresh token rotation skipped (SSI did not return a replacement token)."
+            if [ "$ROTATE_RC" -eq 5 ]; then
+              echo "Refresh call succeeded but SSI did not issue a replacement refresh token."
+              echo "Using existing SSI_REFRESH_TOKEN for this run."
+            elif [ "$ROTATE_RC" -eq 4 ]; then
+              echo "Refresh call failed (likely invalid/expired SSI_REFRESH_TOKEN)."
+              echo "Please generate a new refresh token with scripts/get_refresh_token.py and update Actions secret SSI_REFRESH_TOKEN."
+              exit 1
+            elif [ "$ROTATE_RC" -ne 0 ]; then
+              echo "Refresh token rotation failed unexpectedly (rc=$ROTATE_RC)."
+              echo "Using existing SSI_REFRESH_TOKEN for this run."
+            else
+              echo "Refresh token rotation returned no token output; using existing token for this run."
+            fi
           fi
 
       - name: Fetch match data
