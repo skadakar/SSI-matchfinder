@@ -29,14 +29,19 @@ Go to **Settings → Secrets and variables → Actions** and create:
 
 | Type | Name | Value |
 |------|------|-------|
-| Secret | `SSI_REFRESH_TOKEN` | Your SSI refresh token (used to obtain a short-lived JWT) |
-| Secret | `SSI_API_KEY` | Your SSI API key |
-| Secret | `SSI_REPO_ADMIN_TOKEN` | Optional: GitHub token with permission to write repository Actions secrets (used to auto-rotate `SSI_REFRESH_TOKEN`) |
-| Secret | `SSI_EMAIL` | Optional: SSI account email for automatic refresh-token recovery when `SSI_REFRESH_TOKEN` has expired |
-| Secret | `SSI_PASSWORD` | Optional: SSI account password for automatic refresh-token recovery when `SSI_REFRESH_TOKEN` has expired |
+| Secret | `SSI_REFRESH_TOKEN` | Required. Initial SSI refresh token (used to obtain a short-lived JWT) |
+| Secret | `SSI_API_KEY` | Required. SSI API key |
+| Secret | `SSI_REPO_ADMIN_TOKEN` | Recommended. GitHub token with permission to write repository Actions secrets (used to auto-rotate `SSI_REFRESH_TOKEN`) |
+| Secret | `SSI_EMAIL` | Optional. SSI account email for automatic refresh-token recovery when `SSI_REFRESH_TOKEN` has expired |
+| Secret | `SSI_PASSWORD` | Optional. SSI account password for automatic refresh-token recovery when `SSI_REFRESH_TOKEN` has expired |
 | Variable | `SSI_COUNTRIES` | Comma-separated ISO-3 country codes to fetch, e.g. `NOR,SWE` |
 | Secret | `DISCORD_NOTIFY_CONFIG` | Optional: overrides [data/discord-notify-config.json](data/discord-notify-config.json) with a JSON string for the notifier |
 | Secret | `DISCORD_NOTIFY_WEBHOOKS` | Optional: JSON object mapping webhook names to URLs, e.g. `{"DISCORD_WEBHOOK_SWEDEN":"https://..."}` |
+
+Notes:
+
+- `SSI_REPO_ADMIN_TOKEN` should be a fine-grained PAT scoped to this repository with repository **Secrets: Read and write** permission.
+- If you set `SSI_EMAIL` and `SSI_PASSWORD`, use an account dedicated to automation if possible.
 
 ### 3. Enable GitHub Pages
 
@@ -54,6 +59,9 @@ Each run fetches **2 months of past events** and **12 months of upcoming events*
 ### 4. Test locally
 
 ```bash
+# One-time bootstrap (prints a refresh token you add to GitHub secret SSI_REFRESH_TOKEN)
+python3 scripts/get_refresh_token.py
+
 # Fetch live data (Python 3.10+)
 SSI_REFRESH_TOKEN=your_token SSI_API_KEY=your_key SSI_COUNTRIES=NOR,SWE python3 scripts/fetch-matches.py
 
@@ -61,6 +69,43 @@ SSI_REFRESH_TOKEN=your_token SSI_API_KEY=your_key SSI_COUNTRIES=NOR,SWE python3 
 python3 -m http.server 8000 --directory docs
 # → open http://localhost:8000
 ```
+
+## Token lifecycle in Actions
+
+The workflow step "Prepare SSI refresh token" works in this order:
+
+1. Read `SSI_REFRESH_TOKEN` from repository secrets.
+2. Attempt refresh-token rotation via SSI GraphQL (`revoke_refresh_token: true`).
+3. If rotation returns a new refresh token:
+4. Use it immediately for the current run.
+5. Persist it back to `SSI_REFRESH_TOKEN` via `gh secret set` (if `SSI_REPO_ADMIN_TOKEN` allows it).
+6. If rotation fails because the token is expired and `SSI_EMAIL` + `SSI_PASSWORD` are present:
+7. Mint a replacement token with `token_auth`.
+8. Use it immediately and persist it to `SSI_REFRESH_TOKEN`.
+
+This means you still need one valid initial token once, but after that the workflow is designed to self-maintain.
+
+## Troubleshooting token refresh
+
+Use the logs from "Prepare SSI refresh token":
+
+- `prepare: SSI_REFRESH_TOKEN present=no`
+- `SSI_REFRESH_TOKEN` secret is missing.
+
+- `prepare: SSI_REPO_ADMIN_TOKEN present=no`
+- Rotation cannot persist back to secrets. Current run may still work, but long-term token maintenance will not.
+
+- `rotation: mutation unsuccessful: Expired token.`
+- The saved refresh token has expired. With `SSI_EMAIL` + `SSI_PASSWORD` configured, fallback should recover automatically.
+
+- `fallback: ...` errors
+- Credential recovery path failed (bad credentials, policy/MFA issues, or SSI/API outage).
+
+- `prepare: effective token source=rotated+persisted`
+- Healthy state: token rotated and saved.
+
+- `prepare: effective token source=rotated-not-persisted` or `fallback-not-persisted`
+- Current run can proceed, but secret write failed. Check `SSI_REPO_ADMIN_TOKEN` permissions/expiry.
 
 ## Organizer geocoding
 
