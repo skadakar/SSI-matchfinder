@@ -103,7 +103,27 @@ jobs:
 
             const payload = data?.data?.refresh_token;
             if (!payload?.success) {
-              const errs = (payload?.errors || []).join(' | ');
+              const rawErrs = payload?.errors;
+              let errs = '';
+              if (Array.isArray(rawErrs)) {
+                errs = rawErrs.map(e => {
+                  if (typeof e === 'string') return e;
+                  if (e && typeof e === 'object' && e.message) return e.message;
+                  return JSON.stringify(e);
+                }).join(' | ');
+              } else if (rawErrs && typeof rawErrs === 'object') {
+                if (Array.isArray(rawErrs.nonFieldErrors)) {
+                  errs = rawErrs.nonFieldErrors.map(e => {
+                    if (typeof e === 'string') return e;
+                    if (e && typeof e === 'object' && e.message) return e.message;
+                    return JSON.stringify(e);
+                  }).join(' | ');
+                } else {
+                  errs = JSON.stringify(rawErrs);
+                }
+              } else if (typeof rawErrs === 'string') {
+                errs = rawErrs;
+              }
               console.error(`rotation: mutation unsuccessful: ${errs || 'unknown'}`);
               process.exit(4);
             }
