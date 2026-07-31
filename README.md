@@ -1,6 +1,6 @@
 # SSI Match Finder
 
-A static web frontend for browsing [Shoot'N Score It](https://shootnscoreit.com) matches on a map or in a sortable table. Hosted on GitHub Pages, updated automatically every 6 hours via GitHub Actions.
+A static web frontend for browsing [Shoot'N Score It](https://shootnscoreit.com) matches on a map or in a sortable table. Hosted on GitHub Pages, updated automatically every 4 hours via GitHub Actions.
 
 ## Features
 
@@ -31,6 +31,7 @@ Go to **Settings → Secrets and variables → Actions** and create:
 |------|------|-------|
 | Secret | `SSI_REFRESH_TOKEN` | Your SSI refresh token (used to obtain a short-lived JWT) |
 | Secret | `SSI_API_KEY` | Your SSI API key |
+| Secret | `SSI_REPO_ADMIN_TOKEN` | Optional: GitHub token with permission to write repository Actions secrets (used to auto-rotate `SSI_REFRESH_TOKEN`) |
 | Variable | `SSI_COUNTRIES` | Comma-separated ISO-3 country codes to fetch, e.g. `NOR,SWE` |
 | Secret | `DISCORD_NOTIFY_CONFIG` | Optional: overrides [data/discord-notify-config.json](data/discord-notify-config.json) with a JSON string for the notifier |
 | Secret | `DISCORD_NOTIFY_WEBHOOKS` | Optional: JSON object mapping webhook names to URLs, e.g. `{"DISCORD_WEBHOOK_SWEDEN":"https://..."}` |
@@ -40,7 +41,9 @@ Go to **Settings → Secrets and variables → Actions** and create:
 1. Go to **Settings → Pages**.
 2. Set **Source** to `Deploy from a branch`, branch `main`, folder `/docs`.
 
-The workflow runs every 6 hours and pushes updated data; Pages re-deploys automatically.
+The workflow runs every 4 hours and pushes updated data; Pages re-deploys automatically.
+
+If `SSI_REPO_ADMIN_TOKEN` is set, each workflow run also attempts to rotate `SSI_REFRESH_TOKEN` and store the new value back into repository Actions secrets automatically.
 
 Each run fetches **2 months of past events** and **12 months of upcoming events** in 3-day chunks to stay under the SSI API's per-query result cap (~100 events).
 
@@ -89,7 +92,7 @@ The key is the organizer name in lowercase. `data/organizer-geocache.json` is co
 ## Project structure
 
 ```
-.github/workflows/refresh.yml   GitHub Actions cron job (every 6 h)
+.github/workflows/refresh.yml   GitHub Actions cron job (every 4 h)
 data/manual-coords.json         highest-priority coordinate overrides (~135 NOR/SWE clubs)
 data/organizer-geocache.json    Nominatim forward-geocode cache
 data/reverse-geocache.json      Nominatim reverse-geocode cache (lat/lng → country + county)

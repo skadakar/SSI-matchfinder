@@ -38,6 +38,73 @@ jobs:
           SSI_COUNTRIES:     ${{ vars.SSI_COUNTRIES }}
         run: node scripts/fetch-matches.js
 
+      - name: Rotate SSI refresh token
+        continue-on-error: true
+        env:
+          SSI_REFRESH_TOKEN: ${{ secrets.SSI_REFRESH_TOKEN }}
+          GH_TOKEN: ${{ secrets.SSI_REPO_ADMIN_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "SSI_REPO_ADMIN_TOKEN not set; skipping refresh token rotation."
+            exit 0
+          fi
+
+          if ! command -v gh >/dev/null 2>&1; then
+            echo "gh CLI not found on runner; skipping refresh token rotation."
+            exit 0
+          fi
+
+          NEW_RT=$(node - <<'NODE'
+          (async () => {
+            const endpoint = 'https://shootnscoreit.com/graphql/';
+            const rt = process.env.SSI_REFRESH_TOKEN;
+            if (!rt) return;
+
+            const query = `
+              mutation Rotate($rt: String!) {
+                refresh_token(refresh_token: $rt, revoke_refresh_token: true) {
+                  success
+                  errors
+                  refresh_token { token }
+                }
+              }
+            `;
+
+            const res = await fetch(endpoint, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+              },
+              body: JSON.stringify({ query, variables: { rt } }),
+            });
+
+            if (!res.ok) return;
+            const data = await res.json();
+            if (data?.errors?.length) return;
+
+            const payload = data?.data?.refresh_token;
+            if (!payload?.success) return;
+
+            const next = payload?.refresh_token?.token;
+            if (!next) return;
+
+            process.stdout.write(next);
+          })().catch(() => {
+            process.exit(0);
+          });
+          NODE
+          )
+
+          if [ -n "$NEW_RT" ]; then
+            echo "::add-mask::$NEW_RT"
+            gh secret set SSI_REFRESH_TOKEN --repo "$REPO" --body "$NEW_RT"
+            echo "SSI refresh token rotated and stored in Actions secret."
+          else
+            echo "Refresh token rotation skipped (SSI did not return a replacement token)."
+          fi
+
       - name: Bust asset cache
         run: |
           HASH=$(git rev-parse --short HEAD)
