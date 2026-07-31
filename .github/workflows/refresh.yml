@@ -174,31 +174,22 @@ jobs:
                 echo "Attempting credential fallback to mint a new refresh token..."
                 FALLBACK_LOG=$(mktemp)
                 set +e
-                FALLBACK_RT=$(node - <<'NODE' 2>"$FALLBACK_LOG"
-                (async () => {
-                  const endpoint = 'https://shootnscoreit.com/graphql/';
+                FALLBACK_RT=$(node -e '(async () => {
+                  const endpoint = "https://shootnscoreit.com/graphql/";
                   const email = process.env.SSI_EMAIL;
                   const password = process.env.SSI_PASSWORD;
                   if (!email || !password) {
-                    console.error('fallback: SSI_EMAIL/SSI_PASSWORD not provided');
+                    console.error("fallback: SSI_EMAIL/SSI_PASSWORD not provided");
                     process.exit(7);
                   }
 
-                  const query = `
-                    mutation TokenAuth($email: String!, $password: String!) {
-                      token_auth(email: $email, password: $password) {
-                        success
-                        errors
-                        refresh_token { token }
-                      }
-                    }
-                  `;
+                  const query = "mutation TokenAuth($email: String!, $password: String!) { token_auth(email: $email, password: $password) { success errors refresh_token { token } } }";
 
                   const res = await fetch(endpoint, {
-                    method: 'POST',
+                    method: "POST",
                     headers: {
-                      'Content-Type': 'application/json',
-                      'Accept': 'application/json',
+                      "Content-Type": "application/json",
+                      "Accept": "application/json",
                     },
                     body: JSON.stringify({ query, variables: { email, password } }),
                   });
@@ -209,33 +200,33 @@ jobs:
                   }
                   const data = await res.json();
                   if (data?.errors?.length) {
-                    const msgs = data.errors.map(e => e?.message).filter(Boolean).join(' | ');
-                    console.error(`fallback: GraphQL errors: ${msgs || 'unknown'}`);
+                    const msgs = data.errors.map(e => e?.message).filter(Boolean).join(" | ");
+                    console.error(`fallback: GraphQL errors: ${msgs || "unknown"}`);
                     process.exit(8);
                   }
 
                   const payload = data?.data?.token_auth;
                   if (!payload?.success) {
                     const rawErrs = payload?.errors;
-                    let errs = '';
+                    let errs = "";
                     if (Array.isArray(rawErrs)) {
                       errs = rawErrs.map(e => {
-                        if (typeof e === 'string') return e;
-                        if (e && typeof e === 'object' && e.message) return e.message;
+                        if (typeof e === "string") return e;
+                        if (e && typeof e === "object" && e.message) return e.message;
                         return JSON.stringify(e);
-                      }).join(' | ');
-                    } else if (rawErrs && typeof rawErrs === 'object') {
+                      }).join(" | ");
+                    } else if (rawErrs && typeof rawErrs === "object") {
                       errs = JSON.stringify(rawErrs);
-                    } else if (typeof rawErrs === 'string') {
+                    } else if (typeof rawErrs === "string") {
                       errs = rawErrs;
                     }
-                    console.error(`fallback: token_auth unsuccessful: ${errs || 'unknown'}`);
+                    console.error(`fallback: token_auth unsuccessful: ${errs || "unknown"}`);
                     process.exit(8);
                   }
 
                   const next = payload?.refresh_token?.token;
                   if (!next) {
-                    console.error('fallback: token_auth returned no refresh token');
+                    console.error("fallback: token_auth returned no refresh token");
                     process.exit(8);
                   }
 
@@ -243,9 +234,7 @@ jobs:
                 })().catch((err) => {
                   console.error(`fallback: unexpected exception: ${err?.message || err}`);
                   process.exit(9);
-                });
-                NODE
-                )
+                });' 2>"$FALLBACK_LOG")
                 FALLBACK_RC=$?
                 set -e
                 cat "$FALLBACK_LOG"
