@@ -32,6 +32,8 @@ Go to **Settings → Secrets and variables → Actions** and create:
 | Secret | `SSI_REFRESH_TOKEN` | Your SSI refresh token (used to obtain a short-lived JWT) |
 | Secret | `SSI_API_KEY` | Your SSI API key |
 | Secret | `SSI_REPO_ADMIN_TOKEN` | Optional: GitHub token with permission to write repository Actions secrets (used to auto-rotate `SSI_REFRESH_TOKEN`) |
+| Secret | `SSI_EMAIL` | Optional: SSI account email for automatic refresh-token recovery when `SSI_REFRESH_TOKEN` has expired |
+| Secret | `SSI_PASSWORD` | Optional: SSI account password for automatic refresh-token recovery when `SSI_REFRESH_TOKEN` has expired |
 | Variable | `SSI_COUNTRIES` | Comma-separated ISO-3 country codes to fetch, e.g. `NOR,SWE` |
 | Secret | `DISCORD_NOTIFY_CONFIG` | Optional: overrides [data/discord-notify-config.json](data/discord-notify-config.json) with a JSON string for the notifier |
 | Secret | `DISCORD_NOTIFY_WEBHOOKS` | Optional: JSON object mapping webhook names to URLs, e.g. `{"DISCORD_WEBHOOK_SWEDEN":"https://..."}` |
@@ -44,6 +46,8 @@ Go to **Settings → Secrets and variables → Actions** and create:
 The workflow runs every 4 hours and pushes updated data; Pages re-deploys automatically.
 
 If `SSI_REPO_ADMIN_TOKEN` is set, each workflow run first attempts to rotate `SSI_REFRESH_TOKEN`, stores the new value back into repository Actions secrets, and then uses the effective token for the fetch step.
+
+If `SSI_REFRESH_TOKEN` has already expired, the workflow can automatically recover by using `SSI_EMAIL` + `SSI_PASSWORD` to mint a new refresh token and write it back to `SSI_REFRESH_TOKEN` (requires `SSI_REPO_ADMIN_TOKEN`).
 
 Each run fetches **2 months of past events** and **12 months of upcoming events** in 3-day chunks to stay under the SSI API's per-query result cap (~100 events).
 

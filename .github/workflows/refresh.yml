@@ -34,6 +34,8 @@ jobs:
       - name: Prepare SSI refresh token
         env:
           SSI_REFRESH_TOKEN: ${{ secrets.SSI_REFRESH_TOKEN }}
+          SSI_EMAIL: ${{ secrets.SSI_EMAIL }}
+          SSI_PASSWORD: ${{ secrets.SSI_PASSWORD }}
           GH_TOKEN: ${{ secrets.SSI_REPO_ADMIN_TOKEN }}
           REPO: ${{ github.repository }}
         run: |
@@ -168,8 +170,108 @@ jobs:
               echo "prepare: effective token source=existing"
             elif [ "$ROTATE_RC" -eq 4 ]; then
               echo "Refresh call failed (likely invalid/expired SSI_REFRESH_TOKEN)."
-              echo "Please generate a new refresh token with scripts/get_refresh_token.py and update Actions secret SSI_REFRESH_TOKEN."
-              exit 1
+              if [ -n "$SSI_EMAIL" ] && [ -n "$SSI_PASSWORD" ]; then
+                echo "Attempting credential fallback to mint a new refresh token..."
+                FALLBACK_LOG=$(mktemp)
+                set +e
+                FALLBACK_RT=$(node - <<'NODE' 2>"$FALLBACK_LOG"
+                (async () => {
+                  const endpoint = 'https://shootnscoreit.com/graphql/';
+                  const email = process.env.SSI_EMAIL;
+                  const password = process.env.SSI_PASSWORD;
+                  if (!email || !password) {
+                    console.error('fallback: SSI_EMAIL/SSI_PASSWORD not provided');
+                    process.exit(7);
+                  }
+
+                  const query = `
+                    mutation TokenAuth($email: String!, $password: String!) {
+                      token_auth(email: $email, password: $password) {
+                        success
+                        errors
+                        refresh_token { token }
+                      }
+                    }
+                  `;
+
+                  const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({ query, variables: { email, password } }),
+                  });
+
+                  if (!res.ok) {
+                    console.error(`fallback: HTTP ${res.status} ${res.statusText}`);
+                    process.exit(8);
+                  }
+                  const data = await res.json();
+                  if (data?.errors?.length) {
+                    const msgs = data.errors.map(e => e?.message).filter(Boolean).join(' | ');
+                    console.error(`fallback: GraphQL errors: ${msgs || 'unknown'}`);
+                    process.exit(8);
+                  }
+
+                  const payload = data?.data?.token_auth;
+                  if (!payload?.success) {
+                    const rawErrs = payload?.errors;
+                    let errs = '';
+                    if (Array.isArray(rawErrs)) {
+                      errs = rawErrs.map(e => {
+                        if (typeof e === 'string') return e;
+                        if (e && typeof e === 'object' && e.message) return e.message;
+                        return JSON.stringify(e);
+                      }).join(' | ');
+                    } else if (rawErrs && typeof rawErrs === 'object') {
+                      errs = JSON.stringify(rawErrs);
+                    } else if (typeof rawErrs === 'string') {
+                      errs = rawErrs;
+                    }
+                    console.error(`fallback: token_auth unsuccessful: ${errs || 'unknown'}`);
+                    process.exit(8);
+                  }
+
+                  const next = payload?.refresh_token?.token;
+                  if (!next) {
+                    console.error('fallback: token_auth returned no refresh token');
+                    process.exit(8);
+                  }
+
+                  process.stdout.write(next);
+                })().catch((err) => {
+                  console.error(`fallback: unexpected exception: ${err?.message || err}`);
+                  process.exit(9);
+                });
+                NODE
+                )
+                FALLBACK_RC=$?
+                set -e
+                cat "$FALLBACK_LOG"
+                rm -f "$FALLBACK_LOG"
+
+                if [ -n "$FALLBACK_RT" ]; then
+                  echo "::add-mask::$FALLBACK_RT"
+                  echo "SSI_REFRESH_TOKEN=$FALLBACK_RT" >> "$GITHUB_ENV"
+                  if gh secret set SSI_REFRESH_TOKEN --repo "$REPO" --body "$FALLBACK_RT"; then
+                    echo "Credential fallback succeeded and SSI_REFRESH_TOKEN secret was updated."
+                    echo "prepare: effective token source=fallback+persisted"
+                  else
+                    echo "Credential fallback got a new token, but secret write failed."
+                    echo "Current run will continue with the fallback token; next runs may fail until secret write is fixed."
+                    echo "prepare: effective token source=fallback-not-persisted"
+                  fi
+                else
+                  echo "Credential fallback failed (rc=$FALLBACK_RC)."
+                  echo "Please generate a new refresh token with scripts/get_refresh_token.py and update Actions secret SSI_REFRESH_TOKEN."
+                  exit 1
+                fi
+              else
+                echo "No SSI_EMAIL/SSI_PASSWORD secrets set for automatic recovery."
+                echo "Please generate a new refresh token with scripts/get_refresh_token.py and update Actions secret SSI_REFRESH_TOKEN."
+                exit 1
+              fi
             elif [ "$ROTATE_RC" -ne 0 ]; then
               echo "Refresh token rotation failed unexpectedly (rc=$ROTATE_RC)."
               echo "Using existing SSI_REFRESH_TOKEN for this run."
