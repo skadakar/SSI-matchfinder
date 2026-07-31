@@ -59,6 +59,9 @@ jobs:
           fi
 
           ROTATE_LOG=$(mktemp)
+          # The Actions shell uses "set -e"; temporarily disable it so we can
+          # inspect the node exit code and decide how to proceed.
+          set +e
           NEW_RT=$(node - <<'NODE' 2>"$ROTATE_LOG"
           (async () => {
             const endpoint = 'https://shootnscoreit.com/graphql/';
@@ -114,13 +117,14 @@ jobs:
             }
 
             process.stdout.write(next);
-          })().catch(() => {
-            console.error('rotation: unexpected exception while rotating refresh token');
+          })().catch((err) => {
+            console.error(`rotation: unexpected exception while rotating refresh token: ${err?.message || err}`);
             process.exit(6);
           });
           NODE
           )
           ROTATE_RC=$?
+          set -e
           cat "$ROTATE_LOG"
           rm -f "$ROTATE_LOG"
 
