@@ -37,6 +37,9 @@ jobs:
           GH_TOKEN: ${{ secrets.SSI_REPO_ADMIN_TOKEN }}
           REPO: ${{ github.repository }}
         run: |
+          echo "prepare: SSI_REFRESH_TOKEN present=$([ -n \"$SSI_REFRESH_TOKEN\" ] && echo yes || echo no)"
+          echo "prepare: SSI_REPO_ADMIN_TOKEN present=$([ -n \"$GH_TOKEN\" ] && echo yes || echo no)"
+
           if [ -z "$SSI_REFRESH_TOKEN" ]; then
             echo "SSI_REFRESH_TOKEN is missing; fetch step will fail until the secret is set."
             exit 0
@@ -123,17 +126,22 @@ jobs:
 
           if [ -n "$NEW_RT" ]; then
             echo "::add-mask::$NEW_RT"
+            # Use the rotated token immediately for this workflow run, even if
+            # writing back to repo secrets fails.
+            echo "SSI_REFRESH_TOKEN=$NEW_RT" >> "$GITHUB_ENV"
             if gh secret set SSI_REFRESH_TOKEN --repo "$REPO" --body "$NEW_RT"; then
               echo "SSI refresh token rotated and stored in Actions secret."
-              echo "SSI_REFRESH_TOKEN=$NEW_RT" >> "$GITHUB_ENV"
+              echo "prepare: effective token source=rotated+persisted"
             else
               echo "Token rotation returned a new token, but saving to GitHub Secrets failed."
-              echo "Current run will continue with the previous token value."
+              echo "Current run will continue with the rotated token, but next runs may fail until secret write is fixed."
+              echo "prepare: effective token source=rotated-not-persisted"
             fi
           else
             if [ "$ROTATE_RC" -eq 5 ]; then
               echo "Refresh call succeeded but SSI did not issue a replacement refresh token."
               echo "Using existing SSI_REFRESH_TOKEN for this run."
+              echo "prepare: effective token source=existing"
             elif [ "$ROTATE_RC" -eq 4 ]; then
               echo "Refresh call failed (likely invalid/expired SSI_REFRESH_TOKEN)."
               echo "Please generate a new refresh token with scripts/get_refresh_token.py and update Actions secret SSI_REFRESH_TOKEN."
@@ -141,8 +149,10 @@ jobs:
             elif [ "$ROTATE_RC" -ne 0 ]; then
               echo "Refresh token rotation failed unexpectedly (rc=$ROTATE_RC)."
               echo "Using existing SSI_REFRESH_TOKEN for this run."
+              echo "prepare: effective token source=existing"
             else
               echo "Refresh token rotation returned no token output; using existing token for this run."
+              echo "prepare: effective token source=existing"
             fi
           fi
 
