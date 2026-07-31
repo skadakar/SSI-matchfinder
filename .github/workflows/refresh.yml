@@ -31,27 +31,28 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Fetch match data
-        env:
-          SSI_REFRESH_TOKEN: ${{ secrets.SSI_REFRESH_TOKEN }}
-          SSI_API_KEY:       ${{ secrets.SSI_API_KEY }}
-          SSI_COUNTRIES:     ${{ vars.SSI_COUNTRIES }}
-        run: node scripts/fetch-matches.js
-
-      - name: Rotate SSI refresh token
+      - name: Prepare SSI refresh token
         continue-on-error: true
         env:
           SSI_REFRESH_TOKEN: ${{ secrets.SSI_REFRESH_TOKEN }}
           GH_TOKEN: ${{ secrets.SSI_REPO_ADMIN_TOKEN }}
           REPO: ${{ github.repository }}
         run: |
+          if [ -z "$SSI_REFRESH_TOKEN" ]; then
+            echo "SSI_REFRESH_TOKEN is missing; fetch step will fail until the secret is set."
+            exit 0
+          fi
+
+          echo "::add-mask::$SSI_REFRESH_TOKEN"
+          echo "SSI_REFRESH_TOKEN=$SSI_REFRESH_TOKEN" >> "$GITHUB_ENV"
+
           if [ -z "$GH_TOKEN" ]; then
-            echo "SSI_REPO_ADMIN_TOKEN not set; skipping refresh token rotation."
+            echo "SSI_REPO_ADMIN_TOKEN not set; using current SSI refresh token without rotation."
             exit 0
           fi
 
           if ! command -v gh >/dev/null 2>&1; then
-            echo "gh CLI not found on runner; skipping refresh token rotation."
+            echo "gh CLI not found on runner; using current SSI refresh token without rotation."
             exit 0
           fi
 
@@ -99,11 +100,22 @@ jobs:
 
           if [ -n "$NEW_RT" ]; then
             echo "::add-mask::$NEW_RT"
-            gh secret set SSI_REFRESH_TOKEN --repo "$REPO" --body "$NEW_RT"
-            echo "SSI refresh token rotated and stored in Actions secret."
+            if gh secret set SSI_REFRESH_TOKEN --repo "$REPO" --body "$NEW_RT"; then
+              echo "SSI refresh token rotated and stored in Actions secret."
+              echo "SSI_REFRESH_TOKEN=$NEW_RT" >> "$GITHUB_ENV"
+            else
+              echo "Token rotation returned a new token, but saving to GitHub Secrets failed."
+              echo "Current run will continue with the previous token value."
+            fi
           else
             echo "Refresh token rotation skipped (SSI did not return a replacement token)."
           fi
+
+      - name: Fetch match data
+        env:
+          SSI_API_KEY:       ${{ secrets.SSI_API_KEY }}
+          SSI_COUNTRIES:     ${{ vars.SSI_COUNTRIES }}
+        run: node scripts/fetch-matches.js
 
       - name: Bust asset cache
         run: |

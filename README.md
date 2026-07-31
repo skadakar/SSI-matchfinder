@@ -43,7 +43,7 @@ Go to **Settings → Secrets and variables → Actions** and create:
 
 The workflow runs every 4 hours and pushes updated data; Pages re-deploys automatically.
 
-If `SSI_REPO_ADMIN_TOKEN` is set, each workflow run also attempts to rotate `SSI_REFRESH_TOKEN` and store the new value back into repository Actions secrets automatically.
+If `SSI_REPO_ADMIN_TOKEN` is set, each workflow run first attempts to rotate `SSI_REFRESH_TOKEN`, stores the new value back into repository Actions secrets, and then uses the effective token for the fetch step.
 
 Each run fetches **2 months of past events** and **12 months of upcoming events** in 3-day chunks to stay under the SSI API's per-query result cap (~100 events).
 
