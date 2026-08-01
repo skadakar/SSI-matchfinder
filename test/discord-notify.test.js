@@ -63,6 +63,21 @@ test('buildDiscordPayload omits fields with blank values', () => {
   assert.deepEqual(fieldNames, ['Date', 'Country', 'Location']);
 });
 
+test('buildDiscordPayload adds a Categories field when a match has multiple equipment categories', () => {
+  const payload = buildDiscordPayload([
+    { name: 'NM Steel Challenge 2026', categories: ['Rimfire Open', 'PCC Open', 'Optics'] },
+  ]);
+  const categoriesField = payload.embeds[0].fields.find(f => f.name === 'Categories');
+  assert.ok(categoriesField);
+  assert.equal(categoriesField.value, 'Rimfire Open, PCC Open, Optics');
+});
+
+test('buildDiscordPayload omits the Categories field when a match has none (no duplicate embeds per category)', () => {
+  const payload = buildDiscordPayload([{ name: 'Single-category match', categories: [] }]);
+  assert.equal(payload.embeds.length, 1); // one embed per match, regardless of category count
+  assert.ok(!payload.embeds[0].fields.some(f => f.name === 'Categories'));
+});
+
 // ─── isMatchIncluded ─────────────────────────────────────────────────────────
 
 test('isMatchIncluded filters by country', () => {

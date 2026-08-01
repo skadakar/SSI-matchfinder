@@ -609,6 +609,7 @@ td.filter-active .reg-closed   { color: inherit; }
 .popup-meta       { color: var(--muted); font-size: 0.8rem; }
 .popup-date       { font-weight: 500; }
 .popup-city       { color: var(--muted); font-size: 0.8rem; }
+.popup-categories { color: var(--muted); font-size: 0.8rem; font-style: italic; }
 .popup-reg-dl     { font-size: 0.8rem; color: var(--muted); }
 .popup a          { color: var(--accent); font-weight: 500; }
 

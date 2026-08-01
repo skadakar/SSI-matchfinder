@@ -227,6 +227,17 @@ export function validCoords(lat, lng) {
   return Math.abs(parseFloat(lng)) < 180 && Math.abs(parseFloat(lat)) <= 85;
 }
 
+// SSI's `sub_rule` field is a single comma-separated string listing the
+// equipment categories/divisions a match supports (e.g. a Steel Challenge
+// match offering "Rimfire Open, Rimfire Iron, PCC Open, ..."). It's a facet
+// of one match, not multiple separate disciplines, so it's kept as a
+// `categories` array on the match rather than duplicating the match per
+// category (which would also duplicate Discord notifications per match id).
+export function parseCategories(subRule) {
+  if (!subRule) return [];
+  return String(subRule).split(',').map(s => s.trim()).filter(Boolean);
+}
+
 export function normalizeMatch(raw) {
   const org = raw.organizer || {};
   let lat = raw.lat != null ? raw.lat : org.lat;
@@ -239,6 +250,7 @@ export function normalizeMatch(raw) {
     endDate:              (raw.ends    ?? '').slice(0, 10),
     organizer:            org.name    ?? '',
     discipline:           raw.get_full_rule_display || raw.rule || '',
+    categories:           parseCategories(raw.sub_rule),
     level:                raw.get_full_level_display ?? '',
     country:              org.country || raw.region || '',
     city:                 org.city    ?? '',

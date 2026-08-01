@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   validCoords,
   normalizeMatch,
+  parseCategories,
   geocodeOrganizer,
   reverseGeocode,
   inheritOrganizerCoords,
@@ -93,6 +94,39 @@ test('normalizeMatch handles a missing organizer object gracefully', () => {
   assert.equal(m.organizer, '');
   assert.equal(m.city, '');
   assert.equal(m.url, '');
+});
+
+// ─── parseCategories / normalizeMatch categories ────────────────────────────
+
+test('parseCategories splits a comma-separated sub_rule into a trimmed array', () => {
+  assert.deepEqual(
+    parseCategories('Rimfire Open, Rimfire Iron, PCC Open,PCC Iron'),
+    ['Rimfire Open', 'Rimfire Iron', 'PCC Open', 'PCC Iron'],
+  );
+});
+
+test('parseCategories returns an empty array for missing/blank sub_rule', () => {
+  assert.deepEqual(parseCategories(''), []);
+  assert.deepEqual(parseCategories(null), []);
+  assert.deepEqual(parseCategories(undefined), []);
+});
+
+test('normalizeMatch exposes multiple equipment categories from sub_rule without duplicating the match', () => {
+  const raw = {
+    id: 1190,
+    name: 'NM Steel Challenge 2026',
+    rule: 'Steel',
+    sub_rule: 'Rimfire Open, Rimfire Iron, PCC Open, PCC Iron, Open, Standard, Optics, Production',
+    organizer: { name: 'NOP' },
+  };
+  const m = normalizeMatch(raw);
+  assert.equal(m.discipline, 'Steel'); // one discipline per match — categories are a facet, not separate matches
+  assert.deepEqual(m.categories, ['Rimfire Open', 'Rimfire Iron', 'PCC Open', 'PCC Iron', 'Open', 'Standard', 'Optics', 'Production']);
+});
+
+test('normalizeMatch defaults categories to an empty array when sub_rule is absent', () => {
+  const m = normalizeMatch({ id: 4, organizer: { name: 'Acme Club' } });
+  assert.deepEqual(m.categories, []);
 });
 
 // ─── geocodeOrganizer ────────────────────────────────────────────────────────

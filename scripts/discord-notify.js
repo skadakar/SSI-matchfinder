@@ -154,6 +154,7 @@ export function buildDiscordPayload(matches) {
         { name: 'Date', value: match.date || 'TBD', inline: true },
         { name: 'Country', value: match.country || '—', inline: true },
         { name: 'Location', value: [match.city, match.county].filter(Boolean).join(', ') || '—', inline: true },
+        { name: 'Categories', value: (match.categories || []).join(', '), inline: false },
       ].filter(field => field.value),
       color: 0x2b6cb0,
     })),
