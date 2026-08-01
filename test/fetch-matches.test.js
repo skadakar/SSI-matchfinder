@@ -135,7 +135,7 @@ test('collectDivisions ignores IPSC\'s unrelated categories field (demographic, 
   assert.deepEqual(collectDivisions(raw), ['Open', 'Standard']);
 });
 
-test('collectDivisions no longer collects IPSC-only division fields (confirmed unreliable, see DIVISION_FIELDS comment)', () => {
+test('collectDivisions no longer collects the confirmed-broken IPSC per-firearm division fields (see DIVISION_FIELDS comment)', () => {
   const raw = {
     mini_rifle_divs: 'Open',
     prec_rifle_divs: 'Open',
@@ -143,6 +143,16 @@ test('collectDivisions no longer collects IPSC-only division fields (confirmed u
     pcc_divs: 'Open',
   };
   assert.deepEqual(collectDivisions(raw), []);
+});
+
+test('collectDivisions merges IPSC\'s tournament_divisions field', () => {
+  // Verified against https://shootnscoreit.com/event/22/28350/ and
+  // https://shootnscoreit.com/event/22/25845/ (both "IPSC Handgun Level II"
+  // matches whose live pages show identical divisions).
+  const raw = { tournament_divisions: 'Open, Standard, Optics, Production, Revolver, Classic, Production Optics' };
+  assert.deepEqual(collectDivisions(raw), [
+    'Open', 'Standard', 'Optics', 'Production', 'Revolver', 'Classic', 'Production Optics',
+  ]);
 });
 
 test('collectDivisions returns an empty array when no division fields are present', () => {
@@ -174,6 +184,13 @@ test('translateDivisionCode maps known DMR/PRS (PrecisionMatchNode) codes to the
   assert.equal(translateDivisionCode('D7S'), '7.62 SA');
   assert.equal(translateDivisionCode('D7V'), '7.62 SA LPVO');
   assert.equal(translateDivisionCode('BGX'), 'Bolt');
+});
+
+test('translateDivisionCode maps more DMR/PRS codes (BGO/RFX) to their display names', () => {
+  // Verified against https://shootnscoreit.com/event/110/1097/ and
+  // https://shootnscoreit.com/event/110/1098/.
+  assert.equal(translateDivisionCode('BGO'), 'Bolt Open');
+  assert.equal(translateDivisionCode('RFX'), 'Rimfire');
 });
 
 test('translateDivisionCode passes unrecognized codes through unchanged', () => {

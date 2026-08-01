@@ -156,6 +156,7 @@ const EVENTS_Q = `
         organizer { name city country lat lng }
       }
       ... on SteelMatchNode { divisions }
+      ... on IpscMatchNode { tournament_divisions }
       ... on PpcMatchNode { weapon_classes }
       ... on CmpMatchNode {
         rifle_divs rimfire_rifle_divs
@@ -295,20 +296,34 @@ export function parseCategories(str) {
 // possible choices rather than the stored value). Since we can't verify a
 // fix without live authenticated access, and showing this data would be
 // actively misleading (e.g. listing Shotgun/Air/PCC divisions on a rifle-
-// only match), these fields are omitted from the query entirely — IPSC
-// matches simply get an empty `categories` array until a reliable source
-// for their real per-match divisions is found.
+// only match), these fields are omitted from the query entirely.
+//
+// Instead, IpscMatchNode.tournament_divisions is used — a separate raw
+// field (schema description: "recognized divisions in event, comma-
+// separated string, max 400 char", identical wording to handgun_divs/
+// rifle_divs/etc. but WITHOUT a firearm-type prefix) discovered via schema
+// introspection while investigating the above bug. Unlike the per-firearm
+// fields, this looks like the single authoritative "what this match
+// actually offers" list. Its display/choices resolvers
+// (get_tournament_divisions_display/_choices) are also correctly
+// pluralized (no naming-mismatch red flag like the SteelMatchNode bug), so
+// it's used here as a raw field following the same safe pattern as all
+// other division fields. To be confirmed against live data on the next
+// CI refresh (e.g. event/22/28350 and event/22/25845, both "IPSC Handgun
+// Level II" matches whose live pages show identical divisions: Open,
+// Standard, Optics, Production, Revolver, Classic, Production Optics).
 const DIVISION_FIELDS = [
-  'divisions',            // Steel, Precision, Generic
-  'handgun_divs',         // IDPA
-  'rifle_divs',           // CMP, IDPA
-  'shotgun_divs',         // IDPA
-  'weapon_classes',       // PPC
-  'rimfire_rifle_divs',   // CMP
-  'pistol_divs',          // CMP
-  'rimfire_pistol_divs',  // CMP
-  'dmg_divs',             // IDPA
-  'weapon_groups',        // Nordic
+  'divisions',              // Steel, Precision, Generic
+  'tournament_divisions',   // IPSC
+  'handgun_divs',           // IDPA
+  'rifle_divs',             // CMP, IDPA
+  'shotgun_divs',           // IDPA
+  'weapon_classes',         // PPC
+  'rimfire_rifle_divs',     // CMP
+  'pistol_divs',            // CMP
+  'rimfire_pistol_divs',    // CMP
+  'dmg_divs',               // IDPA
+  'weapon_groups',          // Nordic
 ];
 
 export function collectDivisions(raw) {
@@ -386,6 +401,14 @@ const DIVISION_CODE_LABELS = {
   D7S: '7.62 SA',
   D7V: '7.62 SA LPVO',
   BGX: 'Bolt',
+
+  // More DMR/PRS codes, verified against
+  // https://shootnscoreit.com/event/110/1097/ ("Hovden X Not Flathill"),
+  // whose live page displays "BGO" as "Bolt Open", and
+  // https://shootnscoreit.com/event/110/1098/ ("Aug. Hemmabaneserien
+  // Långhåll Klass A"), whose live page displays "RFX" as "Rimfire".
+  BGO: 'Bolt Open',
+  RFX: 'Rimfire',
 };
 
 export function translateDivisionCode(code) {
