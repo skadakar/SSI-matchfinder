@@ -156,7 +156,6 @@ const EVENTS_Q = `
         organizer { name city country lat lng }
       }
       ... on SteelMatchNode { divisions }
-      ... on IpscMatchNode { tournament_divisions }
       ... on PpcMatchNode { weapon_classes }
       ... on CmpMatchNode {
         rifle_divs rimfire_rifle_divs
@@ -298,23 +297,24 @@ export function parseCategories(str) {
 // actively misleading (e.g. listing Shotgun/Air/PCC divisions on a rifle-
 // only match), these fields are omitted from the query entirely.
 //
-// Instead, IpscMatchNode.tournament_divisions is used — a separate raw
-// field (schema description: "recognized divisions in event, comma-
-// separated string, max 400 char", identical wording to handgun_divs/
-// rifle_divs/etc. but WITHOUT a firearm-type prefix) discovered via schema
-// introspection while investigating the above bug. Unlike the per-firearm
-// fields, this looks like the single authoritative "what this match
-// actually offers" list. Its display/choices resolvers
-// (get_tournament_divisions_display/_choices) are also correctly
-// pluralized (no naming-mismatch red flag like the SteelMatchNode bug), so
-// it's used here as a raw field following the same safe pattern as all
-// other division fields. To be confirmed against live data on the next
-// CI refresh (e.g. event/22/28350 and event/22/25845, both "IPSC Handgun
-// Level II" matches whose live pages show identical divisions: Open,
-// Standard, Optics, Production, Revolver, Classic, Production Optics).
+// ALSO TRIED AND ALSO CONFIRMED BROKEN: IpscMatchNode.tournament_divisions
+// — a separate raw field (schema description: "recognized divisions in
+// event, comma-separated string, max 400 char", identical wording to
+// handgun_divs/rifle_divs/etc. but WITHOUT a firearm-type prefix),
+// discovered via schema introspection and initially believed to be the
+// authoritative field. Reverted after live verification (2026-08-01):
+// event/22/26862 ("IPSC godkjenningskurs, høst, Hokksund") lists 8
+// divisions on its live page (Open, Standard, Standard Optics, Optics,
+// Production, Revolver, Classic, Production Optics), but
+// tournament_divisions returned only 4 codes (iop, imd, ist, ipr) — and
+// that exact same 4-code set was returned for every other IPSC handgun
+// match tested (25845, 28228, 28350, 29250), regardless of each match's
+// actual (and differing) live-page divisions. So the field is not
+// per-instance data at all, just another static/broken value — same bug
+// class as the fields above. No known working field exists for IPSC
+// divisions; they are intentionally left empty until SSI fixes their API.
 const DIVISION_FIELDS = [
   'divisions',              // Steel, Precision, Generic
-  'tournament_divisions',   // IPSC
   'handgun_divs',           // IDPA
   'rifle_divs',             // CMP, IDPA
   'shotgun_divs',           // IDPA

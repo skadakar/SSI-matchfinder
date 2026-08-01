@@ -135,24 +135,15 @@ test('collectDivisions ignores IPSC\'s unrelated categories field (demographic, 
   assert.deepEqual(collectDivisions(raw), ['Open', 'Standard']);
 });
 
-test('collectDivisions no longer collects the confirmed-broken IPSC per-firearm division fields (see DIVISION_FIELDS comment)', () => {
+test('collectDivisions no longer collects the confirmed-broken IPSC division fields (see DIVISION_FIELDS comment)', () => {
   const raw = {
     mini_rifle_divs: 'Open',
     prec_rifle_divs: 'Open',
     air_divs: 'Open',
     pcc_divs: 'Open',
+    tournament_divisions: 'Open, Standard, Optics, Production, Revolver, Classic, Production Optics',
   };
   assert.deepEqual(collectDivisions(raw), []);
-});
-
-test('collectDivisions merges IPSC\'s tournament_divisions field', () => {
-  // Verified against https://shootnscoreit.com/event/22/28350/ and
-  // https://shootnscoreit.com/event/22/25845/ (both "IPSC Handgun Level II"
-  // matches whose live pages show identical divisions).
-  const raw = { tournament_divisions: 'Open, Standard, Optics, Production, Revolver, Classic, Production Optics' };
-  assert.deepEqual(collectDivisions(raw), [
-    'Open', 'Standard', 'Optics', 'Production', 'Revolver', 'Classic', 'Production Optics',
-  ]);
 });
 
 test('collectDivisions returns an empty array when no division fields are present', () => {
