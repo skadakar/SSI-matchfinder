@@ -5,6 +5,7 @@ import {
   normalizeMatch,
   parseCategories,
   collectDivisions,
+  translateDivisionCode,
   geocodeOrganizer,
   reverseGeocode,
   inheritOrganizerCoords,
@@ -136,6 +137,30 @@ test('collectDivisions ignores IPSC\'s unrelated categories field (demographic, 
 
 test('collectDivisions returns an empty array when no division fields are present', () => {
   assert.deepEqual(collectDivisions({}), []);
+});
+
+test('translateDivisionCode maps known Steel Challenge codes to their display names', () => {
+  assert.equal(translateDivisionCode('rio'), 'Rimfire Open');
+  assert.equal(translateDivisionCode('std'), 'Standard');
+  assert.equal(translateDivisionCode('rvl'), 'Revolver');
+});
+
+test('translateDivisionCode passes unrecognized codes through unchanged', () => {
+  assert.equal(translateDivisionCode('hg1'), 'hg1');
+});
+
+test('collectDivisions translates a real Steel Challenge match\'s raw division codes', () => {
+  // Verified against NM Steel Challenge 2026's live match page.
+  const raw = { divisions: 'rio,ris,pco,pci,opp,std,opt,prd,pro,cls,rvl,rlo,rli' };
+  assert.deepEqual(collectDivisions(raw), [
+    'Rimfire Open', 'Rimfire Iron', 'PCC Open', 'PCC Iron', 'Open', 'Standard',
+    'Optics', 'Production', 'Production Optics', 'Classic', 'Revolver',
+    'Rimfire Long Gun Open', 'Rimfire Long Gun Iron',
+  ]);
+});
+
+test('collectDivisions leaves unrecognized codes (e.g. IPSC\'s numbered divisions) untranslated', () => {
+  assert.deepEqual(collectDivisions({ handgun_divs: 'hg1,hg2,hg3' }), ['hg1', 'hg2', 'hg3']);
 });
 
 test('normalizeMatch exposes merged equipment categories without duplicating the match', () => {

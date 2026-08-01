@@ -293,7 +293,44 @@ const DIVISION_FIELDS = [
 
 export function collectDivisions(raw) {
   const all = DIVISION_FIELDS.flatMap(field => parseCategories(raw[field]));
-  return [...new Set(all)];
+  const translated = all.map(translateDivisionCode);
+  return [...new Set(translated)];
+}
+
+// The raw division fields above return short internal codes (e.g. Steel
+// Challenge's "rio", "std", "opp") rather than the human-readable names shown
+// on match pages. This table translates known codes to their display names;
+// unrecognized codes are left as-is (better to show a raw code than a wrong
+// guess). Extend this table as more codes are confirmed against real data.
+//
+// The Steel Challenge codes below were verified by cross-referencing the
+// `divisions` field of two real events against their live match pages'
+// displayed division lists (same code order in both, one a subset of the
+// other):
+//   NM Steel Challenge 2026: rio,ris,pco,pci,opp,std,opt,prd,pro,cls,rvl,rlo,rli
+//     = Rimfire Open, Rimfire Iron, PCC Open, PCC Iron, Open, Standard,
+//       Optics, Production, Production Optics, Classic, Revolver,
+//       Rimfire Long Gun Open, Rimfire Long Gun Iron
+//   DM Steel Challenge 2026: rio,ris,opp,std,opt,prd,pro,cls,rvl
+//     (same codes/order, minus pco/pci/rlo/rli)
+const DIVISION_CODE_LABELS = {
+  rio: 'Rimfire Open',
+  ris: 'Rimfire Iron',
+  pco: 'PCC Open',
+  pci: 'PCC Iron',
+  opp: 'Open',
+  std: 'Standard',
+  opt: 'Optics',
+  prd: 'Production',
+  pro: 'Production Optics',
+  cls: 'Classic',
+  rvl: 'Revolver',
+  rlo: 'Rimfire Long Gun Open',
+  rli: 'Rimfire Long Gun Iron',
+};
+
+export function translateDivisionCode(code) {
+  return DIVISION_CODE_LABELS[code] ?? code;
 }
 
 export function normalizeMatch(raw) {
