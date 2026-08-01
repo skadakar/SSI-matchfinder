@@ -201,7 +201,8 @@ A small notifier is available for posting newly discovered matches to Discord ba
 Edit [data/discord-notify-config.json](data/discord-notify-config.json) to define rules. Each rule can include:
 - `name`: a friendly label for the rule
 - `webhook`: either a direct Discord webhook URL or the name of an environment variable / secret such as `DISCORD_WEBHOOK_SWEDEN`
-- filters such as `countries`, `disciplines`, `levels`, `organizers`, `regions`, `from`, and `to`
+- filters such as `countries`, `disciplines`, `divisions`, `levels`, `organizers`, `regions`, `from`, and `to`
+- `divisions` is an independent filter ANDed with `disciplines` (not merged into it): a match must offer at least one of the listed equipment divisions. For example, `disciplines: ["Steel"]` + `divisions: ["Open", "Standard", "Production", "Revolver", "Classic"]` targets Steel Challenge matches that include a handgun category, as opposed to rifle/PCC-only ones.
 - `cutoffDays`: optional lookback window measured from the notifier's first run date; defaults to `14`
 
 In GitHub Actions, store webhook values as repository secrets (recommended) or variables. You can either use the name from a rule's `webhook` field (for example `DISCORD_WEBHOOK_SWEDEN`) or provide a JSON webhook map via `DISCORD_NOTIFY_WEBHOOKS`, such as:
@@ -221,6 +222,17 @@ A matching rule would then look like this:
   "webhook": "DISCORD_WEBHOOK_SWEDEN",
   "countries": ["SWE"],
   "disciplines": ["IPSC Handgun"]
+}
+```
+
+A rule combining a discipline with specific equipment divisions (e.g. only Steel Challenge matches offering a handgun division):
+
+```json
+{
+  "name": "steel-handgun",
+  "webhook": "DISCORD_WEBHOOK_STEEL",
+  "disciplines": ["Steel"],
+  "divisions": ["Open", "Standard", "Optics", "Production", "Production Optics", "Classic", "Revolver"]
 }
 ```
 

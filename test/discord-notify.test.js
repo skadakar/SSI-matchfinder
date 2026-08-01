@@ -114,6 +114,31 @@ test('isMatchIncluded filters on the discipline field only, ignoring equipment d
   assert.equal(isMatchIncluded({ discipline: 'Rimfire Open' }, rule), true);
 });
 
+test('isMatchIncluded supports a separate rule.divisions filter, ANDed with disciplines (e.g. "Steel" + handgun divisions)', () => {
+  const rule = {
+    disciplines: ['Steel'],
+    divisions: ['Open', 'Standard', 'Optics', 'Production', 'Production Optics', 'Classic', 'Revolver'],
+  };
+  // Steel match offering a handgun division among others — matches.
+  const steelWithHandgun = {
+    discipline: 'Steel',
+    divisions: ['Rimfire Rifle Open', 'PCC Open', 'Open', 'Standard'],
+  };
+  assert.equal(isMatchIncluded(steelWithHandgun, rule), true);
+  // Steel match with only rifle/PCC divisions, no handgun division — excluded.
+  const steelRifleOnly = { discipline: 'Steel', divisions: ['Rimfire Rifle Open', 'Rimfire Rifle Iron'] };
+  assert.equal(isMatchIncluded(steelRifleOnly, rule), false);
+  // Right division but wrong discipline — still excluded (disciplines filter applies too).
+  const ipscHandgun = { discipline: 'IPSC Handgun', divisions: ['Open'] };
+  assert.equal(isMatchIncluded(ipscHandgun, rule), false);
+});
+
+test('isMatchIncluded with rule.divisions set excludes a match with no divisions at all', () => {
+  const rule = { divisions: ['Open'] };
+  assert.equal(isMatchIncluded({ divisions: [] }, rule), false);
+  assert.equal(isMatchIncluded({}, rule), false);
+});
+
 test('isMatchIncluded respects rule.from / rule.to date bounds', () => {
   // now is fixed well before every date used here so the past-event check
   // (tested separately below) never interferes with this test.

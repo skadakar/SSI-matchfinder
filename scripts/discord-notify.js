@@ -92,6 +92,7 @@ export function isMatchIncluded(match, rule, cutoffDate = null, now = new Date()
 
   const country = (match.country || '').toUpperCase();
   const discipline = (match.discipline || '').trim();
+  const divisions = (match.divisions || []).map(d => String(d).trim());
   const level = (match.level || '').trim();
   const organizer = (match.organizer || '').trim();
   const region = (match.county || '').trim();
@@ -99,6 +100,7 @@ export function isMatchIncluded(match, rule, cutoffDate = null, now = new Date()
   const matchDate = parseDate(date);
   const countries = normalizeFilterValues(rule.countries);
   const disciplines = normalizeFilterValues(rule.disciplines);
+  const ruleDivisions = normalizeFilterValues(rule.divisions);
   const levels = normalizeFilterValues(rule.levels);
   const organizers = normalizeFilterValues(rule.organizers);
   const regions = normalizeFilterValues(rule.regions);
@@ -108,6 +110,14 @@ export function isMatchIncluded(match, rule, cutoffDate = null, now = new Date()
   }
   if (disciplines.length) {
     if (!disciplines.includes(discipline)) return false;
+  }
+  // rule.divisions is a separate filter ANDed with disciplines (not merged
+  // into it): a match must offer at least one of the listed equipment
+  // divisions, e.g. disciplines: ["Steel"] + divisions: ["Open", "Standard",
+  // "Production", "Revolver", "Classic"] targets Steel Challenge matches
+  // that include a handgun category, as opposed to rifle/PCC-only ones.
+  if (ruleDivisions.length) {
+    if (!ruleDivisions.some(d => divisions.includes(d))) return false;
   }
   if (levels.length) {
     if (!levels.includes(level)) return false;
