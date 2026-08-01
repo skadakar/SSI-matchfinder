@@ -68,6 +68,74 @@
       "from": "",
       "to": "",
       "comment": "posts Norwegian shotgun matches to the høkk dynamisk discord"
+    },
+    {
+      "name": "Høkk steel riflematch",
+      "webhook": "DISCORD_HOKK_RIFLE_MATCH",
+      "countries": [
+        "NOR"
+      ],
+      "disciplines": [
+        "Steel"
+      ],
+      "divisions": [
+        "rro",
+        "rri"
+      ],
+      "levels": [],
+      "organizers": [],
+      "regions": [],
+      "from": "",
+      "to": "",
+      "comment": "posts Norwegian steelchallenge rifle matches to the høkk dynamisk discord. NOTE: divisions are raw SSI codes (Rimfire Rifle Open/Iron), not display names -- see README for why."
+    },
+    {
+      "name": "Høkk steel pistol",
+      "webhook": "DISCORD_HOKK_HANDGUN_MATCH",
+      "countries": [
+        "NOR"
+      ],
+      "disciplines": [
+        "Steel"
+      ],
+      "divisions": [
+        "opp",
+        "std",
+        "opt",
+        "prd",
+        "pro",
+        "cls",
+        "rvl",
+        "rpo",
+        "rpi"
+      ],
+      "levels": [],
+      "organizers": [],
+      "regions": [],
+      "from": "",
+      "to": "",
+      "comment": "posts Norwegian steelchallenge handgun and handgun+pcc matches to the høkk dynamisk discord. NOTE: divisions are raw SSI codes (Open/Standard/Optics/Production/Production Optics/Classic/Revolver/Rimfire Pistol Open/Iron), not display names -- see README for why."
+    },
+    {
+      "name": "Høkk steel PCC",
+      "webhook": "DISCORD_HOKK_PCC_MATCH",
+      "countries": [
+        "NOR"
+      ],
+      "disciplines": [
+        "Steel"
+      ],
+      "divisions": [
+        "pco",
+        "pci",
+        "pcc"
+      ],
+      "levels": [],
+      "organizers": [],
+      "regions": [],
+      "from": "",
+      "to": "",
+      "comment": "posts Norwegian steelchallenge PCC matches to the høkk dynamisk discord. NOTE: divisions are raw SSI codes (PCC Open/Iron plus a plain 'pcc' variant some events use), not display names -- see README for why."
     }
   ]
 }
