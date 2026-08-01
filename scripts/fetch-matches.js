@@ -167,6 +167,7 @@ const EVENTS_Q = `
       ... on NordicMatchNode { get_weapon_groups_display }
       ... on PrecisionMatchNode { get_divisions_display }
       ... on GenericMatchNode { get_divisions_display }
+      ... on IpscMatchNode { get_divisions_display }
     }
   }
 `;
