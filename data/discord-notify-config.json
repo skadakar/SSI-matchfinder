@@ -1,11 +1,16 @@
 {
   "cutoffDays": 14,
   "rules": [
-          {
+    {
       "name": "Høkk riflematch",
       "webhook": "DISCORD_HOKK_RIFLE_MATCH",
-      "countries": ["NOR"],
-      "disciplines": ["IPSC Rifle", "IPSC Mini Rifle"],
+      "countries": [
+        "NOR"
+      ],
+      "disciplines": [
+        "IPSC Rifle",
+        "IPSC Mini Rifle"
+      ],
       "levels": [],
       "organizers": [],
       "regions": [],
@@ -13,11 +18,17 @@
       "to": "",
       "comment": "posts Norwegian rifle matches to the høkk dynamisk discord"
     },
-        {
+    {
       "name": "Høkk pistol",
       "webhook": "DISCORD_HOKK_HANDGUN_MATCH",
-      "countries": ["NOR"],
-      "disciplines": ["IPSC Handgun", "IPSC Handgun & PCC", "Handgun"],
+      "countries": [
+        "NOR"
+      ],
+      "disciplines": [
+        "IPSC Handgun",
+        "IPSC Handgun & PCC",
+        "Handgun"
+      ],
       "levels": [],
       "organizers": [],
       "regions": [],
@@ -25,11 +36,15 @@
       "to": "",
       "comment": "posts Norwegian handgun and handgun+pcc matches to the høkk dynamisk discord"
     },
-        {
+    {
       "name": "Høkk PCC",
       "webhook": "DISCORD_HOKK_PCC_MATCH",
-      "countries": ["NOR"],
-      "disciplines": ["IPSC Pistol Caliber Carbine"],
+      "countries": [
+        "NOR"
+      ],
+      "disciplines": [
+        "IPSC Pistol Caliber Carbine"
+      ],
       "levels": [],
       "organizers": [],
       "regions": [],
@@ -37,11 +52,16 @@
       "to": "",
       "comment": "posts Norwegian PCC matches to the høkk dynamisk discord"
     },
-        {
+    {
       "name": "Høkk haglematch",
       "webhook": "DISCORD_HOKK_SHOTGUN_MATCH",
-      "countries": ["NOR"],
-      "disciplines": ["IPSC Shotgun", "Shotgun"],
+      "countries": [
+        "NOR"
+      ],
+      "disciplines": [
+        "IPSC Shotgun",
+        "Shotgun"
+      ],
       "levels": [],
       "organizers": [],
       "regions": [],
