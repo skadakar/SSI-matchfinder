@@ -126,9 +126,29 @@ function resolveCutoffDays(config, rule) {
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : 14;
 }
 
+// Discord allows at most 10 embeds per webhook message, so rules with more
+// than 10 new matches must be sent as multiple messages instead of silently
+// truncating the rest.
+const DISCORD_EMBED_LIMIT = 10;
+// Small delay between messages for the same rule to stay well under Discord's
+// per-webhook rate limit when a run has to send several chunks back to back.
+const DISCORD_CHUNK_DELAY_MS = 350;
+
+function sleep(ms) {
+  return new Promise(res => setTimeout(res, ms));
+}
+
+function chunkArray(array, size) {
+  const chunks = [];
+  for (let i = 0; i < array.length; i += size) {
+    chunks.push(array.slice(i, i + size));
+  }
+  return chunks;
+}
+
 function buildDiscordPayload(matches) {
   return {
-    embeds: matches.slice(0, 10).map(match => ({
+    embeds: matches.map(match => ({
       title: match.name,
       url: match.url,
       description: [match.organizer, match.discipline, match.level].filter(Boolean).join(' · '),
@@ -142,22 +162,27 @@ function buildDiscordPayload(matches) {
   };
 }
 
-async function postToDiscord(webhook, matches) {
+async function postToDiscord(webhook, matches, context = 'alert') {
+  // `matches` must already be <= DISCORD_EMBED_LIMIT entries; callers are
+  // expected to chunk before calling this.
   const payload = buildDiscordPayload(matches);
 
+  let response;
   try {
-    const response = await fetch(webhook, {
+    response = await fetch(webhook, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
-
-    if (!response.ok) {
-      const text = await response.text().catch(() => '');
-      throw new Error(`Discord webhook failed with status ${response.status}`);
-    }
   } catch (error) {
-    throw new Error('Discord webhook request failed. Check the webhook configuration.');
+    console.error(`Notifier rule "${context}": Discord webhook request failed: ${error.message}`);
+    throw new Error(`Discord webhook request failed for rule "${context}": ${error.message}`);
+  }
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '');
+    console.error(`Notifier rule "${context}": Discord webhook returned ${response.status} ${response.statusText}${text ? ` — ${text.slice(0, 300)}` : ''}`);
+    throw new Error(`Discord webhook failed with status ${response.status} for rule "${context}"`);
   }
 }
 
@@ -185,15 +210,18 @@ async function main() {
     cutoffDate.setDate(cutoffDate.getDate() - cutoffDays);
     const filtered = matches.filter(match => isMatchIncluded(match, rule, cutoffDate));
     const newMatches = filtered.filter(match => !seenIds.has(`${rule.name || 'rule'}:${match.id}`));
-    const payload = buildDiscordPayload(newMatches);
-    const previewTitles = payload.embeds.map(embed => embed.title).join(', ') || 'none';
+    const previewTitles = newMatches.slice(0, 10).map(match => match.name).join(', ') || 'none';
 
     console.log(`Notifier rule "${rule.name || 'alert'}": resolved webhook from ${webhookInfo.source}${webhookInfo.reference ? ` (${webhookInfo.reference})` : ''}`);
     console.log(`Notifier rule "${rule.name || 'alert'}": payload preview -> embeds: ${previewTitles}${newMatches.length > 10 ? ' …' : ''}`);
 
     if (newMatches.length) {
-      await postToDiscord(webhookInfo.webhook, newMatches);
-      results.push({ rule: rule.name || 'alert', count: newMatches.length });
+      const batches = chunkArray(newMatches, DISCORD_EMBED_LIMIT);
+      for (let i = 0; i < batches.length; i++) {
+        await postToDiscord(webhookInfo.webhook, batches[i], rule.name || 'alert');
+        if (i < batches.length - 1) await sleep(DISCORD_CHUNK_DELAY_MS);
+      }
+      results.push({ rule: rule.name || 'alert', count: newMatches.length, messages: batches.length });
     } else {
       console.log(`Notifier rule "${rule.name || 'alert'}": no new matches to send.`);
     }

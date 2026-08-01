@@ -163,19 +163,6 @@ const EVENTS_Q = `
   }
 `;
 
-const EVENT_Q = `
-  query GetEvent($ct: Int!, $id: String!) {
-    event(content_type: $ct, id: $id) {
-      id name starts ends rule sub_rule
-      venue lat lng region
-      registration registration_starts registration_closes is_registration_possible
-      competitors_count max_competitors number_of_mainmatch_competitors_registered number_of_mainmatch_competitors_waiting
-      get_content_type_key get_full_rule_display get_full_level_display
-      organizer { name city country lat lng }
-    }
-  }
-`;
-
 async function fetchAllMatches() {
   console.log('Authenticating via refresh token...');
   const jwt = await getJwt();
