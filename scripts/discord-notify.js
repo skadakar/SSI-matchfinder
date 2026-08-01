@@ -74,6 +74,11 @@ export function normalizeFilterValues(values) {
 export function isMatchIncluded(match, rule, cutoffDate = null) {
   const country = (match.country || '').toUpperCase();
   const discipline = (match.discipline || '').trim();
+  // Equipment categories (e.g. Steel Challenge's "Rimfire Open"/"Production"/
+  // "Classic") mirror IPSC division names, so a rule targeting one of those
+  // as a "discipline" should also match matches that merely offer it as a
+  // category under a different primary discipline.
+  const disciplineValues = [discipline, ...(match.categories || []).map(c => String(c).trim())].filter(Boolean);
   const level = (match.level || '').trim();
   const organizer = (match.organizer || '').trim();
   const region = (match.county || '').trim();
@@ -89,7 +94,7 @@ export function isMatchIncluded(match, rule, cutoffDate = null) {
     if (!countries.includes(country)) return false;
   }
   if (disciplines.length) {
-    if (!disciplines.includes(discipline)) return false;
+    if (!disciplines.some(d => disciplineValues.includes(d))) return false;
   }
   if (levels.length) {
     if (!levels.includes(level)) return false;

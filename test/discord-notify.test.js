@@ -100,6 +100,18 @@ test('isMatchIncluded filters by discipline, level, organizer, region (all must 
   assert.equal(isMatchIncluded({ ...match, county: 'Oslo' }, rule), false);
 });
 
+test('isMatchIncluded matches a rule discipline against a match\'s equipment categories too', () => {
+  // "NM Steel Challenge 2026" has discipline "Steel" but offers a "Rimfire
+  // Open" category (an IPSC division name) — a rule targeting "Rimfire Open"
+  // should still pick it up.
+  const rule = { disciplines: ['Rimfire Open'] };
+  const steelMatchWithCategory = { discipline: 'Steel', categories: ['Rimfire Open', 'Production'] };
+  assert.equal(isMatchIncluded(steelMatchWithCategory, rule), true);
+  assert.equal(isMatchIncluded({ discipline: 'Steel', categories: ['Production'] }, rule), false);
+  // Still matches by the primary discipline field when no categories are present.
+  assert.equal(isMatchIncluded({ discipline: 'Rimfire Open' }, rule), true);
+});
+
 test('isMatchIncluded respects rule.from / rule.to date bounds', () => {
   const rule = { from: '2026-01-01', to: '2026-12-31' };
   assert.equal(isMatchIncluded({ date: '2026-06-15' }, rule), true);

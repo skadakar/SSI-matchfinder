@@ -167,6 +167,16 @@ function countriesMatchDefault(countries) {
 
 // ─── FILTERING + SORTING ──────────────────────────────────────────────────────
 
+/** A match's discipline plus its equipment categories (e.g. Steel Challenge's
+ *  "Rimfire Open"/"Production"/"Classic" categories mirror IPSC division
+ *  names), so filtering/searching by discipline also finds matches that
+ *  merely *offer* that division under a different primary discipline. */
+function matchDisciplineValues(m) {
+  const values = [...(m.categories || [])];
+  if (m.discipline) values.push(m.discipline);
+  return values;
+}
+
 function applyFilters(matches) {
   const q = state.q.toLowerCase();
   return matches.filter(m => {
@@ -184,7 +194,7 @@ function applyFilters(matches) {
       cutoff.setDate(cutoff.getDate() - state.newMatchDays);
       if (!m.firstSeen || m.firstSeen < cutoff.toISOString().slice(0, 10)) return false;
     }
-    if (state.discipline.length && !state.discipline.includes(m.discipline)) return false;
+    if (state.discipline.length && !matchDisciplineValues(m).some(d => state.discipline.includes(d))) return false;
     if (state.level.length      && !state.level.includes(m.level))           return false;
     if (state.organizer.length  && !state.organizer.includes(m.organizer))   return false;
     if (state.regOpen && m.registrationOpen !== true)                        return false;
@@ -366,7 +376,7 @@ function getCellFilterValue(key, m) {
 function isCellActive(key, m) {
   switch (key) {
     case 'organizer':    return state.organizer.includes(m.organizer);
-    case 'discipline':   return state.discipline.includes(m.discipline);
+    case 'discipline':   return matchDisciplineValues(m).some(d => state.discipline.includes(d));
     case 'country':      return !countriesMatchDefault(state.countries) && state.countries.includes(m.country);
     case 'county':       return !!(m.county && state.regions.includes(m.county));
     case 'region':       return !!(countyToRegion(m) && state.broadRegions.includes(countyToRegion(m)));
@@ -732,7 +742,7 @@ function refreshFilterDropdowns() {
   state.level = savedLevel;
 
   _repopulateSelect('filter-discipline', 'clear-discipline',
-    [...new Set(subsetForDisc.map(m => m.discipline).filter(Boolean))].sort(),
+    [...new Set(subsetForDisc.flatMap(m => matchDisciplineValues(m)))].sort(),
     state.discipline);
 
   _repopulateSelect('filter-level', 'clear-level',

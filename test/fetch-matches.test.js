@@ -4,6 +4,7 @@ import {
   validCoords,
   normalizeMatch,
   parseCategories,
+  collectDivisions,
   geocodeOrganizer,
   reverseGeocode,
   inheritOrganizerCoords,
@@ -96,27 +97,53 @@ test('normalizeMatch handles a missing organizer object gracefully', () => {
   assert.equal(m.url, '');
 });
 
-// ─── parseCategories / normalizeMatch categories ────────────────────────────
+// ─── parseCategories / collectDivisions / normalizeMatch categories ────────
 
-test('parseCategories splits a comma-separated sub_rule into a trimmed array', () => {
+test('parseCategories splits a comma-separated display string into a trimmed array', () => {
   assert.deepEqual(
     parseCategories('Rimfire Open, Rimfire Iron, PCC Open,PCC Iron'),
     ['Rimfire Open', 'Rimfire Iron', 'PCC Open', 'PCC Iron'],
   );
 });
 
-test('parseCategories returns an empty array for missing/blank sub_rule', () => {
+test('parseCategories returns an empty array for missing/blank input', () => {
   assert.deepEqual(parseCategories(''), []);
   assert.deepEqual(parseCategories(null), []);
   assert.deepEqual(parseCategories(undefined), []);
 });
 
-test('normalizeMatch exposes multiple equipment categories from sub_rule without duplicating the match', () => {
+test('collectDivisions merges a Steel match\'s get_division_display', () => {
+  const raw = { get_division_display: 'Rimfire Open, Rimfire Iron, PCC Open, PCC Iron, Open, Standard, Optics, Production' };
+  assert.deepEqual(
+    collectDivisions(raw),
+    ['Rimfire Open', 'Rimfire Iron', 'PCC Open', 'PCC Iron', 'Open', 'Standard', 'Optics', 'Production'],
+  );
+});
+
+test('collectDivisions merges multiple per-firearm division fields (e.g. IPSC) and dedupes', () => {
+  const raw = {
+    get_handgun_divs_display: 'Open, Standard, Production',
+    get_rifle_divs_display: 'Open, Manual',
+    get_pcc_divs_display: 'Open',
+  };
+  assert.deepEqual(collectDivisions(raw), ['Open', 'Standard', 'Production', 'Manual']);
+});
+
+test('collectDivisions ignores IPSC\'s unrelated get_categories_display (demographic, not equipment)', () => {
+  const raw = { get_handgun_divs_display: 'Open, Standard', get_categories_display: 'Senior, Lady' };
+  assert.deepEqual(collectDivisions(raw), ['Open', 'Standard']);
+});
+
+test('collectDivisions returns an empty array when no division-display fields are present', () => {
+  assert.deepEqual(collectDivisions({}), []);
+});
+
+test('normalizeMatch exposes merged equipment categories without duplicating the match', () => {
   const raw = {
     id: 1190,
     name: 'NM Steel Challenge 2026',
     rule: 'Steel',
-    sub_rule: 'Rimfire Open, Rimfire Iron, PCC Open, PCC Iron, Open, Standard, Optics, Production',
+    get_division_display: 'Rimfire Open, Rimfire Iron, PCC Open, PCC Iron, Open, Standard, Optics, Production',
     organizer: { name: 'NOP' },
   };
   const m = normalizeMatch(raw);
@@ -124,7 +151,7 @@ test('normalizeMatch exposes multiple equipment categories from sub_rule without
   assert.deepEqual(m.categories, ['Rimfire Open', 'Rimfire Iron', 'PCC Open', 'PCC Iron', 'Open', 'Standard', 'Optics', 'Production']);
 });
 
-test('normalizeMatch defaults categories to an empty array when sub_rule is absent', () => {
+test('normalizeMatch defaults categories to an empty array when no division-display fields are present', () => {
   const m = normalizeMatch({ id: 4, organizer: { name: 'Acme Club' } });
   assert.deepEqual(m.categories, []);
 });

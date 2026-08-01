@@ -148,13 +148,29 @@ const EVENTS_Q = `
   query GetEvents($after: String!, $before: String!) {
     events(starts_after: $after, starts_before: $before) {
       ... on EventInterface {
-        id name starts ends rule sub_rule
+        id name starts ends rule
         venue lat lng region
         registration registration_starts registration_closes is_registration_possible
         competitors_count max_competitors number_of_mainmatch_competitors_registered number_of_mainmatch_competitors_waiting
         get_content_type_key get_full_rule_display get_full_level_display
         organizer { name city country lat lng }
       }
+      ... on SteelMatchNode { get_division_display }
+      ... on IpscMatchNode {
+        get_handgun_divs_display get_rifle_divs_display get_mini_rifle_divs_display
+        get_prec_rifle_divs_display get_shotgun_divs_display get_air_divs_display get_pcc_divs_display
+      }
+      ... on PpcMatchNode { get_weapon_classes_display }
+      ... on CmpMatchNode {
+        get_rifle_divs_display get_rimfire_rifle_divs_display
+        get_pistol_divs_display get_rimfire_pistol_divs_display
+      }
+      ... on IdpaMatchNode {
+        get_handgun_divs_display get_rifle_divs_display get_shotgun_divs_display get_dmg_divs_display
+      }
+      ... on NordicMatchNode { get_weapon_groups_display }
+      ... on PrecisionMatchNode { get_divisions_display }
+      ... on GenericMatchNode { get_divisions_display }
     }
   }
 `;
@@ -227,15 +243,48 @@ export function validCoords(lat, lng) {
   return Math.abs(parseFloat(lng)) < 180 && Math.abs(parseFloat(lat)) <= 85;
 }
 
-// SSI's `sub_rule` field is a single comma-separated string listing the
-// equipment categories/divisions a match supports (e.g. a Steel Challenge
-// match offering "Rimfire Open, Rimfire Iron, PCC Open, ..."). It's a facet
-// of one match, not multiple separate disciplines, so it's kept as a
-// `categories` array on the match rather than duplicating the match per
-// category (which would also duplicate Discord notifications per match id).
-export function parseCategories(subRule) {
-  if (!subRule) return [];
-  return String(subRule).split(',').map(s => s.trim()).filter(Boolean);
+// Split a single human-readable, comma-separated field (e.g.
+// "Rimfire Open, Rimfire Iron, PCC Open") into a trimmed array.
+export function parseCategories(str) {
+  if (!str) return [];
+  return String(str).split(',').map(s => s.trim()).filter(Boolean);
+}
+
+// SSI models each match's discipline as a distinct GraphQL type (SteelMatchNode,
+// IpscMatchNode, CmpMatchNode, ...), each exposing its own "*_divs_display" /
+// "get_division_display" field(s) listing the equipment categories/divisions the
+// match supports (e.g. a Steel Challenge match offering
+// "Rimfire Open, Rimfire Iron, PCC Open, ..."). These are a facet of one match
+// (not multiple separate disciplines) — often reusing IPSC's own division names
+// (Open, Standard, Production, Classic, Revolver, ...) even for non-IPSC
+// disciplines — so they're merged into a single `categories` array on the match
+// rather than duplicating the match per category (which would also duplicate
+// Discord notifications per match id).
+//
+// NOTE: IPSC's own `get_categories_display` field is intentionally NOT
+// included here — it's an unrelated demographic classification (Senior,
+// Junior, Lady, ...), not an equipment division.
+const DIVISION_DISPLAY_FIELDS = [
+  'get_division_display',            // Steel
+  'get_handgun_divs_display',        // IPSC, IDPA
+  'get_rifle_divs_display',          // IPSC, CMP, IDPA
+  'get_mini_rifle_divs_display',     // IPSC
+  'get_prec_rifle_divs_display',     // IPSC
+  'get_shotgun_divs_display',        // IPSC, IDPA
+  'get_air_divs_display',            // IPSC
+  'get_pcc_divs_display',            // IPSC
+  'get_weapon_classes_display',      // PPC
+  'get_rimfire_rifle_divs_display',  // CMP
+  'get_pistol_divs_display',         // CMP
+  'get_rimfire_pistol_divs_display', // CMP
+  'get_dmg_divs_display',            // IDPA
+  'get_weapon_groups_display',       // Nordic
+  'get_divisions_display',           // Precision, Generic
+];
+
+export function collectDivisions(raw) {
+  const all = DIVISION_DISPLAY_FIELDS.flatMap(field => parseCategories(raw[field]));
+  return [...new Set(all)];
 }
 
 export function normalizeMatch(raw) {
@@ -250,7 +299,7 @@ export function normalizeMatch(raw) {
     endDate:              (raw.ends    ?? '').slice(0, 10),
     organizer:            org.name    ?? '',
     discipline:           raw.get_full_rule_display || raw.rule || '',
-    categories:           parseCategories(raw.sub_rule),
+    categories:           collectDivisions(raw),
     level:                raw.get_full_level_display ?? '',
     country:              org.country || raw.region || '',
     city:                 org.city    ?? '',
