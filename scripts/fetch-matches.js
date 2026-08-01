@@ -155,11 +155,18 @@ const EVENT_INTERFACE_FIELDS = `
   }
 `;
 
-// Per-match-type division fields, keyed by GraphQL type name so a single
-// troublemaker (see KNOWN RISK below) can be excluded from a fallback query
-// without hand-editing a big fragment string.
+// Per-match-type division fields, keyed by GraphQL type name. Fields are
+// space-separated; buildEventsQuery() can drop individual field names (not
+// just whole types) from a fallback query, so a type's other (safe) fields
+// are still recovered when one specific field is known to crash — see
+// RISKY_FIELDS and the KNOWN RISK comment below.
 const DIVISION_FRAGMENTS = {
-  SteelMatchNode:     'get_division_display',    // misnamed resolver, see KNOWN RISK below
+  // `divisions` is the raw underlying field (plain model attribute, so it
+  // isn't subject to the misnamed-resolver crash below); it's queried
+  // alongside get_division_display as a same-tier safety net, and is only
+  // used by collectDivisions() when the display field didn't come back
+  // (see KNOWN RISK below).
+  SteelMatchNode:     'divisions get_division_display', // get_division_display: misnamed resolver, see KNOWN RISK below
   PpcMatchNode:       'get_weapon_classes_display',
   CmpMatchNode:       'get_rifle_divs_display get_rimfire_rifle_divs_display get_pistol_divs_display get_rimfire_pistol_divs_display',
   IdpaMatchNode:      'get_handgun_divs_display get_rifle_divs_display get_shotgun_divs_display get_dmg_divs_display',
@@ -177,10 +184,21 @@ const DIVISION_FRAGMENTS = {
   PpcSerieNode:       'get_weapon_classes_display',
 };
 
-function buildEventsQuery(excludeTypes = []) {
+// Field names known to crash server-side for at least one real match (see
+// KNOWN RISK below). Fallback queries drop only these specific fields
+// rather than a whole type's fragment, so a type's other (safe) fields —
+// e.g. Steel's raw `divisions` — are still recovered.
+const RISKY_FIELDS = ['get_division_display'];
+
+const ALL_DIVISION_FIELD_NAMES = Object.values(DIVISION_FRAGMENTS).flatMap(f => f.split(' '));
+
+function buildEventsQuery(excludeFields = []) {
   const fragments = Object.entries(DIVISION_FRAGMENTS)
-    .filter(([type]) => !excludeTypes.includes(type))
-    .map(([type, fields]) => `... on ${type} { ${fields} }`)
+    .map(([type, fields]) => {
+      const kept = fields.split(' ').filter(f => !excludeFields.includes(f));
+      return kept.length ? `... on ${type} { ${kept.join(' ')} }` : null;
+    })
+    .filter(Boolean)
     .join('\n      ');
   return `
     query GetEvents($after: String!, $before: String!) {
@@ -195,9 +213,9 @@ function buildEventsQuery(excludeTypes = []) {
 // Tiered queries, tried in order for each window: the full query first, then
 // progressively stripped-down fallbacks if a resolver crash breaks it — see
 // the KNOWN RISK comment on queryWindow's retry loop below.
-const EVENTS_Q            = buildEventsQuery();
-const EVENTS_Q_NO_STEEL    = buildEventsQuery(['SteelMatchNode']);
-const EVENTS_Q_MINIMAL     = buildEventsQuery(Object.keys(DIVISION_FRAGMENTS));
+const EVENTS_Q          = buildEventsQuery();
+const EVENTS_Q_NO_RISKY = buildEventsQuery(RISKY_FIELDS);
+const EVENTS_Q_MINIMAL  = buildEventsQuery(ALL_DIVISION_FIELD_NAMES);
 
 export async function fetchAllMatches() {
   console.log('Authenticating via refresh token...');
@@ -234,20 +252,20 @@ export async function fetchAllMatches() {
   //
   // To limit the blast radius, each window is retried with progressively
   // reduced queries rather than giving up on the first error:
-  //   1. EVENTS_Q          — full query, all per-type division fragments.
-  //   2. EVENTS_Q_NO_STEEL — drops just the known-crash-prone Steel fragment
-  //      (the single most likely culprit); recovers the window's events
-  //      (including any OTHER Steel matches) at the cost of that window's
-  //      Steel matches missing their divisions.
-  //   3. EVENTS_Q_MINIMAL  — drops ALL division fragments; recovers the
+  //   1. EVENTS_Q          — full query, all per-type division fields.
+  //   2. EVENTS_Q_NO_RISKY — drops just the known-crash-prone field(s)
+  //      (currently only get_division_display), keeping every type's other
+  //      (safe) fields — e.g. Steel's raw `divisions` field still comes
+  //      back, so collectDivisions() can fall back to it (see below).
+  //   3. EVENTS_Q_MINIMAL  — drops ALL division fields; recovers the
   //      window's events with no divisions data at all, in case the crash
-  //      turns out to be caused by a different/new resolver, not Steel.
+  //      turns out to be caused by a different/new field.
   // Only if even the minimal query fails is the window truly skipped.
   async function queryWindow(after, before) {
     const variables = { after, before };
     const tiers = [
-      { query: EVENTS_Q,         label: 'full query' },
-      { query: EVENTS_Q_NO_STEEL, label: 'fallback query without SteelMatchNode divisions' },
+      { query: EVENTS_Q,          label: 'full query' },
+      { query: EVENTS_Q_NO_RISKY, label: 'fallback query without known-crash-prone display fields (e.g. get_division_display)' },
       { query: EVENTS_Q_MINIMAL,  label: 'minimal fallback query without any division fields' },
     ];
     let lastMsgs = null;
@@ -437,7 +455,14 @@ const DIVISION_FIELDS = [
 
 export function collectDivisions(raw) {
   const all = DIVISION_FIELDS.flatMap(field => parseDivisions(raw[field]));
-  return [...new Set(all)];
+  if (all.length > 0) return [...new Set(all)];
+  // Fallback for the known SteelMatchNode.get_division_display crash: when
+  // that field errors, queryWindow's fallback tier drops it but still
+  // queries the raw underlying `divisions` field (a plain model attribute,
+  // not a dynamically-generated Django method, so it isn't subject to the
+  // same misnamed-resolver crash). Only used when no display field produced
+  // anything, so it never overrides good display data.
+  return parseDivisions(raw.divisions);
 }
 
 export function normalizeMatch(raw) {

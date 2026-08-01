@@ -71,7 +71,25 @@ export function normalizeFilterValues(values) {
   return values.map(value => String(value).trim()).filter(Boolean);
 }
 
-export function isMatchIncluded(match, rule, cutoffDate = null) {
+// A match is "already over" once its last day (end date if multi-day,
+// otherwise its start date) is strictly before today — a match starting or
+// still running today is not yet over. Matches with no usable date are
+// never treated as past (there's nothing to compare).
+export function isPastEvent(match, now = new Date()) {
+  const lastDate = parseDate(match.endDate) || parseDate(match.date);
+  if (!lastDate) return false;
+  const today = parseDate(now.toISOString().slice(0, 10));
+  return lastDate < today;
+}
+
+export function isMatchIncluded(match, rule, cutoffDate = null, now = new Date()) {
+  // Never notify about an event that has already happened — regardless of
+  // rule filters, cutoffDays, or seen-state. This can matter beyond simple
+  // scheduling: e.g. a match temporarily dropped out of the dataset (a data
+  // fetch bug) and later reappears with its start date now in the past
+  // should not be announced as if it were upcoming.
+  if (isPastEvent(match, now)) return false;
+
   const country = (match.country || '').toUpperCase();
   const discipline = (match.discipline || '').trim();
   // Equipment divisions (e.g. Steel Challenge's "Rimfire Open"/"Production"/

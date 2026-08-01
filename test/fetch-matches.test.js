@@ -120,6 +120,19 @@ test('collectDivisions merges a Steel match\'s get_division_display field', () =
   );
 });
 
+test('collectDivisions falls back to Steel\'s raw divisions field when get_division_display is absent (its known-crash fallback query tier)', () => {
+  const raw = { divisions: 'Rimfire Open, Rimfire Iron, PCC Open, PCC Iron, Open, Standard, Optics, Production' };
+  assert.deepEqual(
+    collectDivisions(raw),
+    ['Rimfire Open', 'Rimfire Iron', 'PCC Open', 'PCC Iron', 'Open', 'Standard', 'Optics', 'Production'],
+  );
+});
+
+test('collectDivisions prefers get_division_display over the raw divisions field when both are present', () => {
+  const raw = { get_division_display: 'Open, Standard', divisions: 'unrelated-raw-value' };
+  assert.deepEqual(collectDivisions(raw), ['Open', 'Standard']);
+});
+
 test('collectDivisions merges a Precision/Generic match\'s get_divisions_display field', () => {
   const raw = { get_divisions_display: 'SA Open, Bolt Open, 5.56 SA' };
   assert.deepEqual(collectDivisions(raw), ['SA Open', 'Bolt Open', '5.56 SA']);
@@ -460,7 +473,7 @@ test('fetchAllMatches aborts the run when refresh-token authentication fails', a
   }
 });
 
-test('fetchAllMatches recovers a window via a fallback query (dropping the Steel fragment) when the full query errors, e.g. the known SteelMatchNode resolver crash', async () => {
+test('fetchAllMatches recovers a window via a fallback query (dropping just get_division_display, keeping Steel\'s raw divisions field) when the full query errors, e.g. the known SteelMatchNode resolver crash', async () => {
   let eventsCalls = 0;
   const originalExit = process.exit;
   process.exit = (code) => { throw new Error(`PROCESS_EXIT_${code}`); };
@@ -471,14 +484,16 @@ test('fetchAllMatches recovers a window via a fallback query (dropping the Steel
     }
     eventsCalls++;
     // Simulate the known SteelMatchNode.get_division_display naming-mismatch
-    // crash: the full query (tier 1, includes the Steel fragment) fails for
-    // the very first window; the fallback query without it (tier 2) succeeds.
+    // crash: the full query (tier 1, includes get_division_display) fails for
+    // the very first window; the fallback query without just that field
+    // (tier 2) succeeds, while still keeping Steel's raw `divisions` field.
     if (eventsCalls === 1) {
-      assert.ok(body.query.includes('SteelMatchNode'));
+      assert.ok(body.query.includes('get_division_display'));
       return { body: { errors: [{ message: "'SteelMatch' object has no attribute 'get_division_display'" }] } };
     }
     if (eventsCalls === 2) {
-      assert.ok(!body.query.includes('SteelMatchNode'));
+      assert.ok(!body.query.includes('get_division_display'));
+      assert.ok(body.query.includes('divisions'));
     }
     return { body: { data: { events: [{ id: 1, name: 'Event One' }] } } };
   });

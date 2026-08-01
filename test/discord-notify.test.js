@@ -4,6 +4,7 @@ import {
   chunkArray,
   buildDiscordPayload,
   isMatchIncluded,
+  isPastEvent,
   resolveWebhook,
   resolveCutoffDays,
   normalizeFilterValues,
@@ -113,21 +114,65 @@ test('isMatchIncluded matches a rule discipline against a match\'s equipment div
 });
 
 test('isMatchIncluded respects rule.from / rule.to date bounds', () => {
+  // now is fixed well before every date used here so the past-event check
+  // (tested separately below) never interferes with this test.
+  const now = new Date('2020-01-01T00:00:00Z');
   const rule = { from: '2026-01-01', to: '2026-12-31' };
-  assert.equal(isMatchIncluded({ date: '2026-06-15' }, rule), true);
-  assert.equal(isMatchIncluded({ date: '2025-12-31' }, rule), false);
-  assert.equal(isMatchIncluded({ date: '2027-01-01' }, rule), false);
+  assert.equal(isMatchIncluded({ date: '2026-06-15' }, rule, null, now), true);
+  assert.equal(isMatchIncluded({ date: '2025-12-31' }, rule, null, now), false);
+  assert.equal(isMatchIncluded({ date: '2027-01-01' }, rule, null, now), false);
 });
 
 test('isMatchIncluded respects cutoffDate (excludes matches before it)', () => {
+  const now = new Date('2020-01-01T00:00:00Z');
   const rule = {};
   const cutoff = new Date('2026-06-01T00:00:00Z');
-  assert.equal(isMatchIncluded({ date: '2026-06-15' }, rule, cutoff), true);
-  assert.equal(isMatchIncluded({ date: '2026-05-01' }, rule, cutoff), false);
+  assert.equal(isMatchIncluded({ date: '2026-06-15' }, rule, cutoff, now), true);
+  assert.equal(isMatchIncluded({ date: '2026-05-01' }, rule, cutoff, now), false);
 });
 
 test('isMatchIncluded with no filters set includes everything', () => {
-  assert.equal(isMatchIncluded({ country: 'ANY', date: '2026-01-01' }, {}), true);
+  const now = new Date('2020-01-01T00:00:00Z');
+  assert.equal(isMatchIncluded({ country: 'ANY', date: '2026-01-01' }, {}, null, now), true);
+});
+
+test('isMatchIncluded never includes a match whose date has already passed, regardless of other filters', () => {
+  const now = new Date('2026-08-01T00:00:00Z');
+  assert.equal(isMatchIncluded({ date: '2026-07-31' }, {}, null, now), false);
+  assert.equal(isMatchIncluded({ date: '2026-08-01' }, {}, null, now), true); // starting today: not over yet
+  assert.equal(isMatchIncluded({ date: '2026-08-02' }, {}, null, now), true);
+});
+
+test('isMatchIncluded uses endDate (not just the start date) to decide whether a multi-day match is over', () => {
+  const now = new Date('2026-08-02T00:00:00Z');
+  // Started before "now" but still running (ends today or later) — not over.
+  assert.equal(isMatchIncluded({ date: '2026-08-01', endDate: '2026-08-03' }, {}, null, now), true);
+  // Fully finished before "now".
+  assert.equal(isMatchIncluded({ date: '2026-07-30', endDate: '2026-07-31' }, {}, null, now), false);
+});
+
+test('isMatchIncluded does not exclude a match with no usable date info', () => {
+  assert.equal(isMatchIncluded({ country: 'NOR' }, { countries: ['NOR'] }), true);
+});
+
+// ─── isPastEvent ─────────────────────────────────────────────────────────────
+
+test('isPastEvent is true once a single-day match\'s date is before now', () => {
+  const now = new Date('2026-08-01T00:00:00Z');
+  assert.equal(isPastEvent({ date: '2026-07-31' }, now), true);
+  assert.equal(isPastEvent({ date: '2026-08-01' }, now), false);
+  assert.equal(isPastEvent({ date: '2026-08-02' }, now), false);
+});
+
+test('isPastEvent prefers endDate over date for multi-day matches', () => {
+  const now = new Date('2026-08-02T00:00:00Z');
+  assert.equal(isPastEvent({ date: '2026-08-01', endDate: '2026-08-03' }, now), false);
+  assert.equal(isPastEvent({ date: '2026-07-30', endDate: '2026-07-31' }, now), true);
+});
+
+test('isPastEvent returns false when there is no usable date', () => {
+  assert.equal(isPastEvent({}), false);
+  assert.equal(isPastEvent({ date: '' }), false);
 });
 
 // ─── resolveCutoffDays ───────────────────────────────────────────────────────
