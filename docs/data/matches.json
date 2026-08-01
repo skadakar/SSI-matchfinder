@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-01T14:46:10.791Z",
+  "generated": "2026-08-01T14:56:30.163Z",
   "count": 1195,
   "matches": [
     {
@@ -351,8 +351,8 @@
       "country": "NOR",
       "city": "",
       "venue": "",
-      "lat": 66.31,
-      "lng": 14.15,
+      "lat": 66.38414,
+      "lng": 14.08313,
       "registrationOpen": true,
       "registrationStarts": "2026-07-03",
       "registrationDeadline": "",
@@ -362,7 +362,7 @@
       "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/22/28975/",
       "county": "Nordland",
-      "geocodeSource": "manual",
+      "geocodeSource": "api",
       "firstSeen": "2026-07-03"
     },
     {
@@ -420,6 +420,72 @@
       "county": "Pohjois-Pohjanmaa",
       "geocodeSource": "api",
       "firstSeen": "2026-03-09"
+    },
+    {
+      "id": "29298",
+      "name": "P4 DS Klubbmatch 2/8",
+      "date": "2026-08-02",
+      "endDate": "",
+      "organizer": "P4 Dynamiska Skyttar",
+      "discipline": "IPSC Handgun & PCC",
+      "categories": [
+        "hg1",
+        "hg2",
+        "hg33",
+        "hg3",
+        "hg5",
+        "hg12",
+        "hg17",
+        "hg18",
+        "hgc",
+        "rf1",
+        "rf2",
+        "rf19",
+        "rf20",
+        "mr1",
+        "mr2",
+        "mr3",
+        "rf12",
+        "rf3",
+        "rf4",
+        "rf11",
+        "rf16",
+        "rf17",
+        "rf18",
+        "rfc",
+        "sg1",
+        "sg2",
+        "sg3",
+        "sg4",
+        "ai1",
+        "ai2",
+        "ai3",
+        "ai3a",
+        "ai8",
+        "ai9",
+        "ai10",
+        "ai11",
+        "ai12",
+        "pc2",
+        "pc3"
+      ],
+      "level": "Training",
+      "country": "SWE",
+      "city": "",
+      "venue": "",
+      "lat": 58.39,
+      "lng": 13.84,
+      "registrationOpen": true,
+      "registrationStarts": "2026-07-28",
+      "registrationDeadline": "",
+      "participants": 0,
+      "mainMatchParticipants": 0,
+      "maxParticipants": 45,
+      "waitingCount": 0,
+      "url": "https://shootnscoreit.com/event/22/29298/",
+      "county": "Västra Götalands län",
+      "geocodeSource": "manual",
+      "firstSeen": "2026-07-28"
     },
     {
       "id": "27305",
@@ -490,72 +556,6 @@
       "county": "Västra Götalands län",
       "geocodeSource": "api",
       "firstSeen": "2026-07-04"
-    },
-    {
-      "id": "29298",
-      "name": "P4 DS Klubbmatch 2/8",
-      "date": "2026-08-02",
-      "endDate": "",
-      "organizer": "P4 Dynamiska Skyttar",
-      "discipline": "IPSC Handgun & PCC",
-      "categories": [
-        "hg1",
-        "hg2",
-        "hg33",
-        "hg3",
-        "hg5",
-        "hg12",
-        "hg17",
-        "hg18",
-        "hgc",
-        "rf1",
-        "rf2",
-        "rf19",
-        "rf20",
-        "mr1",
-        "mr2",
-        "mr3",
-        "rf12",
-        "rf3",
-        "rf4",
-        "rf11",
-        "rf16",
-        "rf17",
-        "rf18",
-        "rfc",
-        "sg1",
-        "sg2",
-        "sg3",
-        "sg4",
-        "ai1",
-        "ai2",
-        "ai3",
-        "ai3a",
-        "ai8",
-        "ai9",
-        "ai10",
-        "ai11",
-        "ai12",
-        "pc2",
-        "pc3"
-      ],
-      "level": "Training",
-      "country": "SWE",
-      "city": "",
-      "venue": "",
-      "lat": 58.39,
-      "lng": 13.84,
-      "registrationOpen": true,
-      "registrationStarts": "2026-07-28",
-      "registrationDeadline": "",
-      "participants": 0,
-      "mainMatchParticipants": 0,
-      "maxParticipants": 45,
-      "waitingCount": 0,
-      "url": "https://shootnscoreit.com/event/22/29298/",
-      "county": "Västra Götalands län",
-      "geocodeSource": "manual",
-      "firstSeen": "2026-07-28"
     },
     {
       "id": "28848",
@@ -4371,12 +4371,12 @@
       "organizer": "Uppsala Dynamiska Skyttar",
       "discipline": "DMR",
       "categories": [
-        "DOS",
-        "DOB",
-        "D5S",
-        "D5V",
-        "D7S",
-        "D7V"
+        "SA Open",
+        "Bolt Open",
+        "5.56 SA",
+        "5.56 SA LPVO",
+        "7.62 SA",
+        "7.62 SA LPVO"
       ],
       "level": "Club",
       "country": "SWE",
@@ -4404,7 +4404,7 @@
       "organizer": "Troms Langhold Klubb",
       "discipline": "PRS Points (100p)",
       "categories": [
-        "BGX"
+        "Bolt"
       ],
       "level": "International",
       "country": "NOR",
@@ -7459,12 +7459,12 @@
       "organizer": "🖤",
       "discipline": "DMR",
       "categories": [
-        "DOS",
-        "DOB",
-        "D5S",
-        "D5V",
-        "D7S",
-        "D7V"
+        "SA Open",
+        "Bolt Open",
+        "5.56 SA",
+        "5.56 SA LPVO",
+        "7.62 SA",
+        "7.62 SA LPVO"
       ],
       "level": "Regional",
       "country": "SWE",
@@ -7911,7 +7911,7 @@
       "organizer": "",
       "discipline": "PRS Points (100p)",
       "categories": [
-        "BGX",
+        "Bolt",
         "BGO",
         "BGT",
         "BGP",
@@ -13340,10 +13340,10 @@
       "organizer": "🖤",
       "discipline": "DMR",
       "categories": [
-        "DOS",
-        "DOB",
-        "D5S",
-        "D7S"
+        "SA Open",
+        "Bolt Open",
+        "5.56 SA",
+        "7.62 SA"
       ],
       "level": "Unsanctioned",
       "country": "SWE",
@@ -15877,12 +15877,12 @@
       "organizer": "Uppsala Dynamiska Skyttar",
       "discipline": "DMR",
       "categories": [
-        "DOS",
-        "DOB",
-        "D5S",
-        "D5V",
-        "D7S",
-        "D7V"
+        "SA Open",
+        "Bolt Open",
+        "5.56 SA",
+        "5.56 SA LPVO",
+        "7.62 SA",
+        "7.62 SA LPVO"
       ],
       "level": "Club",
       "country": "SWE",
@@ -19885,12 +19885,12 @@
       "organizer": "Uppsala Dynamiska Skyttar",
       "discipline": "DMR",
       "categories": [
-        "DOS",
-        "DOB",
-        "D5S",
-        "D5V",
-        "D7S",
-        "D7V"
+        "SA Open",
+        "Bolt Open",
+        "5.56 SA",
+        "5.56 SA LPVO",
+        "7.62 SA",
+        "7.62 SA LPVO"
       ],
       "level": "Club",
       "country": "SWE",
@@ -23561,12 +23561,12 @@
       "organizer": "Uppsala Dynamiska Skyttar",
       "discipline": "DMR",
       "categories": [
-        "DOS",
-        "DOB",
-        "D5S",
-        "D5V",
-        "D7S",
-        "D7V"
+        "SA Open",
+        "Bolt Open",
+        "5.56 SA",
+        "5.56 SA LPVO",
+        "7.62 SA",
+        "7.62 SA LPVO"
       ],
       "level": "Club",
       "country": "SWE",
@@ -41940,7 +41940,7 @@
       "organizer": "PRS Shooting Club Finland ry",
       "discipline": "PRS Points (100p)",
       "categories": [
-        "BGX",
+        "Bolt",
         "BGT",
         "BGP",
         "OGX"
@@ -42557,12 +42557,12 @@
       "organizer": "🖤",
       "discipline": "DMR",
       "categories": [
-        "DOS",
-        "DOB",
-        "D5S",
-        "D5V",
-        "D7S",
-        "D7V"
+        "SA Open",
+        "Bolt Open",
+        "5.56 SA",
+        "5.56 SA LPVO",
+        "7.62 SA",
+        "7.62 SA LPVO"
       ],
       "level": "Club",
       "country": "SWE",
@@ -46685,10 +46685,10 @@
       "organizer": "",
       "discipline": "DMR",
       "categories": [
-        "DOS",
-        "DOB",
-        "D5S",
-        "D7S"
+        "SA Open",
+        "Bolt Open",
+        "5.56 SA",
+        "7.62 SA"
       ],
       "level": "Club",
       "country": "SWE",
@@ -47354,7 +47354,7 @@
       "organizer": "Enköpings Skyttesällskap",
       "discipline": "DMR",
       "categories": [
-        "D5V"
+        "5.56 SA LPVO"
       ],
       "level": "Club",
       "country": "SWE",
@@ -50909,9 +50909,9 @@
       "organizer": "Österhaninge Skytteförening",
       "discipline": "DMR",
       "categories": [
-        "DOS",
-        "DOB",
-        "D5S"
+        "SA Open",
+        "Bolt Open",
+        "5.56 SA"
       ],
       "level": "Club",
       "country": "SWE",
@@ -61658,9 +61658,9 @@
       "organizer": "Kikarfält STHLM",
       "discipline": "DMR",
       "categories": [
-        "DOS",
-        "DOB",
-        "D7S",
+        "SA Open",
+        "Bolt Open",
+        "7.62 SA",
         "DS2",
         "DS3"
       ],
@@ -62497,7 +62497,7 @@
       "organizer": "",
       "discipline": "DMR",
       "categories": [
-        "DOS"
+        "SA Open"
       ],
       "level": "Club",
       "country": "SWE",
@@ -66722,12 +66722,12 @@
       "organizer": "Österhaninge Skytteförening",
       "discipline": "DMR",
       "categories": [
-        "DOS",
-        "DOB",
-        "D5S",
-        "D5V",
-        "D7S",
-        "D7V"
+        "SA Open",
+        "Bolt Open",
+        "5.56 SA",
+        "5.56 SA LPVO",
+        "7.62 SA",
+        "7.62 SA LPVO"
       ],
       "level": "Club",
       "country": "SWE",
