@@ -303,16 +303,36 @@ export function collectDivisions(raw) {
 // unrecognized codes are left as-is (better to show a raw code than a wrong
 // guess). Extend this table as more codes are confirmed against real data.
 //
-// The Steel Challenge codes below were verified by cross-referencing the
-// `divisions` field of two real events against their live match pages'
-// displayed division lists (same code order in both, one a subset of the
-// other):
+// SSI appears to use more than one code scheme for the same Steel Challenge
+// divisions across different events (likely due to the underlying
+// multi-select field's choices changing over time) — both schemes below have
+// been observed in real data and are mapped.
+//
+// Scheme A verified by cross-referencing the `divisions` field of two real
+// events against their live match pages' displayed division lists (same code
+// order in both, one a subset of the other):
 //   NM Steel Challenge 2026: rio,ris,pco,pci,opp,std,opt,prd,pro,cls,rvl,rlo,rli
 //     = Rimfire Open, Rimfire Iron, PCC Open, PCC Iron, Open, Standard,
 //       Optics, Production, Production Optics, Classic, Revolver,
 //       Rimfire Long Gun Open, Rimfire Long Gun Iron
 //   DM Steel Challenge 2026: rio,ris,opp,std,opt,prd,pro,cls,rvl
 //     (same codes/order, minus pco/pci/rlo/rli)
+//
+// Scheme B verified for event https://shootnscoreit.com/event/30/1265/
+// ("Bep steel 4"), whose live page lists the same 13 divisions as NM Steel
+// Challenge above but whose raw `divisions` field returns
+// rro,rri,rpo,rpi,PCC Open,PCC Iron,Open,Standard,Optics,Production,
+// Production Optics,Classic,Revolver — i.e. 9 of the 13 already came through
+// as plain text, leaving exactly {rro,rri,rpo,rpi} to account for the
+// remaining {Rimfire Open, Rimfire Iron, Rimfire Long Gun Open, Rimfire Long
+// Gun Iron}. The individual pairing (rpo/rpi = the plain "Rimfire" pistol
+// divisions, rro/rri = the "Rimfire Long Gun"/rifle divisions) is confirmed
+// by event https://shootnscoreit.com/event/30/1261/ ("Bep steel lvl 2"),
+// whose `divisions` list contains BOTH the plain-text "Rimfire Open"/"Rimfire
+// Iron" entries AND rro/rri/rpo/rpi as separate items in the same list —
+// proving rro/rri/rpo/rpi are NOT duplicates of the plain-text pistol
+// divisions, so they must be the long-gun/rifle variants paired by the
+// matching o/i (Open/Iron) suffix and the r/p (rifle/pistol) prefix.
 const DIVISION_CODE_LABELS = {
   rio: 'Rimfire Open',
   ris: 'Rimfire Iron',
@@ -327,6 +347,10 @@ const DIVISION_CODE_LABELS = {
   rvl: 'Revolver',
   rlo: 'Rimfire Long Gun Open',
   rli: 'Rimfire Long Gun Iron',
+  rpo: 'Rimfire Open',
+  rpi: 'Rimfire Iron',
+  rro: 'Rimfire Long Gun Open',
+  rri: 'Rimfire Long Gun Iron',
 };
 
 export function translateDivisionCode(code) {

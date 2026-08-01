@@ -145,6 +145,15 @@ test('translateDivisionCode maps known Steel Challenge codes to their display na
   assert.equal(translateDivisionCode('rvl'), 'Revolver');
 });
 
+test('translateDivisionCode maps the alternate Steel Challenge rimfire code scheme (rpo/rpi/rro/rri)', () => {
+  // Verified against https://shootnscoreit.com/event/30/1265/ and
+  // https://shootnscoreit.com/event/30/1261/ (see comment on DIVISION_CODE_LABELS).
+  assert.equal(translateDivisionCode('rpo'), 'Rimfire Open');
+  assert.equal(translateDivisionCode('rpi'), 'Rimfire Iron');
+  assert.equal(translateDivisionCode('rro'), 'Rimfire Long Gun Open');
+  assert.equal(translateDivisionCode('rri'), 'Rimfire Long Gun Iron');
+});
+
 test('translateDivisionCode passes unrecognized codes through unchanged', () => {
   assert.equal(translateDivisionCode('hg1'), 'hg1');
 });
