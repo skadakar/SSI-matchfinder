@@ -70,6 +70,16 @@ python3 -m http.server 8000 --directory docs
 # → open http://localhost:8000
 ```
 
+### 5. Run tests
+
+The Node.js pipeline scripts (`scripts/fetch-matches.js`, `scripts/discord-notify.js`) have unit tests using Node's built-in test runner. Network calls (SSI API, Nominatim, Discord) are always mocked — tests never hit real services.
+
+```bash
+npm test
+```
+
+CI runs this automatically on every push/PR via `.github/workflows/ci.yml`.
+
 ## Token lifecycle in Actions
 
 The workflow step "Prepare SSI refresh token" works in this order:

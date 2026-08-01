@@ -13,7 +13,7 @@
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs';
 import { resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -37,19 +37,11 @@ if (existsSync(envPath)) {
 
 // ─── CONFIG ──────────────────────────────────────────────────────────────────
 // Adjust these once you have inspected the raw API response via --dump.
-
+// Presence is validated lazily in the CLI-entry guard at the bottom of this
+// file (not at module load time), so this module can be imported by tests
+// without these being set.
 const REFRESH_TOKEN = process.env.SSI_REFRESH_TOKEN;
-if (!REFRESH_TOKEN) {
-  console.error('Error: SSI_REFRESH_TOKEN environment variable is not set.');
-  console.error('Run: python scripts/get_refresh_token.py  then add the value to .env');
-  process.exit(1);
-}
-
 const API_KEY = process.env.SSI_API_KEY;
-if (!API_KEY) {
-  console.error('Error: SSI_API_KEY environment variable is not set.');
-  process.exit(1);
-}
 
 const GQL_ENDPOINT = 'https://shootnscoreit.com/graphql/';
 
@@ -64,8 +56,12 @@ const _countriesEnv = process.env.SSI_COUNTRIES ?? '';
 const COUNTRIES = new Set(_countriesEnv.split(',').map(c => c.trim().toUpperCase()).filter(Boolean));
 
 const NOMINATIM_BASE = 'https://nominatim.openstreetmap.org/search';
-/** Nominatim usage policy: max 1 req/s. Keep this >= 1200 ms. */
-const NOMINATIM_DELAY_MS = 1250;
+/** Nominatim usage policy: max 1 req/s. Keep this >= 1200 ms in production.
+ * Overridable via env (e.g. NOMINATIM_DELAY_MS=0) so tests don't have to
+ * wait on the real rate-limit delay. */
+const NOMINATIM_DELAY_MS = process.env.NOMINATIM_DELAY_MS !== undefined
+  ? Number(process.env.NOMINATIM_DELAY_MS)
+  : 1250;
 
 // ─── PATHS ───────────────────────────────────────────────────────────────────
 
@@ -98,7 +94,7 @@ function sleep(ms) {
   return new Promise(res => setTimeout(res, ms));
 }
 
-async function postGql(query, variables, auth, apiKey) {
+export async function postGql(query, variables, auth, apiKey) {
   const res = await fetch(GQL_ENDPOINT, {
     method: 'POST',
     headers: {
@@ -163,7 +159,7 @@ const EVENTS_Q = `
   }
 `;
 
-async function fetchAllMatches() {
+export async function fetchAllMatches() {
   console.log('Authenticating via refresh token...');
   const jwt = await getJwt();
   let auth = `JWT ${jwt}`;
@@ -226,12 +222,12 @@ async function fetchAllMatches() {
 
 /** Return false for SSI's 'no location' sentinel (85.05, -180) and any
  * other geometrically impossible values. */
-function validCoords(lat, lng) {
+export function validCoords(lat, lng) {
   if (lat == null || lng == null) return false;
   return Math.abs(parseFloat(lng)) < 180 && Math.abs(parseFloat(lat)) <= 85;
 }
 
-function normalizeMatch(raw) {
+export function normalizeMatch(raw) {
   const org = raw.organizer || {};
   let lat = raw.lat != null ? raw.lat : org.lat;
   let lng = raw.lng != null ? raw.lng : org.lng;
@@ -266,7 +262,7 @@ function normalizeMatch(raw) {
 
 // ─── GEOCODING ───────────────────────────────────────────────────────────────
 
-async function geocodeOrganizer(name, country, cache, manual) {
+export async function geocodeOrganizer(name, country, cache, manual) {
   const key = name.toLowerCase().trim();
 
   // 1. Manual override
@@ -350,7 +346,7 @@ async function enrichWithCoordinates(matches, cache) {
   }
 }
 
-async function reverseGeocode(lat, lng, cache) {
+export async function reverseGeocode(lat, lng, cache) {
   const key = `${lat.toFixed(5)},${lng.toFixed(5)}`;
   if (key in cache) {
     const val = cache[key];
@@ -385,7 +381,7 @@ async function reverseGeocode(lat, lng, cache) {
   }
 }
 
-function inheritOrganizerCoords(matches) {
+export function inheritOrganizerCoords(matches) {
   /** Where an organizer has at least one event with precise API coordinates
    * (the actual range), inherit those coords for their other events that fell
    * back to Nominatim / geocache (city-centre approximations). */
@@ -525,7 +521,22 @@ async function main() {
     }
   }}
 
-main().catch(err => {
-  console.error(err);
-  process.exit(1);
-});
+// Only run as a CLI entry point (e.g. `node scripts/fetch-matches.js`), not
+// when this module is imported by tests.
+const isMainModule = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
+if (isMainModule) {
+  if (!REFRESH_TOKEN) {
+    console.error('Error: SSI_REFRESH_TOKEN environment variable is not set.');
+    console.error('Run: python scripts/get_refresh_token.py  then add the value to .env');
+    process.exit(1);
+  }
+  if (!API_KEY) {
+    console.error('Error: SSI_API_KEY environment variable is not set.');
+    process.exit(1);
+  }
+
+  main().catch(err => {
+    console.error(err);
+    process.exit(1);
+  });
+}

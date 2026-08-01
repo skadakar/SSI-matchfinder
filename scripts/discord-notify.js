@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -23,7 +23,7 @@ const DATA_PATH = resolve(ROOT, 'docs', 'data', 'matches.json');
 const STATE_PATH = resolve(ROOT, 'data', 'discord-notify-state.json');
 const CONFIG_PATH = resolve(ROOT, 'data', 'discord-notify-config.json');
 
-function loadWebhookMap(raw) {
+export function loadWebhookMap(raw) {
   if (!raw) return {};
   try {
     const parsed = JSON.parse(raw);
@@ -37,12 +37,10 @@ function loadWebhookMap(raw) {
   }
 }
 
-let webhookMapCache = null;
-
+// Not cached: this is cheap (parsing a small env var) and re-reading it fresh
+// each call keeps behavior predictable in tests that vary the env var.
 function getWebhookMap() {
-  if (webhookMapCache) return webhookMapCache;
-  webhookMapCache = loadWebhookMap(process.env.DISCORD_NOTIFY_WEBHOOKS || '');
-  return webhookMapCache;
+  return loadWebhookMap(process.env.DISCORD_NOTIFY_WEBHOOKS || '');
 }
 
 function loadJson(path, fallback) {
@@ -67,13 +65,13 @@ function parseDate(str) {
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
-function normalizeFilterValues(values) {
+export function normalizeFilterValues(values) {
   if (!values) return [];
   if (!Array.isArray(values)) return [];
   return values.map(value => String(value).trim()).filter(Boolean);
 }
 
-function isMatchIncluded(match, rule, cutoffDate = null) {
+export function isMatchIncluded(match, rule, cutoffDate = null) {
   const country = (match.country || '').toUpperCase();
   const discipline = (match.discipline || '').trim();
   const level = (match.level || '').trim();
@@ -109,7 +107,7 @@ function isMatchIncluded(match, rule, cutoffDate = null) {
   return true;
 }
 
-function resolveWebhook(rule) {
+export function resolveWebhook(rule) {
   const webhookMap = getWebhookMap();
   const raw = rule.webhook || '';
   if (!raw) return { webhook: null, source: 'none', reference: null, missing: false };
@@ -120,7 +118,7 @@ function resolveWebhook(rule) {
   return { webhook: null, source: 'env', reference: raw, missing: true };
 }
 
-function resolveCutoffDays(config, rule) {
+export function resolveCutoffDays(config, rule) {
   const raw = rule.cutoffDays ?? config.cutoffDays ?? 14;
   const parsed = Number(raw);
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : 14;
@@ -138,7 +136,7 @@ function sleep(ms) {
   return new Promise(res => setTimeout(res, ms));
 }
 
-function chunkArray(array, size) {
+export function chunkArray(array, size) {
   const chunks = [];
   for (let i = 0; i < array.length; i += size) {
     chunks.push(array.slice(i, i + size));
@@ -146,7 +144,7 @@ function chunkArray(array, size) {
   return chunks;
 }
 
-function buildDiscordPayload(matches) {
+export function buildDiscordPayload(matches) {
   return {
     embeds: matches.map(match => ({
       title: match.name,
@@ -162,7 +160,7 @@ function buildDiscordPayload(matches) {
   };
 }
 
-async function postToDiscord(webhook, matches, context = 'alert') {
+export async function postToDiscord(webhook, matches, context = 'alert') {
   // `matches` must already be <= DISCORD_EMBED_LIMIT entries; callers are
   // expected to chunk before calling this.
   const payload = buildDiscordPayload(matches);
@@ -278,7 +276,12 @@ async function main() {
   }
 }
 
-main().catch(err => {
-  console.error(err.message || err);
-  process.exit(1);
-});
+// Only run the CLI entry point when this file is executed directly (e.g.
+// `node scripts/discord-notify.js`), not when it's imported by tests.
+const isMainModule = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
+if (isMainModule) {
+  main().catch(err => {
+    console.error(err.message || err);
+    process.exit(1);
+  });
+}
