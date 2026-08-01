@@ -168,6 +168,14 @@ const EVENTS_Q = `
       ... on PrecisionMatchNode { get_divisions_display }
       ... on GenericMatchNode { get_divisions_display }
       ... on IpscMatchNode { get_divisions_display }
+      # "Serie"/Cup events (a container aggregating several component
+      # matches, e.g. a club's DMR Cup) are a DIFFERENT GraphQL type from
+      # the individual match types above, and were previously not queried
+      # for divisions at all — see the DIVISION_FIELDS comment block below.
+      ... on IpscSerieNode { get_serie_divisions_display }
+      ... on PrecisionSerieNode { get_divisions_display }
+      ... on NordicSerieNode { get_weapon_groups_display }
+      ... on PpcSerieNode { get_weapon_classes_display }
     }
   }
 `;
@@ -334,18 +342,39 @@ export function parseDivisions(str) {
 // `get_divisions_display` is already in DIVISION_FIELDS below (shared with
 // Precision/Generic), so no code change was needed there — just adding the
 // query fragment was sufficient.
+//
+// RESOLVED (2026-08-01): "Serie"/Cup events (e.g. "UDS DMR CUP 2026",
+// https://shootnscoreit.com/event/117/123/) are a SEPARATE GraphQL type
+// from the individual component matches they group (e.g.
+// https://shootnscoreit.com/event/110/1086/, one of the cup's matches) —
+// content_type 110 is PrecisionMatchNode, but content_type 117 is
+// PrecisionSerieNode, a distinct type our query never had a fragment for,
+// so these Serie events always got empty divisions. Only 4 disciplines
+// have a Serie type at all (confirmed via full __schema introspection —
+// Steel/Cmp/Idpa/Generic/Sass do not): IpscSerieNode, PrecisionSerieNode,
+// NordicSerieNode, PpcSerieNode. Their division field names mostly match
+// their non-Serie counterpart (PrecisionSerieNode/NordicSerieNode/
+// PpcSerieNode reuse get_divisions_display/get_weapon_groups_display/
+// get_weapon_classes_display respectively — already in DIVISION_FIELDS),
+// EXCEPT IpscSerieNode, which uses `get_serie_divisions_display` instead of
+// IpscMatchNode's `get_divisions_display` (added to DIVISION_FIELDS below).
+// Confirmed via production content_type breakdown before this fix: ctype
+// 43 (IpscSerieNode, 5 events), 117 (PrecisionSerieNode, 1 event) and 136
+// (NordicSerieNode, 3 events) had 100% empty divisions, while their
+// individual-match counterparts (22, 110, 91) had 0% empty.
 const DIVISION_FIELDS = [
-  'get_divisions_display',           // Precision, Generic, IPSC
+  'get_divisions_display',           // Precision, Generic, IPSC, PrecisionSerie
   'get_division_display',            // Steel (misnamed resolver, see above)
   'get_handgun_divs_display',        // IDPA
   'get_rifle_divs_display',          // CMP, IDPA
   'get_shotgun_divs_display',        // IDPA
-  'get_weapon_classes_display',      // PPC
+  'get_weapon_classes_display',      // PPC, PpcSerie
   'get_rimfire_rifle_divs_display',  // CMP
   'get_pistol_divs_display',         // CMP
   'get_rimfire_pistol_divs_display', // CMP
   'get_dmg_divs_display',            // IDPA
-  'get_weapon_groups_display',       // Nordic
+  'get_weapon_groups_display',       // Nordic, NordicSerie
+  'get_serie_divisions_display',     // IpscSerie (IpscMatchNode uses get_divisions_display instead)
 ];
 
 export function collectDivisions(raw) {

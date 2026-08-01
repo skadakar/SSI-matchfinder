@@ -163,6 +163,28 @@ test('collectDivisions returns an empty array when no division fields are presen
   assert.deepEqual(collectDivisions({}), []);
 });
 
+// ─── Serie/Cup events (a distinct GraphQL type from individual matches) ────
+
+test('collectDivisions merges an IpscSerieNode\'s get_serie_divisions_display field (different field name than IpscMatchNode)', () => {
+  const raw = { get_serie_divisions_display: 'Open, Standard, Production' };
+  assert.deepEqual(collectDivisions(raw), ['Open', 'Standard', 'Production']);
+});
+
+test('collectDivisions merges a PrecisionSerieNode\'s get_divisions_display field (same field name as PrecisionMatchNode)', () => {
+  const raw = { get_divisions_display: 'SA Open, Bolt Open' };
+  assert.deepEqual(collectDivisions(raw), ['SA Open', 'Bolt Open']);
+});
+
+test('collectDivisions merges a NordicSerieNode\'s get_weapon_groups_display field (same field name as NordicMatchNode)', () => {
+  const raw = { get_weapon_groups_display: 'B & 3' };
+  assert.deepEqual(collectDivisions(raw), ['B & 3']);
+});
+
+test('collectDivisions merges a PpcSerieNode\'s get_weapon_classes_display field (same field name as PpcMatchNode)', () => {
+  const raw = { get_weapon_classes_display: 'Open, Stock' };
+  assert.deepEqual(collectDivisions(raw), ['Open', 'Stock']);
+});
+
 test('collectDivisions no longer needs a code-translation step — *_display fields already return human-readable text', () => {
   // Previously this required a hardcoded DIVISION_CODE_LABELS table mapping
   // raw codes (rio, DOS, BGX, ...) to labels. Querying *_display fields
