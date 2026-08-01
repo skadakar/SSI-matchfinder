@@ -144,41 +144,60 @@ async function getJwt() {
   return d.token.token;
 }
 
-const EVENTS_Q = `
-  query GetEvents($after: String!, $before: String!) {
-    events(starts_after: $after, starts_before: $before) {
-      ... on EventInterface {
-        id name starts ends rule
-        venue lat lng region
-        registration registration_starts registration_closes is_registration_possible
-        competitors_count max_competitors number_of_mainmatch_competitors_registered number_of_mainmatch_competitors_waiting
-        get_content_type_key get_full_rule_display get_full_level_display
-        organizer { name city country lat lng }
-      }
-      ... on SteelMatchNode { get_division_display }
-      ... on PpcMatchNode { get_weapon_classes_display }
-      ... on CmpMatchNode {
-        get_rifle_divs_display get_rimfire_rifle_divs_display
-        get_pistol_divs_display get_rimfire_pistol_divs_display
-      }
-      ... on IdpaMatchNode {
-        get_handgun_divs_display get_rifle_divs_display get_shotgun_divs_display get_dmg_divs_display
-      }
-      ... on NordicMatchNode { get_weapon_groups_display }
-      ... on PrecisionMatchNode { get_divisions_display }
-      ... on GenericMatchNode { get_divisions_display }
-      ... on IpscMatchNode { get_divisions_display }
-      # "Serie"/Cup events (a container aggregating several component
-      # matches, e.g. a club's DMR Cup) are a DIFFERENT GraphQL type from
-      # the individual match types above, and were previously not queried
-      # for divisions at all — see the DIVISION_FIELDS comment block below.
-      ... on IpscSerieNode { get_serie_divisions_display }
-      ... on PrecisionSerieNode { get_divisions_display }
-      ... on NordicSerieNode { get_weapon_groups_display }
-      ... on PpcSerieNode { get_weapon_classes_display }
-    }
+const EVENT_INTERFACE_FIELDS = `
+  ... on EventInterface {
+    id name starts ends rule
+    venue lat lng region
+    registration registration_starts registration_closes is_registration_possible
+    competitors_count max_competitors number_of_mainmatch_competitors_registered number_of_mainmatch_competitors_waiting
+    get_content_type_key get_full_rule_display get_full_level_display
+    organizer { name city country lat lng }
   }
 `;
+
+// Per-match-type division fields, keyed by GraphQL type name so a single
+// troublemaker (see KNOWN RISK below) can be excluded from a fallback query
+// without hand-editing a big fragment string.
+const DIVISION_FRAGMENTS = {
+  SteelMatchNode:     'get_division_display',    // misnamed resolver, see KNOWN RISK below
+  PpcMatchNode:       'get_weapon_classes_display',
+  CmpMatchNode:       'get_rifle_divs_display get_rimfire_rifle_divs_display get_pistol_divs_display get_rimfire_pistol_divs_display',
+  IdpaMatchNode:      'get_handgun_divs_display get_rifle_divs_display get_shotgun_divs_display get_dmg_divs_display',
+  NordicMatchNode:    'get_weapon_groups_display',
+  PrecisionMatchNode: 'get_divisions_display',
+  GenericMatchNode:   'get_divisions_display',
+  IpscMatchNode:      'get_divisions_display',
+  // "Serie"/Cup events (a container aggregating several component matches,
+  // e.g. a club's DMR Cup) are a DIFFERENT GraphQL type from the individual
+  // match types above, and were previously not queried for divisions at all
+  // — see the DIVISION_FIELDS comment block below.
+  IpscSerieNode:      'get_serie_divisions_display',
+  PrecisionSerieNode: 'get_divisions_display',
+  NordicSerieNode:    'get_weapon_groups_display',
+  PpcSerieNode:       'get_weapon_classes_display',
+};
+
+function buildEventsQuery(excludeTypes = []) {
+  const fragments = Object.entries(DIVISION_FRAGMENTS)
+    .filter(([type]) => !excludeTypes.includes(type))
+    .map(([type, fields]) => `... on ${type} { ${fields} }`)
+    .join('\n      ');
+  return `
+    query GetEvents($after: String!, $before: String!) {
+      events(starts_after: $after, starts_before: $before) {
+        ${EVENT_INTERFACE_FIELDS}
+        ${fragments}
+      }
+    }
+  `;
+}
+
+// Tiered queries, tried in order for each window: the full query first, then
+// progressively stripped-down fallbacks if a resolver crash breaks it — see
+// the KNOWN RISK comment on queryWindow's retry loop below.
+const EVENTS_Q            = buildEventsQuery();
+const EVENTS_Q_NO_STEEL    = buildEventsQuery(['SteelMatchNode']);
+const EVENTS_Q_MINIMAL     = buildEventsQuery(Object.keys(DIVISION_FRAGMENTS));
 
 export async function fetchAllMatches() {
   console.log('Authenticating via refresh token...');
@@ -189,35 +208,72 @@ export async function fetchAllMatches() {
   const todayStr = today.toISOString().slice(0, 10);
   const allEvents = new Map(); // id → event, deduplicated across chunks
 
-  async function queryWindow(after, before) {
-    const variables = { after, before };
-    let result = await postGql(EVENTS_Q, variables, auth, API_KEY);
+  async function runQuery(query, variables) {
+    let result = await postGql(query, variables, auth, API_KEY);
     if (result.errors) {
       const msgs = result.errors.map(e => e.message);
       if (msgs.some(m => m.toLowerCase().includes('authenticated'))) {
         auth   = `Bearer ${jwt}`;
-        result = await postGql(EVENTS_Q, variables, auth, API_KEY);
-      }
-      if (result.errors) {
-        // "not authenticated" errors are systemic (nothing will work without
-        // valid auth) — abort the whole run rather than silently producing
-        // an empty dataset.
-        if (result.errors.some(e => e.message.toLowerCase().includes('authenticated'))) {
-          console.error('Events query errors:', result.errors.map(e => e.message));
-          process.exit(1);
-        }
-        // Any other error (e.g. a single event's resolver crashing server-
-        // side, such as the known SteelMatchNode.get_division_display
-        // naming-mismatch bug) is scoped to this one query window — GraphQL's
-        // `events` field is non-null-of-non-null, so one crashing event nulls
-        // the entire window's result, but NOT the rest of the fetch. Skip
-        // this window (losing only its matches) and keep going, rather than
-        // aborting the entire run over one bad match.
-        console.warn(`Skipping window ${after}..${before} due to GraphQL error(s): ${result.errors.map(e => e.message).join('; ')}`);
-        return [];
+        result = await postGql(query, variables, auth, API_KEY);
       }
     }
-    return result.data.events ?? [];
+    return result;
+  }
+
+  // KNOWN RISK: some *MatchNode "*_display" resolvers crash server-side for
+  // specific events (e.g. SteelMatchNode.get_division_display is misnamed in
+  // SSI's own schema and throws "'SteelMatch' object has no attribute
+  // 'get_division_display'" for at least one real match). Because GraphQL's
+  // `events` field is non-null-of-non-null, a crash resolving ANY single
+  // event's field nulls the *entire* events list for that query window, not
+  // just the offending event — so a single bad match can silently make every
+  // other match starting in that ~3-day window (any discipline) vanish from
+  // the whole dataset, indefinitely (the same match keeps re-triggering the
+  // crash every time its window is queried again, whether that's still the
+  // "future" range or, once its date passes, the "past" lookback range).
+  //
+  // To limit the blast radius, each window is retried with progressively
+  // reduced queries rather than giving up on the first error:
+  //   1. EVENTS_Q          — full query, all per-type division fragments.
+  //   2. EVENTS_Q_NO_STEEL — drops just the known-crash-prone Steel fragment
+  //      (the single most likely culprit); recovers the window's events
+  //      (including any OTHER Steel matches) at the cost of that window's
+  //      Steel matches missing their divisions.
+  //   3. EVENTS_Q_MINIMAL  — drops ALL division fragments; recovers the
+  //      window's events with no divisions data at all, in case the crash
+  //      turns out to be caused by a different/new resolver, not Steel.
+  // Only if even the minimal query fails is the window truly skipped.
+  async function queryWindow(after, before) {
+    const variables = { after, before };
+    const tiers = [
+      { query: EVENTS_Q,         label: 'full query' },
+      { query: EVENTS_Q_NO_STEEL, label: 'fallback query without SteelMatchNode divisions' },
+      { query: EVENTS_Q_MINIMAL,  label: 'minimal fallback query without any division fields' },
+    ];
+    let lastMsgs = null;
+    for (let i = 0; i < tiers.length; i++) {
+      const result = await runQuery(tiers[i].query, variables);
+      if (!result.errors) {
+        if (i > 0) {
+          console.warn(`Window ${after}..${before}: recovered via ${tiers[i].label} after earlier tier(s) errored.`);
+        }
+        return result.data.events ?? [];
+      }
+      const msgs = result.errors.map(e => e.message);
+      // "not authenticated" errors are systemic (nothing will work without
+      // valid auth) — abort the whole run rather than silently producing
+      // an empty dataset.
+      if (msgs.some(m => m.toLowerCase().includes('authenticated'))) {
+        console.error('Events query errors:', msgs);
+        process.exit(1);
+      }
+      lastMsgs = msgs;
+    }
+    // Every tier (including the minimal, division-free one) failed — this is
+    // scoped to this one query window and skipped rather than aborting the
+    // entire run over one bad window.
+    console.warn(`Skipping window ${after}..${before} entirely — even the minimal query failed: ${lastMsgs.join('; ')}`);
+    return [];
   }
 
   // 1. Upcoming events in 3-day chunks to stay under the API result cap (~100/query)

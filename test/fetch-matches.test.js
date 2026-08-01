@@ -460,7 +460,7 @@ test('fetchAllMatches aborts the run when refresh-token authentication fails', a
   }
 });
 
-test('fetchAllMatches skips a single query window (rather than aborting the whole run) when a non-auth GraphQL error occurs, e.g. a resolver crash', async () => {
+test('fetchAllMatches recovers a window via a fallback query (dropping the Steel fragment) when the full query errors, e.g. the known SteelMatchNode resolver crash', async () => {
   let eventsCalls = 0;
   const originalExit = process.exit;
   process.exit = (code) => { throw new Error(`PROCESS_EXIT_${code}`); };
@@ -471,16 +471,51 @@ test('fetchAllMatches skips a single query window (rather than aborting the whol
     }
     eventsCalls++;
     // Simulate the known SteelMatchNode.get_division_display naming-mismatch
-    // crash on the very first window only; every other window succeeds.
+    // crash: the full query (tier 1, includes the Steel fragment) fails for
+    // the very first window; the fallback query without it (tier 2) succeeds.
     if (eventsCalls === 1) {
+      assert.ok(body.query.includes('SteelMatchNode'));
       return { body: { errors: [{ message: "'SteelMatch' object has no attribute 'get_division_display'" }] } };
+    }
+    if (eventsCalls === 2) {
+      assert.ok(!body.query.includes('SteelMatchNode'));
     }
     return { body: { data: { events: [{ id: 1, name: 'Event One' }] } } };
   });
   try {
     const events = await fetchAllMatches();
-    // The crashing window contributed no events, but the run did not abort —
-    // events from all other (successful) windows are still collected.
+    // The window recovered via the fallback query rather than being skipped
+    // entirely — its (non-Steel) events are still present.
+    assert.ok(events.length > 0);
+    assert.ok(events.every(e => e.id === 1));
+  } finally {
+    process.exit = originalExit;
+    restoreFetch();
+  }
+});
+
+test('fetchAllMatches skips a window entirely (rather than aborting the whole run) only when even the minimal, division-free fallback query also errors', async () => {
+  let eventsCalls = 0;
+  const originalExit = process.exit;
+  process.exit = (code) => { throw new Error(`PROCESS_EXIT_${code}`); };
+  stubFetch((url, options) => {
+    const body = JSON.parse(options.body);
+    if (body.query.includes('mutation Refresh')) {
+      return { body: { data: { refresh_token: { success: true, token: { token: 'JWT123' } } } } };
+    }
+    eventsCalls++;
+    // Simulate a total outage for the very first window: all three tiers
+    // (full, no-Steel, minimal) fail for its first 3 calls; every other
+    // window's calls succeed normally.
+    if (eventsCalls <= 3) {
+      return { body: { errors: [{ message: 'Internal server error' }] } };
+    }
+    return { body: { data: { events: [{ id: 1, name: 'Event One' }] } } };
+  });
+  try {
+    const events = await fetchAllMatches();
+    // The fully-failed window contributed no events, but the run did not
+    // abort — events from all other (successful) windows are still collected.
     assert.ok(events.length > 0);
     assert.ok(events.every(e => e.id === 1));
   } finally {
