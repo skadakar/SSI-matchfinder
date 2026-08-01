@@ -763,7 +763,11 @@ function _repopulateSelect(selId, clearBtnId, values, selected) {
 }
 
 function syncFilterInputs() {
-  document.getElementById('filter-search').value     = state.q;
+  const searchInput = document.getElementById('filter-search');
+  // Avoid stomping the value while the user is actively typing: state.q is
+  // trimmed on every 'input' event, so re-assigning .value here would strip
+  // a trailing space right after it's typed, breaking multi-word queries.
+  if (document.activeElement !== searchInput) searchInput.value = state.q;
   document.getElementById('filter-reg-open').checked = state.regOpen;
   document.getElementById('filter-future-only').checked = state.futureOnly;
   document.getElementById('filter-new-match').checked = state.newMatch;
