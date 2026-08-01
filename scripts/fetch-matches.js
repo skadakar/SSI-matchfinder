@@ -155,22 +155,22 @@ const EVENTS_Q = `
         get_content_type_key get_full_rule_display get_full_level_display
         organizer { name city country lat lng }
       }
-      ... on SteelMatchNode { get_division_display }
+      ... on SteelMatchNode { divisions }
       ... on IpscMatchNode {
-        get_handgun_divs_display get_rifle_divs_display get_mini_rifle_divs_display
-        get_prec_rifle_divs_display get_shotgun_divs_display get_air_divs_display get_pcc_divs_display
+        handgun_divs rifle_divs mini_rifle_divs
+        prec_rifle_divs shotgun_divs air_divs pcc_divs
       }
-      ... on PpcMatchNode { get_weapon_classes_display }
+      ... on PpcMatchNode { weapon_classes }
       ... on CmpMatchNode {
-        get_rifle_divs_display get_rimfire_rifle_divs_display
-        get_pistol_divs_display get_rimfire_pistol_divs_display
+        rifle_divs rimfire_rifle_divs
+        pistol_divs rimfire_pistol_divs
       }
       ... on IdpaMatchNode {
-        get_handgun_divs_display get_rifle_divs_display get_shotgun_divs_display get_dmg_divs_display
+        handgun_divs rifle_divs shotgun_divs dmg_divs
       }
-      ... on NordicMatchNode { get_weapon_groups_display }
-      ... on PrecisionMatchNode { get_divisions_display }
-      ... on GenericMatchNode { get_divisions_display }
+      ... on NordicMatchNode { weapon_groups }
+      ... on PrecisionMatchNode { divisions }
+      ... on GenericMatchNode { divisions }
     }
   }
 `;
@@ -251,39 +251,48 @@ export function parseCategories(str) {
 }
 
 // SSI models each match's discipline as a distinct GraphQL type (SteelMatchNode,
-// IpscMatchNode, CmpMatchNode, ...), each exposing its own "*_divs_display" /
-// "get_division_display" field(s) listing the equipment categories/divisions the
-// match supports (e.g. a Steel Challenge match offering
-// "Rimfire Open, Rimfire Iron, PCC Open, ..."). These are a facet of one match
-// (not multiple separate disciplines) — often reusing IPSC's own division names
-// (Open, Standard, Production, Classic, Revolver, ...) even for non-IPSC
-// disciplines — so they're merged into a single `categories` array on the match
-// rather than duplicating the match per category (which would also duplicate
-// Discord notifications per match id).
+// IpscMatchNode, CmpMatchNode, ...), each exposing its own raw field(s) listing
+// the equipment categories/divisions the match supports (e.g. a Steel Challenge
+// match offering "Rimfire Open, Rimfire Iron, PCC Open, ..."). These are a facet
+// of one match (not multiple separate disciplines) — often reusing IPSC's own
+// division names (Open, Standard, Production, Classic, Revolver, ...) even for
+// non-IPSC disciplines — so they're merged into a single `categories` array on
+// the match rather than duplicating the match per category (which would also
+// duplicate Discord notifications per match id).
 //
-// NOTE: IPSC's own `get_categories_display` field is intentionally NOT
-// included here — it's an unrelated demographic classification (Senior,
-// Junior, Lady, ...), not an equipment division.
-const DIVISION_DISPLAY_FIELDS = [
-  'get_division_display',            // Steel
-  'get_handgun_divs_display',        // IPSC, IDPA
-  'get_rifle_divs_display',          // IPSC, CMP, IDPA
-  'get_mini_rifle_divs_display',     // IPSC
-  'get_prec_rifle_divs_display',     // IPSC
-  'get_shotgun_divs_display',        // IPSC, IDPA
-  'get_air_divs_display',            // IPSC
-  'get_pcc_divs_display',            // IPSC
-  'get_weapon_classes_display',      // PPC
-  'get_rimfire_rifle_divs_display',  // CMP
-  'get_pistol_divs_display',         // CMP
-  'get_rimfire_pistol_divs_display', // CMP
-  'get_dmg_divs_display',            // IDPA
-  'get_weapon_groups_display',       // Nordic
-  'get_divisions_display',           // Precision, Generic
+// NOTE: we deliberately query the *raw* fields (e.g. `divisions`,
+// `handgun_divs`) rather than their "*_display" counterparts. SSI's own schema
+// has at least one broken display resolver (SteelMatchNode.get_division_display
+// crashes server-side with "'SteelMatch' object has no attribute
+// 'get_division_display'" — a naming-mismatch bug, since the underlying field
+// is plural `divisions` but the declared display resolver is singular). Since
+// we can't verify every other type's display resolver without risking more
+// production failures (the fetch runs unattended in CI), the raw fields are
+// the safe choice even though their values may be internal codes rather than
+// pretty labels.
+//
+// Also note: IPSC's own `categories`/`get_categories_display` field is
+// intentionally NOT included here — it's an unrelated demographic
+// classification (Senior, Junior, Lady, ...), not an equipment division.
+const DIVISION_FIELDS = [
+  'divisions',            // Steel, Precision, Generic
+  'handgun_divs',         // IPSC, IDPA
+  'rifle_divs',           // IPSC, CMP, IDPA
+  'mini_rifle_divs',      // IPSC
+  'prec_rifle_divs',      // IPSC
+  'shotgun_divs',         // IPSC, IDPA
+  'air_divs',             // IPSC
+  'pcc_divs',             // IPSC
+  'weapon_classes',       // PPC
+  'rimfire_rifle_divs',   // CMP
+  'pistol_divs',          // CMP
+  'rimfire_pistol_divs',  // CMP
+  'dmg_divs',             // IDPA
+  'weapon_groups',        // Nordic
 ];
 
 export function collectDivisions(raw) {
-  const all = DIVISION_DISPLAY_FIELDS.flatMap(field => parseCategories(raw[field]));
+  const all = DIVISION_FIELDS.flatMap(field => parseCategories(raw[field]));
   return [...new Set(all)];
 }
 
