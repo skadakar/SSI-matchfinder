@@ -167,7 +167,7 @@ const EVENTS_Q = `
       ... on NordicMatchNode { get_weapon_groups_display }
       ... on PrecisionMatchNode { get_divisions_display }
       ... on GenericMatchNode { get_divisions_display }
-      ... on IpscMatchNode { get_divisions_display } # EXPERIMENT: under live verification
+      ... on IpscMatchNode { get_divisions_display }
     }
   }
 `;
@@ -301,31 +301,40 @@ export function parseCategories(str) {
 // intentionally NOT included here — it's an unrelated demographic
 // classification (Senior, Junior, Lady, ...), not an equipment division.
 //
-// IMPORTANT: NO IpscMatchNode division field is queried at all. Every field
-// tried (handgun_divs, rifle_divs, mini_rifle_divs, prec_rifle_divs,
-// shotgun_divs, air_divs, pcc_divs, and tournament_divisions) was verified
-// against multiple real IPSC matches with known live-page divisions and
-// found to return WRONG data — not a crash, but a bloated near-constant
-// superset of ~20-50 codes spanning every firearm type at once, or (for
-// tournament_divisions) an identical static 4-code value regardless of the
-// match's actual divisions:
-//   event/22/25845: page shows 7 divisions — raw per-firearm fields
-//     returned 23 codes across every firearm type.
-//   event/22/28228: page shows 17 divisions — raw fields returned 52 codes.
-//   event/22/29250: page shows 4 divisions — raw fields returned 37 codes.
-//   event/22/28975: page shows 4 unrelated categories — raw fields
-//     returned 39 codes.
-//   event/22/26862: page shows 8 divisions, but tournament_divisions
-//     returned the same 4 codes (iop, imd, ist, ipr) as events 25845,
-//     28228, 28350 and 29250 — despite all having different real divisions.
-// Because this is silently-wrong data rather than a crash, the "survive the
-// failure" resilience above cannot detect or protect against it. No known
-// working IPSC field currently exists; IPSC matches intentionally show
-// empty categories until SSI fixes their API server-side or a genuinely
-// correct field surfaces (see git history: commits 973ed92, b7ca371, 586bd28
-// for the full verified evidence trail).
+// IpscMatchNode: every PER-FIREARM field (handgun_divs, rifle_divs,
+// mini_rifle_divs, prec_rifle_divs, shotgun_divs, air_divs, pcc_divs, and
+// tournament_divisions — raw AND _display variants) was verified against
+// multiple real IPSC matches with known live-page divisions and found to
+// return WRONG data (a bloated near-constant superset of unrelated codes,
+// or a static value identical across unrelated matches) — see git history
+// (commits 973ed92, b7ca371, 586bd28) for the full evidence trail. Those
+// fields are NOT queried.
+//
+// RESOLVED (2026-08-01, commit 21fd02e): IpscMatchNode also has a
+// `get_divisions_display` field (no corresponding raw `divisions` field —
+// likely a computed aggregate across all the per-firearm fields above,
+// unlike its broken siblings). This one is CORRECT: verified live against
+// 4 real matches with known live-page divisions —
+//   event/22/26862: live page shows "Open, Standard, Standard Optics,
+//     Optics, Production, Revolver, Classic, Production Optics" (8) —
+//     get_divisions_display returned the exact same 8 values.
+//   event/22/25845: live page shows 7 divisions — returned exactly 7
+//     matching values (Open, Standard, Optics, Production, Revolver,
+//     Classic, Production Optics).
+//   event/22/28228: live page shows 17 divisions — returned exactly 17
+//     matching values.
+//   event/22/29250: an IPSC Rifle match — returned 4 rifle-specific values
+//     (Semi-Auto Open, Semi-Auto Standard, Semi-Auto Limited, Manual Action
+//     Bolt), not the bloated all-firearm-types superset the broken fields
+//     returned for the same event.
+// Across the full production dataset (726 events), 362 of 364 IPSC matches
+// now get non-empty, correct categories; the 2 remaining are a beginner
+// clinic and a test match with no divisions configured at all (expected).
+// `get_divisions_display` is already in DIVISION_FIELDS below (shared with
+// Precision/Generic), so no code change was needed there — just adding the
+// query fragment was sufficient.
 const DIVISION_FIELDS = [
-  'get_divisions_display',           // Precision, Generic
+  'get_divisions_display',           // Precision, Generic, IPSC
   'get_division_display',            // Steel (misnamed resolver, see above)
   'get_handgun_divs_display',        // IDPA
   'get_rifle_divs_display',          // CMP, IDPA

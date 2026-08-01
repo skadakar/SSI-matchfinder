@@ -139,7 +139,7 @@ test('collectDivisions ignores IPSC\'s unrelated categories field (demographic, 
   assert.deepEqual(collectDivisions(raw), ['Open', 'Standard']);
 });
 
-test('collectDivisions never collects any IpscMatchNode division field (all confirmed broken, see DIVISION_FIELDS comment)', () => {
+test('collectDivisions never collects any broken IpscMatchNode per-firearm division field (see DIVISION_FIELDS comment)', () => {
   const raw = {
     handgun_divs: 'Open',
     mini_rifle_divs: 'Open',
@@ -150,6 +150,13 @@ test('collectDivisions never collects any IpscMatchNode division field (all conf
     get_tournament_divisions_display: 'Open, Standard, Optics, Production, Revolver, Classic, Production Optics',
   };
   assert.deepEqual(collectDivisions(raw), []);
+});
+
+test('collectDivisions merges an IpscMatchNode\'s get_divisions_display field (confirmed correct, unlike its per-firearm siblings)', () => {
+  const raw = { get_divisions_display: 'Open, Standard, Standard Optics, Optics, Production, Revolver, Classic, Production Optics' };
+  assert.deepEqual(collectDivisions(raw), [
+    'Open', 'Standard', 'Standard Optics', 'Optics', 'Production', 'Revolver', 'Classic', 'Production Optics',
+  ]);
 });
 
 test('collectDivisions returns an empty array when no division fields are present', () => {
