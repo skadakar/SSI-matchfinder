@@ -352,14 +352,16 @@ export function parseDivisions(str) {
 // GraphQL's `events` field is doubly non-null (`[EventInterface!]!`), a
 // crash resolving ANY single event's field nulls the *entire* events list
 // for that query window — there's no way to get partial per-event data back
-// from one crashing request. Rather than avoid the field forever (which
-// would mean resurrecting a hardcoded Steel Challenge translation table),
-// `queryWindow` treats non-auth GraphQL errors as "skip this window": it
-// logs a warning and returns no events for that ~3-day window rather than
-// aborting the whole run. A Steel Challenge match that hits this bug costs
-// us that one window's matches (all disciplines, not just Steel) instead of
-// the entire fetch — a deliberate "survive the failure, accept not knowing
-// in the odd case it crashes" trade-off.
+// Rather than avoid the field forever (which would mean resurrecting a
+// hardcoded Steel Challenge translation table), `queryWindow` retries a
+// failing window with progressively reduced queries (see EVENTS_Q_NO_STEEL /
+// EVENTS_Q_MINIMAL and the KNOWN RISK comment on queryWindow further down):
+// dropping just the Steel fragment means the crashing resolver is never
+// invoked, so every event in the window — including the Steel match that
+// triggered the crash — still comes back; only the divisions for Steel
+// matches in that window come back empty (`collectDivisions` simply gets
+// `undefined` for the un-queried field, same as any match with no divisions
+// configured). Only if that fallback also fails is the whole window skipped.
 //
 // Also note: IPSC's own `categories`/`get_categories_display` GraphQL field
 // (SSI's own naming) is intentionally NOT included here — it's an unrelated
