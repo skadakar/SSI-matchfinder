@@ -271,6 +271,47 @@ jobs:
             fi
           fi
 
+      - name: DEBUG probe event 28322 division fields
+        env:
+          SSI_API_KEY: ${{ secrets.SSI_API_KEY }}
+        run: |
+          node - <<'NODE'
+          (async () => {
+            const endpoint = 'https://shootnscoreit.com/graphql/';
+            const rt = process.env.SSI_REFRESH_TOKEN;
+            const authHeaders = (auth) => ({
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              ...(auth ? { Authorization: auth } : {}),
+              ...(process.env.SSI_API_KEY ? { 'x-api-key': process.env.SSI_API_KEY } : {}),
+            });
+            async function gql(query, variables, auth) {
+              const res = await fetch(endpoint, { method: 'POST', headers: authHeaders(auth), body: JSON.stringify({ query, variables }) });
+              return res.json();
+            }
+            const refreshQ = `mutation Refresh($rt: String!) { refresh_token(refresh_token: $rt, revoke_refresh_token: false) { success errors token { token } } }`;
+            const r = await gql(refreshQ, { rt });
+            const jwt = r?.data?.refresh_token?.token?.token;
+            if (!jwt) { console.error('DEBUG PROBE: auth failed', JSON.stringify(r)); return; }
+            const auth = `JWT ${jwt}`;
+            const eventQ = `query GetEvent($ct: Int!, $id: String!) {
+              event(content_type: $ct, id: $id) {
+                ... on EventInterface { id name rule get_content_type_key }
+                ... on IpscMatchNode {
+                  tournament_divisions handgun_divs rifle_divs mini_rifle_divs prec_rifle_divs
+                  shotgun_divs air_divs pcc_divs categories
+                  get_tournament_divisions_display get_handgun_divs_display get_rifle_divs_display
+                  get_mini_rifle_divs_display get_prec_rifle_divs_display get_shotgun_divs_display
+                  get_air_divs_display get_pcc_divs_display get_categories_display
+                  get_divisions_display
+                }
+              }
+            }`;
+            const evR = await gql(eventQ, { ct: 22, id: '28322' }, auth);
+            console.log('DEBUG PROBE event 28322 result:', JSON.stringify(evR, null, 2));
+          })().catch(e => console.error('DEBUG PROBE exception:', e));
+          NODE
+
       - name: Fetch match data
         env:
           SSI_API_KEY:       ${{ secrets.SSI_API_KEY }}
