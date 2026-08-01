@@ -5,7 +5,6 @@ import {
   normalizeMatch,
   parseCategories,
   collectDivisions,
-  translateDivisionCode,
   geocodeOrganizer,
   reverseGeocode,
   inheritOrganizerCoords,
@@ -113,35 +112,42 @@ test('parseCategories returns an empty array for missing/blank input', () => {
   assert.deepEqual(parseCategories(undefined), []);
 });
 
-test('collectDivisions merges a Steel match\'s divisions field', () => {
-  const raw = { divisions: 'Rimfire Open, Rimfire Iron, PCC Open, PCC Iron, Open, Standard, Optics, Production' };
+test('collectDivisions merges a Steel match\'s get_division_display field', () => {
+  const raw = { get_division_display: 'Rimfire Open, Rimfire Iron, PCC Open, PCC Iron, Open, Standard, Optics, Production' };
   assert.deepEqual(
     collectDivisions(raw),
     ['Rimfire Open', 'Rimfire Iron', 'PCC Open', 'PCC Iron', 'Open', 'Standard', 'Optics', 'Production'],
   );
 });
 
-test('collectDivisions merges multiple per-firearm division fields (e.g. IDPA) and dedupes', () => {
+test('collectDivisions merges a Precision/Generic match\'s get_divisions_display field', () => {
+  const raw = { get_divisions_display: 'SA Open, Bolt Open, 5.56 SA' };
+  assert.deepEqual(collectDivisions(raw), ['SA Open', 'Bolt Open', '5.56 SA']);
+});
+
+test('collectDivisions merges multiple per-firearm *_display division fields (e.g. IDPA) and dedupes', () => {
   const raw = {
-    handgun_divs: 'Open, Standard, Production',
-    rifle_divs: 'Open, Manual',
-    shotgun_divs: 'Open',
+    get_handgun_divs_display: 'Open, Standard, Production',
+    get_rifle_divs_display: 'Open, Manual',
+    get_shotgun_divs_display: 'Open',
   };
   assert.deepEqual(collectDivisions(raw), ['Open', 'Standard', 'Production', 'Manual']);
 });
 
 test('collectDivisions ignores IPSC\'s unrelated categories field (demographic, not equipment)', () => {
-  const raw = { handgun_divs: 'Open, Standard', categories: 'Senior, Lady' };
+  const raw = { get_handgun_divs_display: 'Open, Standard', categories: 'Senior, Lady' };
   assert.deepEqual(collectDivisions(raw), ['Open', 'Standard']);
 });
 
-test('collectDivisions no longer collects the confirmed-broken IPSC division fields (see DIVISION_FIELDS comment)', () => {
+test('collectDivisions never collects any IpscMatchNode division field (all confirmed broken, see DIVISION_FIELDS comment)', () => {
   const raw = {
+    handgun_divs: 'Open',
     mini_rifle_divs: 'Open',
     prec_rifle_divs: 'Open',
     air_divs: 'Open',
     pcc_divs: 'Open',
     tournament_divisions: 'Open, Standard, Optics, Production, Revolver, Classic, Production Optics',
+    get_tournament_divisions_display: 'Open, Standard, Optics, Production, Revolver, Classic, Production Optics',
   };
   assert.deepEqual(collectDivisions(raw), []);
 });
@@ -150,56 +156,14 @@ test('collectDivisions returns an empty array when no division fields are presen
   assert.deepEqual(collectDivisions({}), []);
 });
 
-test('translateDivisionCode maps known Steel Challenge codes to their display names', () => {
-  assert.equal(translateDivisionCode('rio'), 'Rimfire Open');
-  assert.equal(translateDivisionCode('std'), 'Standard');
-  assert.equal(translateDivisionCode('rvl'), 'Revolver');
-});
-
-test('translateDivisionCode maps the alternate Steel Challenge rimfire code scheme (rpo/rpi/rro/rri)', () => {
-  // Verified against https://shootnscoreit.com/event/30/1265/ and
-  // https://shootnscoreit.com/event/30/1261/ (see comment on DIVISION_CODE_LABELS).
-  assert.equal(translateDivisionCode('rpo'), 'Rimfire Open');
-  assert.equal(translateDivisionCode('rpi'), 'Rimfire Iron');
-  assert.equal(translateDivisionCode('rro'), 'Rimfire Long Gun Open');
-  assert.equal(translateDivisionCode('rri'), 'Rimfire Long Gun Iron');
-});
-
-test('translateDivisionCode maps known DMR/PRS (PrecisionMatchNode) codes to their display names', () => {
-  // Verified against https://shootnscoreit.com/event/110/1086/ and
-  // https://shootnscoreit.com/event/110/1084/.
-  assert.equal(translateDivisionCode('DOS'), 'SA Open');
-  assert.equal(translateDivisionCode('DOB'), 'Bolt Open');
-  assert.equal(translateDivisionCode('D5S'), '5.56 SA');
-  assert.equal(translateDivisionCode('D5V'), '5.56 SA LPVO');
-  assert.equal(translateDivisionCode('D7S'), '7.62 SA');
-  assert.equal(translateDivisionCode('D7V'), '7.62 SA LPVO');
-  assert.equal(translateDivisionCode('BGX'), 'Bolt');
-});
-
-test('translateDivisionCode maps more DMR/PRS codes (BGO/RFX) to their display names', () => {
-  // Verified against https://shootnscoreit.com/event/110/1097/ and
-  // https://shootnscoreit.com/event/110/1098/.
-  assert.equal(translateDivisionCode('BGO'), 'Bolt Open');
-  assert.equal(translateDivisionCode('RFX'), 'Rimfire');
-});
-
-test('translateDivisionCode passes unrecognized codes through unchanged', () => {
-  assert.equal(translateDivisionCode('hg1'), 'hg1');
-});
-
-test('collectDivisions translates a real Steel Challenge match\'s raw division codes', () => {
-  // Verified against NM Steel Challenge 2026's live match page.
-  const raw = { divisions: 'rio,ris,pco,pci,opp,std,opt,prd,pro,cls,rvl,rlo,rli' };
+test('collectDivisions no longer needs a code-translation step — *_display fields already return human-readable text', () => {
+  // Previously this required a hardcoded DIVISION_CODE_LABELS table mapping
+  // raw codes (rio, DOS, BGX, ...) to labels. Querying *_display fields
+  // directly means whatever SSI's API returns is used as-is.
+  const raw = { get_division_display: 'rio,ris,pco,pci,opp,std,opt,prd,pro,cls,rvl,rlo,rli' };
   assert.deepEqual(collectDivisions(raw), [
-    'Rimfire Open', 'Rimfire Iron', 'PCC Open', 'PCC Iron', 'Open', 'Standard',
-    'Optics', 'Production', 'Production Optics', 'Classic', 'Revolver',
-    'Rimfire Long Gun Open', 'Rimfire Long Gun Iron',
+    'rio', 'ris', 'pco', 'pci', 'opp', 'std', 'opt', 'prd', 'pro', 'cls', 'rvl', 'rlo', 'rli',
   ]);
-});
-
-test('collectDivisions leaves unrecognized codes untranslated', () => {
-  assert.deepEqual(collectDivisions({ handgun_divs: 'hg1,hg2,hg3' }), ['hg1', 'hg2', 'hg3']);
 });
 
 test('normalizeMatch exposes merged equipment categories without duplicating the match', () => {
@@ -207,7 +171,7 @@ test('normalizeMatch exposes merged equipment categories without duplicating the
     id: 1190,
     name: 'NM Steel Challenge 2026',
     rule: 'Steel',
-    divisions: 'Rimfire Open, Rimfire Iron, PCC Open, PCC Iron, Open, Standard, Optics, Production',
+    get_division_display: 'Rimfire Open, Rimfire Iron, PCC Open, PCC Iron, Open, Standard, Optics, Production',
     organizer: { name: 'NOP' },
   };
   const m = normalizeMatch(raw);
@@ -461,6 +425,35 @@ test('fetchAllMatches aborts the run when refresh-token authentication fails', a
   process.exit = (code) => { throw new Error(`PROCESS_EXIT_${code}`); };
   try {
     await assert.rejects(() => fetchAllMatches(), /PROCESS_EXIT_1/);
+  } finally {
+    process.exit = originalExit;
+    restoreFetch();
+  }
+});
+
+test('fetchAllMatches skips a single query window (rather than aborting the whole run) when a non-auth GraphQL error occurs, e.g. a resolver crash', async () => {
+  let eventsCalls = 0;
+  const originalExit = process.exit;
+  process.exit = (code) => { throw new Error(`PROCESS_EXIT_${code}`); };
+  stubFetch((url, options) => {
+    const body = JSON.parse(options.body);
+    if (body.query.includes('mutation Refresh')) {
+      return { body: { data: { refresh_token: { success: true, token: { token: 'JWT123' } } } } };
+    }
+    eventsCalls++;
+    // Simulate the known SteelMatchNode.get_division_display naming-mismatch
+    // crash on the very first window only; every other window succeeds.
+    if (eventsCalls === 1) {
+      return { body: { errors: [{ message: "'SteelMatch' object has no attribute 'get_division_display'" }] } };
+    }
+    return { body: { data: { events: [{ id: 1, name: 'Event One' }] } } };
+  });
+  try {
+    const events = await fetchAllMatches();
+    // The crashing window contributed no events, but the run did not abort —
+    // events from all other (successful) windows are still collected.
+    assert.ok(events.length > 0);
+    assert.ok(events.every(e => e.id === 1));
   } finally {
     process.exit = originalExit;
     restoreFetch();

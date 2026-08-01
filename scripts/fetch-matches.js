@@ -155,18 +155,18 @@ const EVENTS_Q = `
         get_content_type_key get_full_rule_display get_full_level_display
         organizer { name city country lat lng }
       }
-      ... on SteelMatchNode { divisions }
-      ... on PpcMatchNode { weapon_classes }
+      ... on SteelMatchNode { get_division_display }
+      ... on PpcMatchNode { get_weapon_classes_display }
       ... on CmpMatchNode {
-        rifle_divs rimfire_rifle_divs
-        pistol_divs rimfire_pistol_divs
+        get_rifle_divs_display get_rimfire_rifle_divs_display
+        get_pistol_divs_display get_rimfire_pistol_divs_display
       }
       ... on IdpaMatchNode {
-        handgun_divs rifle_divs shotgun_divs dmg_divs
+        get_handgun_divs_display get_rifle_divs_display get_shotgun_divs_display get_dmg_divs_display
       }
-      ... on NordicMatchNode { weapon_groups }
-      ... on PrecisionMatchNode { divisions }
-      ... on GenericMatchNode { divisions }
+      ... on NordicMatchNode { get_weapon_groups_display }
+      ... on PrecisionMatchNode { get_divisions_display }
+      ... on GenericMatchNode { get_divisions_display }
     }
   }
 `;
@@ -190,11 +190,25 @@ export async function fetchAllMatches() {
         result = await postGql(EVENTS_Q, variables, auth, API_KEY);
       }
       if (result.errors) {
-        console.error('Events query errors:', result.errors.map(e => e.message));
-        process.exit(1);
+        // "not authenticated" errors are systemic (nothing will work without
+        // valid auth) — abort the whole run rather than silently producing
+        // an empty dataset.
+        if (result.errors.some(e => e.message.toLowerCase().includes('authenticated'))) {
+          console.error('Events query errors:', result.errors.map(e => e.message));
+          process.exit(1);
+        }
+        // Any other error (e.g. a single event's resolver crashing server-
+        // side, such as the known SteelMatchNode.get_division_display
+        // naming-mismatch bug) is scoped to this one query window — GraphQL's
+        // `events` field is non-null-of-non-null, so one crashing event nulls
+        // the entire window's result, but NOT the rest of the fetch. Skip
+        // this window (losing only its matches) and keep going, rather than
+        // aborting the entire run over one bad match.
+        console.warn(`Skipping window ${after}..${before} due to GraphQL error(s): ${result.errors.map(e => e.message).join('; ')}`);
+        return [];
       }
     }
-    return result.data.events;
+    return result.data.events ?? [];
   }
 
   // 1. Upcoming events in 3-day chunks to stay under the API result cap (~100/query)
@@ -256,163 +270,76 @@ export function parseCategories(str) {
 // the match rather than duplicating the match per category (which would also
 // duplicate Discord notifications per match id).
 //
-// NOTE: we deliberately query the *raw* fields (e.g. `divisions`,
-// `handgun_divs`) rather than their "*_display" counterparts. SSI's own schema
-// has at least one broken display resolver (SteelMatchNode.get_division_display
-// crashes server-side with "'SteelMatch' object has no attribute
-// 'get_division_display'" — a naming-mismatch bug, since the underlying field
-// is plural `divisions` but the declared display resolver is singular). Since
-// we can't verify every other type's display resolver without risking more
-// production failures (the fetch runs unattended in CI), the raw fields are
-// the safe choice even though their values may be internal codes rather than
-// pretty labels.
+// We query each type's "*_display" field (e.g. `get_divisions_display`,
+// `get_handgun_divs_display`) rather than the underlying raw field
+// (`divisions`, `handgun_divs`). The display resolvers return the actual
+// human-readable names SSI shows on its own match pages, so no local
+// code→label translation table is needed. (A hand-maintained table was
+// tried earlier and repeatedly proved to be a maintenance trap: SSI uses
+// multiple different internal code schemes for the same divisions across
+// different events, so new unmapped codes kept surfacing every review
+// round — see git history for the abandoned DIVISION_CODE_LABELS table.)
+//
+// KNOWN RISK: SteelMatchNode's display resolver (`get_division_display`) is
+// misnamed in SSI's own schema (singular "division" despite the underlying
+// field being plural `divisions`), which crashes server-side with
+// "'SteelMatch' object has no attribute 'get_division_display'". Because
+// GraphQL's `events` field is doubly non-null (`[EventInterface!]!`), a
+// crash resolving ANY single event's field nulls the *entire* events list
+// for that query window — there's no way to get partial per-event data back
+// from one crashing request. Rather than avoid the field forever (which
+// would mean resurrecting a hardcoded Steel Challenge translation table),
+// `queryWindow` treats non-auth GraphQL errors as "skip this window": it
+// logs a warning and returns no events for that ~3-day window rather than
+// aborting the whole run. A Steel Challenge match that hits this bug costs
+// us that one window's matches (all disciplines, not just Steel) instead of
+// the entire fetch — a deliberate "survive the failure, accept not knowing
+// in the odd case it crashes" trade-off.
 //
 // Also note: IPSC's own `categories`/`get_categories_display` field is
 // intentionally NOT included here — it's an unrelated demographic
 // classification (Senior, Junior, Lady, ...), not an equipment division.
 //
-// IMPORTANT: IpscMatchNode's own per-firearm division fields (handgun_divs,
-// rifle_divs, mini_rifle_divs, prec_rifle_divs, shotgun_divs, air_divs,
-// pcc_divs) are DELIBERATELY EXCLUDED and no longer queried at all. Verified
-// against 4 real IPSC matches with known live-page divisions — in every
-// case the raw fields returned a bloated, near-constant set of ~20-50
-// numbered codes spanning every firearm type at once (handgun *and* rifle
-// *and* shotgun *and* air *and* PCC codes together), regardless of the
-// match's actual configured divisions or discipline:
-//   event/22/25845 ("IPSC Handgun Level II"): page shows 7 divisions
-//     (Open, Standard, Optics, Production, Revolver, Classic, Production
-//     Optics) — raw fields returned 23 codes across hg/rf/mr/sg/ai/pc.
-//   event/22/28228 ("IPSC Handgun & PCC Level I"): page shows 17
-//     divisions — raw fields returned 52 codes across hg/rf/mr/sg/ai/pc.
-//   event/22/29250 ("IPSC Rifle Level I"): page shows 4 divisions (Semi-
-//     Auto Open, Semi-Auto Standard, Semi-Auto Limited, Manual Action
-//     Bolt) — raw fields returned 37 codes across hg/rf/mr/sg/ai/pc.
-//   event/22/28975 ("NROF Rifle"): page shows 4 unrelated "Klasse"
-//     categories — raw fields returned 39 codes across hg/rf/mr/sg/ai/pc.
-// This is the same class of bug as the SteelMatchNode.get_division_display
-// crash documented above — a resolver returning something other than the
-// actual per-instance selection (most likely the field's full set of
-// possible choices rather than the stored value). Since we can't verify a
-// fix without live authenticated access, and showing this data would be
-// actively misleading (e.g. listing Shotgun/Air/PCC divisions on a rifle-
-// only match), these fields are omitted from the query entirely.
-//
-// ALSO TRIED AND ALSO CONFIRMED BROKEN: IpscMatchNode.tournament_divisions
-// — a separate raw field (schema description: "recognized divisions in
-// event, comma-separated string, max 400 char", identical wording to
-// handgun_divs/rifle_divs/etc. but WITHOUT a firearm-type prefix),
-// discovered via schema introspection and initially believed to be the
-// authoritative field. Reverted after live verification (2026-08-01):
-// event/22/26862 ("IPSC godkjenningskurs, høst, Hokksund") lists 8
-// divisions on its live page (Open, Standard, Standard Optics, Optics,
-// Production, Revolver, Classic, Production Optics), but
-// tournament_divisions returned only 4 codes (iop, imd, ist, ipr) — and
-// that exact same 4-code set was returned for every other IPSC handgun
-// match tested (25845, 28228, 28350, 29250), regardless of each match's
-// actual (and differing) live-page divisions. So the field is not
-// per-instance data at all, just another static/broken value — same bug
-// class as the fields above. No known working field exists for IPSC
-// divisions; they are intentionally left empty until SSI fixes their API.
+// IMPORTANT: NO IpscMatchNode division field is queried at all. Every field
+// tried (handgun_divs, rifle_divs, mini_rifle_divs, prec_rifle_divs,
+// shotgun_divs, air_divs, pcc_divs, and tournament_divisions) was verified
+// against multiple real IPSC matches with known live-page divisions and
+// found to return WRONG data — not a crash, but a bloated near-constant
+// superset of ~20-50 codes spanning every firearm type at once, or (for
+// tournament_divisions) an identical static 4-code value regardless of the
+// match's actual divisions:
+//   event/22/25845: page shows 7 divisions — raw per-firearm fields
+//     returned 23 codes across every firearm type.
+//   event/22/28228: page shows 17 divisions — raw fields returned 52 codes.
+//   event/22/29250: page shows 4 divisions — raw fields returned 37 codes.
+//   event/22/28975: page shows 4 unrelated categories — raw fields
+//     returned 39 codes.
+//   event/22/26862: page shows 8 divisions, but tournament_divisions
+//     returned the same 4 codes (iop, imd, ist, ipr) as events 25845,
+//     28228, 28350 and 29250 — despite all having different real divisions.
+// Because this is silently-wrong data rather than a crash, the "survive the
+// failure" resilience above cannot detect or protect against it. No known
+// working IPSC field currently exists; IPSC matches intentionally show
+// empty categories until SSI fixes their API server-side or a genuinely
+// correct field surfaces (see git history: commits 973ed92, b7ca371, 586bd28
+// for the full verified evidence trail).
 const DIVISION_FIELDS = [
-  'divisions',              // Steel, Precision, Generic
-  'handgun_divs',           // IDPA
-  'rifle_divs',             // CMP, IDPA
-  'shotgun_divs',           // IDPA
-  'weapon_classes',         // PPC
-  'rimfire_rifle_divs',     // CMP
-  'pistol_divs',            // CMP
-  'rimfire_pistol_divs',    // CMP
-  'dmg_divs',               // IDPA
-  'weapon_groups',          // Nordic
+  'get_divisions_display',           // Precision, Generic
+  'get_division_display',            // Steel (misnamed resolver, see above)
+  'get_handgun_divs_display',        // IDPA
+  'get_rifle_divs_display',          // CMP, IDPA
+  'get_shotgun_divs_display',        // IDPA
+  'get_weapon_classes_display',      // PPC
+  'get_rimfire_rifle_divs_display',  // CMP
+  'get_pistol_divs_display',         // CMP
+  'get_rimfire_pistol_divs_display', // CMP
+  'get_dmg_divs_display',            // IDPA
+  'get_weapon_groups_display',       // Nordic
 ];
 
 export function collectDivisions(raw) {
   const all = DIVISION_FIELDS.flatMap(field => parseCategories(raw[field]));
-  const translated = all.map(translateDivisionCode);
-  return [...new Set(translated)];
-}
-
-// The raw division fields above return short internal codes (e.g. Steel
-// Challenge's "rio", "std", "opp") rather than the human-readable names shown
-// on match pages. This table translates known codes to their display names;
-// unrecognized codes are left as-is (better to show a raw code than a wrong
-// guess). Extend this table as more codes are confirmed against real data.
-//
-// SSI appears to use more than one code scheme for the same Steel Challenge
-// divisions across different events (likely due to the underlying
-// multi-select field's choices changing over time) — both schemes below have
-// been observed in real data and are mapped.
-//
-// Scheme A verified by cross-referencing the `divisions` field of two real
-// events against their live match pages' displayed division lists (same code
-// order in both, one a subset of the other):
-//   NM Steel Challenge 2026: rio,ris,pco,pci,opp,std,opt,prd,pro,cls,rvl,rlo,rli
-//     = Rimfire Open, Rimfire Iron, PCC Open, PCC Iron, Open, Standard,
-//       Optics, Production, Production Optics, Classic, Revolver,
-//       Rimfire Long Gun Open, Rimfire Long Gun Iron
-//   DM Steel Challenge 2026: rio,ris,opp,std,opt,prd,pro,cls,rvl
-//     (same codes/order, minus pco/pci/rlo/rli)
-//
-// Scheme B verified for event https://shootnscoreit.com/event/30/1265/
-// ("Bep steel 4"), whose live page lists the same 13 divisions as NM Steel
-// Challenge above but whose raw `divisions` field returns
-// rro,rri,rpo,rpi,PCC Open,PCC Iron,Open,Standard,Optics,Production,
-// Production Optics,Classic,Revolver — i.e. 9 of the 13 already came through
-// as plain text, leaving exactly {rro,rri,rpo,rpi} to account for the
-// remaining {Rimfire Open, Rimfire Iron, Rimfire Long Gun Open, Rimfire Long
-// Gun Iron}. The individual pairing (rpo/rpi = the plain "Rimfire" pistol
-// divisions, rro/rri = the "Rimfire Long Gun"/rifle divisions) is confirmed
-// by event https://shootnscoreit.com/event/30/1261/ ("Bep steel lvl 2"),
-// whose `divisions` list contains BOTH the plain-text "Rimfire Open"/"Rimfire
-// Iron" entries AND rro/rri/rpo/rpi as separate items in the same list —
-// proving rro/rri/rpo/rpi are NOT duplicates of the plain-text pistol
-// divisions, so they must be the long-gun/rifle variants paired by the
-// matching o/i (Open/Iron) suffix and the r/p (rifle/pistol) prefix.
-const DIVISION_CODE_LABELS = {
-  rio: 'Rimfire Open',
-  ris: 'Rimfire Iron',
-  pco: 'PCC Open',
-  pci: 'PCC Iron',
-  opp: 'Open',
-  std: 'Standard',
-  opt: 'Optics',
-  prd: 'Production',
-  pro: 'Production Optics',
-  cls: 'Classic',
-  rvl: 'Revolver',
-  rlo: 'Rimfire Long Gun Open',
-  rli: 'Rimfire Long Gun Iron',
-  rpo: 'Rimfire Open',
-  rpi: 'Rimfire Iron',
-  rro: 'Rimfire Long Gun Open',
-  rri: 'Rimfire Long Gun Iron',
-
-  // DMR/PRS (PrecisionMatchNode `divisions`) codes, verified against
-  // https://shootnscoreit.com/event/110/1086/ ("UDS DMR #1 Silvia"), whose
-  // live page displays "DOS, DOB, D5S, D5V, D7S, D7V" as
-  // "SA Open, Bolt Open, 5.56 SA, 5.56 SA LPVO, 7.62 SA, 7.62 SA LPVO"
-  // (same order in both), and https://shootnscoreit.com/event/110/1084/
-  // ("Bjørkebakk Steel Challenge", a PRS match), whose page displays "BGX"
-  // as "Bolt".
-  DOS: 'SA Open',
-  DOB: 'Bolt Open',
-  D5S: '5.56 SA',
-  D5V: '5.56 SA LPVO',
-  D7S: '7.62 SA',
-  D7V: '7.62 SA LPVO',
-  BGX: 'Bolt',
-
-  // More DMR/PRS codes, verified against
-  // https://shootnscoreit.com/event/110/1097/ ("Hovden X Not Flathill"),
-  // whose live page displays "BGO" as "Bolt Open", and
-  // https://shootnscoreit.com/event/110/1098/ ("Aug. Hemmabaneserien
-  // Långhåll Klass A"), whose live page displays "RFX" as "Rimfire".
-  BGO: 'Bolt Open',
-  RFX: 'Rimfire',
-};
-
-export function translateDivisionCode(code) {
-  return DIVISION_CODE_LABELS[code] ?? code;
+  return [...new Set(all)];
 }
 
 export function normalizeMatch(raw) {
