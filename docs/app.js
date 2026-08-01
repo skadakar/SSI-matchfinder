@@ -8,7 +8,7 @@ const COLUMNS = [
   { key: 'name',                label: 'Match',        defaultVisible: true,  sortable: true  },
   { key: 'organizer',           label: 'Club',         defaultVisible: true,  sortable: true  },
   { key: 'discipline',          label: 'Discipline',   defaultVisible: true,  sortable: true  },
-  { key: 'categories',          label: 'Categories',   defaultVisible: false, sortable: false },
+  { key: 'divisions',           label: 'Divisions',    defaultVisible: false, sortable: false },
   { key: 'level',               label: 'Level',        defaultVisible: false, sortable: true  },
   { key: 'country',             label: 'Country',      defaultVisible: true,  sortable: true  },
   { key: 'county',              label: 'County',       defaultVisible: true,  sortable: true  },
@@ -167,12 +167,12 @@ function countriesMatchDefault(countries) {
 
 // ─── FILTERING + SORTING ──────────────────────────────────────────────────────
 
-/** A match's discipline plus its equipment categories (e.g. Steel Challenge's
- *  "Rimfire Open"/"Production"/"Classic" categories mirror IPSC division
+/** A match's discipline plus its equipment divisions (e.g. Steel Challenge's
+ *  "Rimfire Open"/"Production"/"Classic" divisions mirror IPSC division
  *  names), so filtering/searching by discipline also finds matches that
  *  merely *offer* that division under a different primary discipline. */
 function matchDisciplineValues(m) {
-  const values = [...(m.categories || [])];
+  const values = [...(m.divisions || [])];
   if (m.discipline) values.push(m.discipline);
   return values;
 }
@@ -180,7 +180,7 @@ function matchDisciplineValues(m) {
 function applyFilters(matches) {
   const q = state.q.toLowerCase();
   return matches.filter(m => {
-    if (q && ![m.name, m.organizer, m.city, m.venue, ...(m.categories || [])].some(
+    if (q && ![m.name, m.organizer, m.city, m.venue, ...(m.divisions || [])].some(
       f => (f || '').toLowerCase().includes(q)
     )) return false;
     if (state.countries.length && m.country && !state.countries.includes(m.country)) return false;
@@ -262,7 +262,7 @@ function renderMap(matches) {
       : formatDate(m.date);
 
     const meta = [m.organizer, m.discipline, m.level].filter(l => l && l !== '--').map(escHtml).join(' · ');
-    const categoriesTxt = (m.categories || []).join(', ');
+    const divisionsTxt = (m.divisions || []).join(', ');
 
     let participantsTxt = '';
     if (m.participants != null) {
@@ -281,7 +281,7 @@ function renderMap(matches) {
         <div class="popup-meta">${meta}</div>
         <div class="popup-date">${dateStr}</div>
         ${m.city          ? `<div class="popup-city">${escHtml(m.city)}${m.country ? ', ' + escHtml(m.country) : ''}</div>` : ''}
-        ${categoriesTxt   ? `<div class="popup-categories">${escHtml(categoriesTxt)}</div>` : ''}
+        ${divisionsTxt    ? `<div class="popup-divisions">${escHtml(divisionsTxt)}</div>` : ''}
         ${regBadge        ? `<div>${regBadge}</div>` : ''}
         ${regOpens        ? `<div class="popup-reg-dl">Reg. opens: ${regOpens}</div>` : ''}
         ${m.registrationDeadline ? `<div class="popup-reg-dl">Deadline: ${formatDate(m.registrationDeadline)}</div>` : ''}
@@ -465,8 +465,8 @@ function appendCellContent(td, key, m) {
     case 'discipline':
       td.textContent = m.discipline;
       break;
-    case 'categories':
-      td.textContent = (m.categories || []).join(', ');
+    case 'divisions':
+      td.textContent = (m.divisions || []).join(', ');
       break;
     case 'level':
       td.textContent = (m.level && m.level !== '--') ? m.level : '';

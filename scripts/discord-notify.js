@@ -74,11 +74,11 @@ export function normalizeFilterValues(values) {
 export function isMatchIncluded(match, rule, cutoffDate = null) {
   const country = (match.country || '').toUpperCase();
   const discipline = (match.discipline || '').trim();
-  // Equipment categories (e.g. Steel Challenge's "Rimfire Open"/"Production"/
+  // Equipment divisions (e.g. Steel Challenge's "Rimfire Open"/"Production"/
   // "Classic") mirror IPSC division names, so a rule targeting one of those
   // as a "discipline" should also match matches that merely offer it as a
-  // category under a different primary discipline.
-  const disciplineValues = [discipline, ...(match.categories || []).map(c => String(c).trim())].filter(Boolean);
+  // division under a different primary discipline.
+  const disciplineValues = [discipline, ...(match.divisions || []).map(c => String(c).trim())].filter(Boolean);
   const level = (match.level || '').trim();
   const organizer = (match.organizer || '').trim();
   const region = (match.county || '').trim();
@@ -159,7 +159,7 @@ export function buildDiscordPayload(matches) {
         { name: 'Date', value: match.date || 'TBD', inline: true },
         { name: 'Country', value: match.country || '—', inline: true },
         { name: 'Location', value: [match.city, match.county].filter(Boolean).join(', ') || '—', inline: true },
-        { name: 'Categories', value: (match.categories || []).join(', '), inline: false },
+        { name: 'Divisions', value: (match.divisions || []).join(', '), inline: false },
       ].filter(field => field.value),
       color: 0x2b6cb0,
     })),

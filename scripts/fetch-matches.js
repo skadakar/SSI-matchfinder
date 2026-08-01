@@ -256,19 +256,19 @@ export function validCoords(lat, lng) {
 
 // Split a single human-readable, comma-separated field (e.g.
 // "Rimfire Open, Rimfire Iron, PCC Open") into a trimmed array.
-export function parseCategories(str) {
+export function parseDivisions(str) {
   if (!str) return [];
   return String(str).split(',').map(s => s.trim()).filter(Boolean);
 }
 
 // SSI models each match's discipline as a distinct GraphQL type (SteelMatchNode,
 // IpscMatchNode, CmpMatchNode, ...), each exposing its own raw field(s) listing
-// the equipment categories/divisions the match supports (e.g. a Steel Challenge
-// match offering "Rimfire Open, Rimfire Iron, PCC Open, ..."). These are a facet
+// the equipment divisions the match supports (e.g. a Steel Challenge match
+// offering "Rimfire Open, Rimfire Iron, PCC Open, ..."). These are a facet
 // of one match (not multiple separate disciplines) — often reusing IPSC's own
 // division names (Open, Standard, Production, Classic, Revolver, ...) even for
-// non-IPSC disciplines — so they're merged into a single `categories` array on
-// the match rather than duplicating the match per category (which would also
+// non-IPSC disciplines — so they're merged into a single `divisions` array on
+// the match rather than duplicating the match per division (which would also
 // duplicate Discord notifications per match id).
 //
 // We query each type's "*_display" field (e.g. `get_divisions_display`,
@@ -297,9 +297,10 @@ export function parseCategories(str) {
 // the entire fetch — a deliberate "survive the failure, accept not knowing
 // in the odd case it crashes" trade-off.
 //
-// Also note: IPSC's own `categories`/`get_categories_display` field is
-// intentionally NOT included here — it's an unrelated demographic
-// classification (Senior, Junior, Lady, ...), not an equipment division.
+// Also note: IPSC's own `categories`/`get_categories_display` GraphQL field
+// (SSI's own naming) is intentionally NOT included here — it's an unrelated
+// demographic classification (Senior, Junior, Lady, ...), not an equipment
+// division.
 //
 // IpscMatchNode: every PER-FIREARM field (handgun_divs, rifle_divs,
 // mini_rifle_divs, prec_rifle_divs, shotgun_divs, air_divs, pcc_divs, and
@@ -328,7 +329,7 @@ export function parseCategories(str) {
 //     Bolt), not the bloated all-firearm-types superset the broken fields
 //     returned for the same event.
 // Across the full production dataset (726 events), 362 of 364 IPSC matches
-// now get non-empty, correct categories; the 2 remaining are a beginner
+// now get non-empty, correct divisions; the 2 remaining are a beginner
 // clinic and a test match with no divisions configured at all (expected).
 // `get_divisions_display` is already in DIVISION_FIELDS below (shared with
 // Precision/Generic), so no code change was needed there — just adding the
@@ -348,7 +349,7 @@ const DIVISION_FIELDS = [
 ];
 
 export function collectDivisions(raw) {
-  const all = DIVISION_FIELDS.flatMap(field => parseCategories(raw[field]));
+  const all = DIVISION_FIELDS.flatMap(field => parseDivisions(raw[field]));
   return [...new Set(all)];
 }
 
@@ -364,7 +365,7 @@ export function normalizeMatch(raw) {
     endDate:              (raw.ends    ?? '').slice(0, 10),
     organizer:            org.name    ?? '',
     discipline:           raw.get_full_rule_display || raw.rule || '',
-    categories:           collectDivisions(raw),
+    divisions:            collectDivisions(raw),
     level:                raw.get_full_level_display ?? '',
     country:              org.country || raw.region || '',
     city:                 org.city    ?? '',

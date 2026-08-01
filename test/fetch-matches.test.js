@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   validCoords,
   normalizeMatch,
-  parseCategories,
+  parseDivisions,
   collectDivisions,
   geocodeOrganizer,
   reverseGeocode,
@@ -97,19 +97,19 @@ test('normalizeMatch handles a missing organizer object gracefully', () => {
   assert.equal(m.url, '');
 });
 
-// ─── parseCategories / collectDivisions / normalizeMatch categories ────────
+// ─── parseDivisions / collectDivisions / normalizeMatch divisions ──────────
 
-test('parseCategories splits a comma-separated display string into a trimmed array', () => {
+test('parseDivisions splits a comma-separated display string into a trimmed array', () => {
   assert.deepEqual(
-    parseCategories('Rimfire Open, Rimfire Iron, PCC Open,PCC Iron'),
+    parseDivisions('Rimfire Open, Rimfire Iron, PCC Open,PCC Iron'),
     ['Rimfire Open', 'Rimfire Iron', 'PCC Open', 'PCC Iron'],
   );
 });
 
-test('parseCategories returns an empty array for missing/blank input', () => {
-  assert.deepEqual(parseCategories(''), []);
-  assert.deepEqual(parseCategories(null), []);
-  assert.deepEqual(parseCategories(undefined), []);
+test('parseDivisions returns an empty array for missing/blank input', () => {
+  assert.deepEqual(parseDivisions(''), []);
+  assert.deepEqual(parseDivisions(null), []);
+  assert.deepEqual(parseDivisions(undefined), []);
 });
 
 test('collectDivisions merges a Steel match\'s get_division_display field', () => {
@@ -173,7 +173,7 @@ test('collectDivisions no longer needs a code-translation step — *_display fie
   ]);
 });
 
-test('normalizeMatch exposes merged equipment categories without duplicating the match', () => {
+test('normalizeMatch exposes merged equipment divisions without duplicating the match', () => {
   const raw = {
     id: 1190,
     name: 'NM Steel Challenge 2026',
@@ -182,13 +182,13 @@ test('normalizeMatch exposes merged equipment categories without duplicating the
     organizer: { name: 'NOP' },
   };
   const m = normalizeMatch(raw);
-  assert.equal(m.discipline, 'Steel'); // one discipline per match — categories are a facet, not separate matches
-  assert.deepEqual(m.categories, ['Rimfire Open', 'Rimfire Iron', 'PCC Open', 'PCC Iron', 'Open', 'Standard', 'Optics', 'Production']);
+  assert.equal(m.discipline, 'Steel'); // one discipline per match — divisions are a facet, not separate matches
+  assert.deepEqual(m.divisions, ['Rimfire Open', 'Rimfire Iron', 'PCC Open', 'PCC Iron', 'Open', 'Standard', 'Optics', 'Production']);
 });
 
-test('normalizeMatch defaults categories to an empty array when no division fields are present', () => {
+test('normalizeMatch defaults divisions to an empty array when no division fields are present', () => {
   const m = normalizeMatch({ id: 4, organizer: { name: 'Acme Club' } });
-  assert.deepEqual(m.categories, []);
+  assert.deepEqual(m.divisions, []);
 });
 
 // ─── geocodeOrganizer ────────────────────────────────────────────────────────

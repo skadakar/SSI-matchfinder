@@ -63,19 +63,19 @@ test('buildDiscordPayload omits fields with blank values', () => {
   assert.deepEqual(fieldNames, ['Date', 'Country', 'Location']);
 });
 
-test('buildDiscordPayload adds a Categories field when a match has multiple equipment categories', () => {
+test('buildDiscordPayload adds a Divisions field when a match has multiple equipment divisions', () => {
   const payload = buildDiscordPayload([
-    { name: 'NM Steel Challenge 2026', categories: ['Rimfire Open', 'PCC Open', 'Optics'] },
+    { name: 'NM Steel Challenge 2026', divisions: ['Rimfire Open', 'PCC Open', 'Optics'] },
   ]);
-  const categoriesField = payload.embeds[0].fields.find(f => f.name === 'Categories');
-  assert.ok(categoriesField);
-  assert.equal(categoriesField.value, 'Rimfire Open, PCC Open, Optics');
+  const divisionsField = payload.embeds[0].fields.find(f => f.name === 'Divisions');
+  assert.ok(divisionsField);
+  assert.equal(divisionsField.value, 'Rimfire Open, PCC Open, Optics');
 });
 
-test('buildDiscordPayload omits the Categories field when a match has none (no duplicate embeds per category)', () => {
-  const payload = buildDiscordPayload([{ name: 'Single-category match', categories: [] }]);
-  assert.equal(payload.embeds.length, 1); // one embed per match, regardless of category count
-  assert.ok(!payload.embeds[0].fields.some(f => f.name === 'Categories'));
+test('buildDiscordPayload omits the Divisions field when a match has none (no duplicate embeds per division)', () => {
+  const payload = buildDiscordPayload([{ name: 'Single-division match', divisions: [] }]);
+  assert.equal(payload.embeds.length, 1); // one embed per match, regardless of division count
+  assert.ok(!payload.embeds[0].fields.some(f => f.name === 'Divisions'));
 });
 
 // ─── isMatchIncluded ─────────────────────────────────────────────────────────
@@ -100,15 +100,15 @@ test('isMatchIncluded filters by discipline, level, organizer, region (all must 
   assert.equal(isMatchIncluded({ ...match, county: 'Oslo' }, rule), false);
 });
 
-test('isMatchIncluded matches a rule discipline against a match\'s equipment categories too', () => {
+test('isMatchIncluded matches a rule discipline against a match\'s equipment divisions too', () => {
   // "NM Steel Challenge 2026" has discipline "Steel" but offers a "Rimfire
-  // Open" category (an IPSC division name) — a rule targeting "Rimfire Open"
+  // Open" division (an IPSC division name) — a rule targeting "Rimfire Open"
   // should still pick it up.
   const rule = { disciplines: ['Rimfire Open'] };
-  const steelMatchWithCategory = { discipline: 'Steel', categories: ['Rimfire Open', 'Production'] };
-  assert.equal(isMatchIncluded(steelMatchWithCategory, rule), true);
-  assert.equal(isMatchIncluded({ discipline: 'Steel', categories: ['Production'] }, rule), false);
-  // Still matches by the primary discipline field when no categories are present.
+  const steelMatchWithDivision = { discipline: 'Steel', divisions: ['Rimfire Open', 'Production'] };
+  assert.equal(isMatchIncluded(steelMatchWithDivision, rule), true);
+  assert.equal(isMatchIncluded({ discipline: 'Steel', divisions: ['Production'] }, rule), false);
+  // Still matches by the primary discipline field when no divisions are present.
   assert.equal(isMatchIncluded({ discipline: 'Rimfire Open' }, rule), true);
 });
 
