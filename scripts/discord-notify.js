@@ -195,6 +195,11 @@ async function main() {
   const seenIds = new Set(previousState.seen || []);
   const firstRunAt = previousState.firstRunAt ? new Date(previousState.firstRunAt) : new Date();
   const results = [];
+  const failures = [];
+  // Keys successfully posted to Discord this run. Used so a mid-run failure
+  // on one rule (or one batch within a rule) doesn't cause matches that were
+  // already sent to be lost from state and re-sent again next run.
+  const sentThisRun = new Set();
 
   for (const rule of config.rules || []) {
     const webhookInfo = resolveWebhook(rule);
@@ -215,15 +220,29 @@ async function main() {
     console.log(`Notifier rule "${rule.name || 'alert'}": resolved webhook from ${webhookInfo.source}${webhookInfo.reference ? ` (${webhookInfo.reference})` : ''}`);
     console.log(`Notifier rule "${rule.name || 'alert'}": payload preview -> embeds: ${previewTitles}${newMatches.length > 10 ? ' …' : ''}`);
 
-    if (newMatches.length) {
-      const batches = chunkArray(newMatches, DISCORD_EMBED_LIMIT);
+    if (!newMatches.length) {
+      console.log(`Notifier rule "${rule.name || 'alert'}": no new matches to send.`);
+      continue;
+    }
+
+    const batches = chunkArray(newMatches, DISCORD_EMBED_LIMIT);
+    let sentCount = 0;
+    try {
       for (let i = 0; i < batches.length; i++) {
         await postToDiscord(webhookInfo.webhook, batches[i], rule.name || 'alert');
+        for (const match of batches[i]) {
+          sentThisRun.add(`${rule.name || 'rule'}:${match.id}`);
+        }
+        sentCount += batches[i].length;
         if (i < batches.length - 1) await sleep(DISCORD_CHUNK_DELAY_MS);
       }
       results.push({ rule: rule.name || 'alert', count: newMatches.length, messages: batches.length });
-    } else {
-      console.log(`Notifier rule "${rule.name || 'alert'}": no new matches to send.`);
+    } catch (error) {
+      // Don't let one rule's webhook failure abort the whole run - earlier
+      // batches (and other rules) that already succeeded must still be
+      // persisted as seen so they aren't re-sent next run.
+      console.error(`Notifier rule "${rule.name || 'alert'}": failed after sending ${sentCount}/${newMatches.length} match(es): ${error.message}`);
+      failures.push({ rule: rule.name || 'alert', error: error.message, sent: sentCount, total: newMatches.length });
     }
   }
 
@@ -236,7 +255,13 @@ async function main() {
     cutoffDate.setDate(cutoffDate.getDate() - cutoffDays);
     const filtered = matches.filter(match => isMatchIncluded(match, rule, cutoffDate));
     for (const match of filtered) {
-      nextSeen.push(`${rule.name || 'rule'}:${match.id}`);
+      const key = `${rule.name || 'rule'}:${match.id}`;
+      // Only carry a match forward as "seen" if it was already seen before
+      // this run, or was actually sent successfully this run. Anything that
+      // failed to send stays unseen so it gets retried on the next run.
+      if (seenIds.has(key) || sentThisRun.has(key)) {
+        nextSeen.push(key);
+      }
     }
   }
 
@@ -246,7 +271,11 @@ async function main() {
     updatedAt: new Date().toISOString(),
   });
 
-  console.log(JSON.stringify({ ok: true, results }, null, 2));
+  console.log(JSON.stringify({ ok: failures.length === 0, results, failures }, null, 2));
+
+  if (failures.length) {
+    process.exitCode = 1;
+  }
 }
 
 main().catch(err => {

@@ -297,7 +297,20 @@ jobs:
           DISCORD_WEBHOOK_NORWAY_PCC: ${{ secrets.DISCORD_WEBHOOK_NORWAY_PCC }}
         run: |
           if [ -n "$DISCORD_NOTIFY_CONFIG" ]; then
-            echo "$DISCORD_NOTIFY_CONFIG" > data/discord-notify-config.json
+            # Re-serialize with the same formatting the repo file already
+            # uses (2-space indent + trailing newline) so that whitespace or
+            # key-order differences in the secret don't cause a spurious
+            # commit every run when the underlying config hasn't changed.
+            node -e '
+              const fs = require("fs");
+              try {
+                const cfg = JSON.parse(process.env.DISCORD_NOTIFY_CONFIG);
+                fs.writeFileSync("data/discord-notify-config.json", JSON.stringify(cfg, null, 2) + "\n");
+              } catch (err) {
+                console.error("DISCORD_NOTIFY_CONFIG secret is not valid JSON:", err.message);
+                process.exit(1);
+              }
+            '
           fi
           node scripts/discord-notify.js
 
