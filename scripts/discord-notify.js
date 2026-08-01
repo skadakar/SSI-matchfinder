@@ -92,11 +92,6 @@ export function isMatchIncluded(match, rule, cutoffDate = null, now = new Date()
 
   const country = (match.country || '').toUpperCase();
   const discipline = (match.discipline || '').trim();
-  // Equipment divisions (e.g. Steel Challenge's "Rimfire Open"/"Production"/
-  // "Classic") mirror IPSC division names, so a rule targeting one of those
-  // as a "discipline" should also match matches that merely offer it as a
-  // division under a different primary discipline.
-  const disciplineValues = [discipline, ...(match.divisions || []).map(c => String(c).trim())].filter(Boolean);
   const level = (match.level || '').trim();
   const organizer = (match.organizer || '').trim();
   const region = (match.county || '').trim();
@@ -112,7 +107,7 @@ export function isMatchIncluded(match, rule, cutoffDate = null, now = new Date()
     if (!countries.includes(country)) return false;
   }
   if (disciplines.length) {
-    if (!disciplines.some(d => disciplineValues.includes(d))) return false;
+    if (!disciplines.includes(discipline)) return false;
   }
   if (levels.length) {
     if (!levels.includes(level)) return false;

@@ -101,15 +101,16 @@ test('isMatchIncluded filters by discipline, level, organizer, region (all must 
   assert.equal(isMatchIncluded({ ...match, county: 'Oslo' }, rule), false);
 });
 
-test('isMatchIncluded matches a rule discipline against a match\'s equipment divisions too', () => {
-  // "NM Steel Challenge 2026" has discipline "Steel" but offers a "Rimfire
-  // Open" division (an IPSC division name) — a rule targeting "Rimfire Open"
-  // should still pick it up.
+test('isMatchIncluded filters on the discipline field only, ignoring equipment divisions', () => {
+  // rule.disciplines should only match match.discipline, not the
+  // (much more crowded) match.divisions list — divisions used to be merged
+  // in here so a rule targeting a division name (e.g. an IPSC division
+  // reused by Steel Challenge) would also match, but that made the
+  // discipline field too broad/noisy.
   const rule = { disciplines: ['Rimfire Open'] };
   const steelMatchWithDivision = { discipline: 'Steel', divisions: ['Rimfire Open', 'Production'] };
-  assert.equal(isMatchIncluded(steelMatchWithDivision, rule), true);
-  assert.equal(isMatchIncluded({ discipline: 'Steel', divisions: ['Production'] }, rule), false);
-  // Still matches by the primary discipline field when no divisions are present.
+  assert.equal(isMatchIncluded(steelMatchWithDivision, rule), false);
+  // Still matches by the primary discipline field directly.
   assert.equal(isMatchIncluded({ discipline: 'Rimfire Open' }, rule), true);
 });
 
