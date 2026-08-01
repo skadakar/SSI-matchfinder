@@ -156,10 +156,6 @@ const EVENTS_Q = `
         organizer { name city country lat lng }
       }
       ... on SteelMatchNode { divisions }
-      ... on IpscMatchNode {
-        handgun_divs rifle_divs mini_rifle_divs
-        prec_rifle_divs shotgun_divs air_divs pcc_divs
-      }
       ... on PpcMatchNode { weapon_classes }
       ... on CmpMatchNode {
         rifle_divs rimfire_rifle_divs
@@ -274,15 +270,39 @@ export function parseCategories(str) {
 // Also note: IPSC's own `categories`/`get_categories_display` field is
 // intentionally NOT included here — it's an unrelated demographic
 // classification (Senior, Junior, Lady, ...), not an equipment division.
+//
+// IMPORTANT: IpscMatchNode's own per-firearm division fields (handgun_divs,
+// rifle_divs, mini_rifle_divs, prec_rifle_divs, shotgun_divs, air_divs,
+// pcc_divs) are DELIBERATELY EXCLUDED and no longer queried at all. Verified
+// against 4 real IPSC matches with known live-page divisions — in every
+// case the raw fields returned a bloated, near-constant set of ~20-50
+// numbered codes spanning every firearm type at once (handgun *and* rifle
+// *and* shotgun *and* air *and* PCC codes together), regardless of the
+// match's actual configured divisions or discipline:
+//   event/22/25845 ("IPSC Handgun Level II"): page shows 7 divisions
+//     (Open, Standard, Optics, Production, Revolver, Classic, Production
+//     Optics) — raw fields returned 23 codes across hg/rf/mr/sg/ai/pc.
+//   event/22/28228 ("IPSC Handgun & PCC Level I"): page shows 17
+//     divisions — raw fields returned 52 codes across hg/rf/mr/sg/ai/pc.
+//   event/22/29250 ("IPSC Rifle Level I"): page shows 4 divisions (Semi-
+//     Auto Open, Semi-Auto Standard, Semi-Auto Limited, Manual Action
+//     Bolt) — raw fields returned 37 codes across hg/rf/mr/sg/ai/pc.
+//   event/22/28975 ("NROF Rifle"): page shows 4 unrelated "Klasse"
+//     categories — raw fields returned 39 codes across hg/rf/mr/sg/ai/pc.
+// This is the same class of bug as the SteelMatchNode.get_division_display
+// crash documented above — a resolver returning something other than the
+// actual per-instance selection (most likely the field's full set of
+// possible choices rather than the stored value). Since we can't verify a
+// fix without live authenticated access, and showing this data would be
+// actively misleading (e.g. listing Shotgun/Air/PCC divisions on a rifle-
+// only match), these fields are omitted from the query entirely — IPSC
+// matches simply get an empty `categories` array until a reliable source
+// for their real per-match divisions is found.
 const DIVISION_FIELDS = [
   'divisions',            // Steel, Precision, Generic
-  'handgun_divs',         // IPSC, IDPA
-  'rifle_divs',           // IPSC, CMP, IDPA
-  'mini_rifle_divs',      // IPSC
-  'prec_rifle_divs',      // IPSC
-  'shotgun_divs',         // IPSC, IDPA
-  'air_divs',             // IPSC
-  'pcc_divs',             // IPSC
+  'handgun_divs',         // IDPA
+  'rifle_divs',           // CMP, IDPA
+  'shotgun_divs',         // IDPA
   'weapon_classes',       // PPC
   'rimfire_rifle_divs',   // CMP
   'pistol_divs',          // CMP

@@ -121,11 +121,11 @@ test('collectDivisions merges a Steel match\'s divisions field', () => {
   );
 });
 
-test('collectDivisions merges multiple per-firearm division fields (e.g. IPSC) and dedupes', () => {
+test('collectDivisions merges multiple per-firearm division fields (e.g. IDPA) and dedupes', () => {
   const raw = {
     handgun_divs: 'Open, Standard, Production',
     rifle_divs: 'Open, Manual',
-    pcc_divs: 'Open',
+    shotgun_divs: 'Open',
   };
   assert.deepEqual(collectDivisions(raw), ['Open', 'Standard', 'Production', 'Manual']);
 });
@@ -133,6 +133,16 @@ test('collectDivisions merges multiple per-firearm division fields (e.g. IPSC) a
 test('collectDivisions ignores IPSC\'s unrelated categories field (demographic, not equipment)', () => {
   const raw = { handgun_divs: 'Open, Standard', categories: 'Senior, Lady' };
   assert.deepEqual(collectDivisions(raw), ['Open', 'Standard']);
+});
+
+test('collectDivisions no longer collects IPSC-only division fields (confirmed unreliable, see DIVISION_FIELDS comment)', () => {
+  const raw = {
+    mini_rifle_divs: 'Open',
+    prec_rifle_divs: 'Open',
+    air_divs: 'Open',
+    pcc_divs: 'Open',
+  };
+  assert.deepEqual(collectDivisions(raw), []);
 });
 
 test('collectDivisions returns an empty array when no division fields are present', () => {
@@ -180,7 +190,7 @@ test('collectDivisions translates a real Steel Challenge match\'s raw division c
   ]);
 });
 
-test('collectDivisions leaves unrecognized codes (e.g. IPSC\'s numbered divisions) untranslated', () => {
+test('collectDivisions leaves unrecognized codes untranslated', () => {
   assert.deepEqual(collectDivisions({ handgun_divs: 'hg1,hg2,hg3' }), ['hg1', 'hg2', 'hg3']);
 });
 
