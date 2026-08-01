@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-01T16:03:16.261Z",
+  "generated": "2026-08-01T16:16:18.935Z",
   "count": 726,
   "matches": [
     {
@@ -1569,7 +1569,14 @@
       "endDate": "",
       "organizer": "Uppsala Dynamiska Skyttar",
       "discipline": "DMR",
-      "divisions": [],
+      "divisions": [
+        "SA Open",
+        "Bolt Open",
+        "5.56 SA",
+        "5.56 SA LPVO",
+        "7.62 SA",
+        "7.62 SA LPVO"
+      ],
       "level": "-",
       "country": "SWE",
       "city": "",
@@ -8656,7 +8663,12 @@
       "endDate": "",
       "organizer": "Trondheim Dynamiske Sportsskyttere",
       "discipline": "IPSC Handgun",
-      "divisions": [],
+      "divisions": [
+        "Open",
+        "Modified",
+        "Standard",
+        "Production"
+      ],
       "level": "Training",
       "country": "NOR",
       "city": "",
@@ -9045,7 +9057,13 @@
       "endDate": "",
       "organizer": "Vantaan Reserviläiset",
       "discipline": "SRA Handgun, Rifle, Precision Rifle, Shotgun",
-      "divisions": [],
+      "divisions": [
+        "Open",
+        "Standard",
+        "Military",
+        "Restricted 1",
+        "Restricted 2"
+      ],
       "level": "Club",
       "country": "FIN",
       "city": "",
@@ -9099,7 +9117,10 @@
       "endDate": "2026-10-25",
       "organizer": "Trondheim Dynamiske Sportsskyttere",
       "discipline": "Handgun, Mini Rifle & PCC",
-      "divisions": [],
+      "divisions": [
+        "Open",
+        "Standard"
+      ],
       "level": "Unsanctioned",
       "country": "NOR",
       "city": "",
@@ -11015,7 +11036,12 @@
       "endDate": "",
       "organizer": "Trondheim Dynamiske Sportsskyttere",
       "discipline": "Mini Rifle",
-      "divisions": [],
+      "divisions": [
+        "Open",
+        "Modified",
+        "Standard",
+        "Production"
+      ],
       "level": "Unsanctioned",
       "country": "NOR",
       "city": "",
@@ -16412,7 +16438,12 @@
       "endDate": "",
       "organizer": "",
       "discipline": "IPSC Handgun, Pistol Caliber Carbine & PCC",
-      "divisions": [],
+      "divisions": [
+        "Open",
+        "Modified",
+        "Standard",
+        "Production"
+      ],
       "level": "Level I",
       "country": "NOR",
       "city": "",
@@ -17822,7 +17853,10 @@
       "endDate": "",
       "organizer": "",
       "discipline": "RESUL ",
-      "divisions": [],
+      "divisions": [
+        "Standard",
+        "Open"
+      ],
       "level": "--",
       "country": "FIN",
       "city": "",
@@ -21223,7 +21257,9 @@
       "endDate": "2026-06-13",
       "organizer": "",
       "discipline": "RESUL ",
-      "divisions": [],
+      "divisions": [
+        "Standard"
+      ],
       "level": "--",
       "country": "FIN",
       "city": "",
@@ -22676,7 +22712,9 @@
       "endDate": "",
       "organizer": "Tampereen Reserviläiset ry",
       "discipline": "RESUL ",
-      "divisions": [],
+      "divisions": [
+        "Open"
+      ],
       "level": "--",
       "country": "FIN",
       "city": "",
