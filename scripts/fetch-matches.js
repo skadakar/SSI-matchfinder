@@ -351,6 +351,21 @@ const DIVISION_CODE_LABELS = {
   rpi: 'Rimfire Iron',
   rro: 'Rimfire Long Gun Open',
   rri: 'Rimfire Long Gun Iron',
+
+  // DMR/PRS (PrecisionMatchNode `divisions`) codes, verified against
+  // https://shootnscoreit.com/event/110/1086/ ("UDS DMR #1 Silvia"), whose
+  // live page displays "DOS, DOB, D5S, D5V, D7S, D7V" as
+  // "SA Open, Bolt Open, 5.56 SA, 5.56 SA LPVO, 7.62 SA, 7.62 SA LPVO"
+  // (same order in both), and https://shootnscoreit.com/event/110/1084/
+  // ("Bjørkebakk Steel Challenge", a PRS match), whose page displays "BGX"
+  // as "Bolt".
+  DOS: 'SA Open',
+  DOB: 'Bolt Open',
+  D5S: '5.56 SA',
+  D5V: '5.56 SA LPVO',
+  D7S: '7.62 SA',
+  D7V: '7.62 SA LPVO',
+  BGX: 'Bolt',
 };
 
 export function translateDivisionCode(code) {

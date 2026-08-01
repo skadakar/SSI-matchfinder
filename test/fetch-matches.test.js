@@ -154,6 +154,18 @@ test('translateDivisionCode maps the alternate Steel Challenge rimfire code sche
   assert.equal(translateDivisionCode('rri'), 'Rimfire Long Gun Iron');
 });
 
+test('translateDivisionCode maps known DMR/PRS (PrecisionMatchNode) codes to their display names', () => {
+  // Verified against https://shootnscoreit.com/event/110/1086/ and
+  // https://shootnscoreit.com/event/110/1084/.
+  assert.equal(translateDivisionCode('DOS'), 'SA Open');
+  assert.equal(translateDivisionCode('DOB'), 'Bolt Open');
+  assert.equal(translateDivisionCode('D5S'), '5.56 SA');
+  assert.equal(translateDivisionCode('D5V'), '5.56 SA LPVO');
+  assert.equal(translateDivisionCode('D7S'), '7.62 SA');
+  assert.equal(translateDivisionCode('D7V'), '7.62 SA LPVO');
+  assert.equal(translateDivisionCode('BGX'), 'Bolt');
+});
+
 test('translateDivisionCode passes unrecognized codes through unchanged', () => {
   assert.equal(translateDivisionCode('hg1'), 'hg1');
 });
