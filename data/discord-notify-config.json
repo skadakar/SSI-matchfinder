@@ -68,31 +68,6 @@
       "from": "",
       "to": "",
       "comment": "posts Norwegian shotgun matches to the høkk dynamisk discord"
-    },
-    {
-      "name": "Høkk Steel pistol",
-      "webhook": "DISCORD_HOKK_STEEL_HANDGUN_MATCH",
-      "countries": [
-        "NOR"
-      ],
-      "disciplines": [
-        "Steel"
-      ],
-      "divisions": [
-        "Open",
-        "Standard",
-        "Optics",
-        "Production",
-        "Production Optics",
-        "Classic",
-        "Revolver"
-      ],
-      "levels": [],
-      "organizers": [],
-      "regions": [],
-      "from": "",
-      "to": "",
-      "comment": "posts Norwegian Steel Challenge matches that offer a handgun division to the høkk dynamisk discord"
     }
   ]
 }
