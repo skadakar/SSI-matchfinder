@@ -2358,5 +2358,9 @@
   "61.63396,29.37566": {
     "country": "FIN",
     "county": "Etelä-Karjala"
+  },
+  "61.45000,5.86000": {
+    "country": "NOR",
+    "county": "Vestland"
   }
 }
