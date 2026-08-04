@@ -2362,5 +2362,9 @@
   "61.45000,5.86000": {
     "country": "NOR",
     "county": "Vestland"
+  },
+  "59.52000,17.90000": {
+    "country": "SWE",
+    "county": "Stockholms län"
   }
 }
