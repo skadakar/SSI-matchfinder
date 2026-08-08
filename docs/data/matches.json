@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-08T01:44:07.473Z",
+  "generated": "2026-08-08T04:59:31.072Z",
   "count": 1189,
   "matches": [
     {
@@ -322,7 +322,7 @@
       "participants": 27,
       "mainMatchParticipants": 23,
       "maxParticipants": 30,
-      "waitingCount": 1,
+      "waitingCount": 2,
       "url": "https://shootnscoreit.com/event/22/27829/",
       "county": "Buskerud",
       "geocodeSource": "manual",
@@ -976,8 +976,8 @@
       "registrationOpen": true,
       "registrationStarts": "2026-03-05",
       "registrationDeadline": "",
-      "participants": 23,
-      "mainMatchParticipants": 23,
+      "participants": 22,
+      "mainMatchParticipants": 22,
       "maxParticipants": 60,
       "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/64/2904/",
@@ -6424,7 +6424,7 @@
       "registrationOpen": true,
       "registrationStarts": "2026-04-20",
       "registrationDeadline": "",
-      "participants": 233,
+      "participants": 232,
       "mainMatchParticipants": 160,
       "maxParticipants": 160,
       "waitingCount": 11,
