@@ -1026,6 +1026,18 @@ function updateThemeButton() {
   btn.setAttribute('aria-label', label);
 }
 
+function focusSearchOnDesktop() {
+  if (isMobileViewport()) return;
+  const input = document.getElementById('filter-search');
+  if (!input) return;
+
+  // Do not steal focus if the user already focused another control.
+  const active = document.activeElement;
+  if (active && active !== document.body && active !== document.documentElement) return;
+
+  input.focus({ preventScroll: true });
+}
+
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 
 function formatDate(dateStr) {
@@ -1072,6 +1084,7 @@ async function init() {
     populateDropdowns();
     syncFilterInputs();
     render();
+    focusSearchOnDesktop();
   } catch (err) {
     document.getElementById('match-count').textContent =
       'Failed to load match data: ' + err.message;
