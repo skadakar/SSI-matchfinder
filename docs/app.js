@@ -74,7 +74,7 @@ function getDefaultCols() {
 
 function buildDefaultState() {
   return {
-    view:       'map',
+    view:       'table',
     q:          '',
     discipline: [],
     level:      [],
@@ -110,10 +110,15 @@ function applyViewportColumnDefaults() {
 
 function readStateFromURL() {
   const p = new URLSearchParams(location.search);
+  const hasAnyQueryParam = p.toString().length > 0;
+  const defaultView = hasAnyQueryParam ? 'map' : 'table';
   const colsParam = p.get('cols');
   hasExplicitColsParam = Boolean(colsParam);
   return {
-    view:       p.get('view')       || 'map',
+    // Backward compatibility: legacy links with query params but no explicit
+    // view used to resolve to map. Keep that behavior while making fresh
+    // no-query visits default to table.
+    view:       p.get('view')       || defaultView,
     q:          p.get('q')          || '',
     discipline: p.get('discipline') ? p.get('discipline').split(',').filter(Boolean) : [],
     level:      p.get('level')      ? p.get('level').split(',').filter(Boolean)      : [],
@@ -135,7 +140,7 @@ function readStateFromURL() {
 
 function writeStateToURL() {
   const p = new URLSearchParams();
-  if (state.view !== 'map')                         p.set('view',       state.view);
+  if (state.view !== 'table')                       p.set('view',       state.view);
   if (state.q)                                      p.set('q',          state.q);
   if (state.discipline.length)                      p.set('discipline', state.discipline.join(','));
   if (state.level.length)                           p.set('level',      state.level.join(','));
