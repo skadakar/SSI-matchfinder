@@ -38,6 +38,7 @@
     "Høkk pistol:27470",
     "Høkk pistol:28810",
     "Høkk pistol:28618",
+    "Høkk pistol:29453",
     "Høkk pistol:29161",
     "Høkk pistol:28375",
     "Høkk pistol:27353",
@@ -101,15 +102,19 @@
     "Høkk PCC:29057",
     "Høkk PCC:26445",
     "Høkk PCC:28619",
+    "Høkk PCC:29454",
     "Høkk PCC:28621",
     "Høkk PCC:27982",
     "Høkk haglematch:24927",
     "Høkk steel riflematch:1261",
+    "Høkk steel riflematch:1270",
     "Høkk steel pistol:1261",
+    "Høkk steel pistol:1270",
     "Høkk steel pistol:1190",
     "Høkk steel PCC:1261",
+    "Høkk steel PCC:1270",
     "Høkk steel PCC:1190"
   ],
   "firstRunAt": "2026-07-23T22:29:01.740Z",
-  "updatedAt": "2026-08-10T16:56:04.478Z"
+  "updatedAt": "2026-08-10T20:44:55.939Z"
 }
