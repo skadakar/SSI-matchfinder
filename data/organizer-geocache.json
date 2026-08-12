@@ -964,5 +964,10 @@
   "bofors skjutfälts skyttekår": {
     "lat": null,
     "lng": null
+  },
+  "sölvesborg": {
+    "lat": 56.0506535,
+    "lng": 14.5871906,
+    "display": "Sölvesborg, Sölvesborgs kommun, Blekinge län, 294 31, Sverige"
   }
 }
