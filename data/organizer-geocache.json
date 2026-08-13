@@ -969,5 +969,10 @@
     "lat": 56.0506535,
     "lng": 14.5871906,
     "display": "Sölvesborg, Sölvesborgs kommun, Blekinge län, 294 31, Sverige"
+  },
+  "schiessplatz seltisberg": {
+    "lat": 47.4530467,
+    "lng": 7.7240193,
+    "display": "Schiessplatz Seltisberg, Bubendorf, Bezirk Liestal, Basel-Landschaft, 4416, Schweiz/Suisse/Svizzera/Svizra"
   }
 }
