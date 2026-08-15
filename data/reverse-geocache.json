@@ -2430,5 +2430,13 @@
   "63.39672,27.71211": {
     "country": "FIN",
     "county": "Pohjois-Savo"
+  },
+  "60.16036,12.24166": {
+    "country": "NOR",
+    "county": "Innlandet"
+  },
+  "60.08968,12.02814": {
+    "country": "NOR",
+    "county": "Innlandet"
   }
 }
