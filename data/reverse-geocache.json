@@ -2442,5 +2442,13 @@
   "60.67000,17.14000": {
     "country": "SWE",
     "county": "Gävleborgs län"
+  },
+  "56.52491,13.08692": {
+    "country": "SWE",
+    "county": "Hallands län"
+  },
+  "64.82392,28.86005": {
+    "country": "FIN",
+    "county": "Kainuu"
   }
 }
