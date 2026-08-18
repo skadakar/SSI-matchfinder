@@ -2458,5 +2458,13 @@
   "58.40996,15.54618": {
     "country": "SWE",
     "county": "Östergötlands län"
+  },
+  "62.66288,30.94381": {
+    "country": "FIN",
+    "county": "Pohjois-Karjala"
+  },
+  "61.60000,5.03000": {
+    "country": "NOR",
+    "county": "Vestland"
   }
 }
