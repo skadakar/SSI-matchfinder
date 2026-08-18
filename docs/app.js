@@ -140,7 +140,6 @@ function readStateFromURL() {
 
 function writeStateToURL() {
   const p = new URLSearchParams();
-  if (state.view !== 'table')                       p.set('view',       state.view);
   if (state.q)                                      p.set('q',          state.q);
   if (state.discipline.length)                      p.set('discipline', state.discipline.join(','));
   if (state.level.length)                           p.set('level',      state.level.join(','));
@@ -157,6 +156,8 @@ function writeStateToURL() {
   if (!colsMatchDefault(state.cols))                p.set('cols',       state.cols.join(','));
   if (state.sort !== DEFAULT_SORT)                  p.set('sort',       state.sort);
   if (state.dir  !== DEFAULT_DIR)                   p.set('dir',        state.dir);
+  // Write view only when there are other params (to keep clean no-filter URLs), or when not table
+  if (state.view !== 'table' || p.toString().length > 0) p.set('view', state.view);
 
   const qs = p.toString();
   history.replaceState(null, '', qs ? `?${qs}` : location.pathname);
