@@ -2466,5 +2466,9 @@
   "61.60000,5.03000": {
     "country": "NOR",
     "county": "Vestland"
+  },
+  "70.00000,23.00000": {
+    "country": "NOR",
+    "county": "Finnmark"
   }
 }
