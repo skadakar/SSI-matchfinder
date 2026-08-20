@@ -161,12 +161,11 @@ const EVENT_INTERFACE_FIELDS = `
 // are still recovered when one specific field is known to crash — see
 // RISKY_FIELDS and the KNOWN RISK comment below.
 const DIVISION_FRAGMENTS = {
-  // `divisions` is the raw underlying field (plain model attribute, so it
-  // isn't subject to the misnamed-resolver crash below); it's queried
-  // alongside get_division_display as a same-tier safety net, and is only
-  // used by collectDivisions() when the display field didn't come back
-  // (see KNOWN RISK below).
-  SteelMatchNode:     'divisions get_division_display', // get_division_display: misnamed resolver, see KNOWN RISK below
+  // `divisions` is the raw underlying field (plain model attribute); it's
+  // queried alongside get_divisions_display as a same-tier safety net, and
+  // is only used by collectDivisions() when the display field didn't come
+  // back.
+  SteelMatchNode:     'divisions get_divisions_display',
   PpcMatchNode:       'get_weapon_classes_display',
   CmpMatchNode:       'get_rifle_divs_display get_rimfire_rifle_divs_display get_pistol_divs_display get_rimfire_pistol_divs_display',
   IdpaMatchNode:      'get_handgun_divs_display get_rifle_divs_display get_shotgun_divs_display get_dmg_divs_display',
@@ -184,11 +183,15 @@ const DIVISION_FRAGMENTS = {
   PpcSerieNode:       'get_weapon_classes_display',
 };
 
-// Field names known to crash server-side for at least one real match (see
-// KNOWN RISK below). Fallback queries drop only these specific fields
-// rather than a whole type's fragment, so a type's other (safe) fields —
-// e.g. Steel's raw `divisions` — are still recovered.
-const RISKY_FIELDS = ['get_division_display'];
+// Field names known to crash server-side for at least one real match.
+// Fallback queries drop only these specific fields rather than a whole
+// type's fragment, so a type's other (safe) fields — e.g. Steel's raw
+// `divisions` — are still recovered. Currently empty: the only entry ever
+// added here (`get_division_display`) turned out to be our own typo for
+// SteelMatchNode's actual field, `get_divisions_display` (see git history) —
+// not a genuine SSI-side crash — so it was removed once the field name was
+// corrected.
+const RISKY_FIELDS = [];
 
 const ALL_DIVISION_FIELD_NAMES = Object.values(DIVISION_FRAGMENTS).flatMap(f => f.split(' '));
 
@@ -238,23 +241,22 @@ export async function fetchAllMatches() {
     return result;
   }
 
-  // KNOWN RISK: some *MatchNode "*_display" resolvers crash server-side for
-  // specific events (e.g. SteelMatchNode.get_division_display is misnamed in
-  // SSI's own schema and throws "'SteelMatch' object has no attribute
-  // 'get_division_display'" for at least one real match). Because GraphQL's
-  // `events` field is non-null-of-non-null, a crash resolving ANY single
-  // event's field nulls the *entire* events list for that query window, not
-  // just the offending event — so a single bad match can silently make every
-  // other match starting in that ~3-day window (any discipline) vanish from
-  // the whole dataset, indefinitely (the same match keeps re-triggering the
+  // KNOWN RISK: some *MatchNode "*_display" resolvers can crash server-side
+  // for specific events (e.g. a query field name that doesn't actually exist
+  // on that type throws an AttributeError). Because GraphQL's `events` field
+  // is non-null-of-non-null, a crash resolving ANY single event's field
+  // nulls the *entire* events list for that query window, not just the
+  // offending event — so a single bad match can silently make every other
+  // match starting in that ~3-day window (any discipline) vanish from the
+  // whole dataset, indefinitely (the same match keeps re-triggering the
   // crash every time its window is queried again, whether that's still the
   // "future" range or, once its date passes, the "past" lookback range).
   //
   // To limit the blast radius, each window is retried with progressively
   // reduced queries rather than giving up on the first error:
   //   1. EVENTS_Q          — full query, all per-type division fields.
-  //   2. EVENTS_Q_NO_RISKY — drops just the known-crash-prone field(s)
-  //      (currently only get_division_display), keeping every type's other
+  //   2. EVENTS_Q_NO_RISKY — drops just the known-crash-prone field(s), if
+  //      any (see RISKY_FIELDS — currently none), keeping every type's other
   //      (safe) fields — e.g. Steel's raw `divisions` field still comes
   //      back, so collectDivisions() can fall back to it (see below).
   //   3. EVENTS_Q_MINIMAL  — drops ALL division fields; recovers the
@@ -265,7 +267,7 @@ export async function fetchAllMatches() {
     const variables = { after, before };
     const tiers = [
       { query: EVENTS_Q,          label: 'full query' },
-      { query: EVENTS_Q_NO_RISKY, label: 'fallback query without known-crash-prone display fields (e.g. get_division_display)' },
+      { query: EVENTS_Q_NO_RISKY, label: 'fallback query without known-crash-prone display fields' },
       { query: EVENTS_Q_MINIMAL,  label: 'minimal fallback query without any division fields' },
     ];
     let lastMsgs = null;
@@ -363,23 +365,18 @@ export function parseDivisions(str) {
 // different events, so new unmapped codes kept surfacing every review
 // round — see git history for the abandoned DIVISION_CODE_LABELS table.)
 //
-// KNOWN RISK: SteelMatchNode's display resolver (`get_division_display`) is
-// misnamed in SSI's own schema (singular "division" despite the underlying
-// field being plural `divisions`), which crashes server-side with
-// "'SteelMatch' object has no attribute 'get_division_display'". Because
-// GraphQL's `events` field is doubly non-null (`[EventInterface!]!`), a
-// crash resolving ANY single event's field nulls the *entire* events list
-// for that query window — there's no way to get partial per-event data back
-// Rather than avoid the field forever (which would mean resurrecting a
-// hardcoded Steel Challenge translation table), `queryWindow` retries a
-// failing window with progressively reduced queries (see EVENTS_Q_NO_STEEL /
-// EVENTS_Q_MINIMAL and the KNOWN RISK comment on queryWindow further down):
-// dropping just the Steel fragment means the crashing resolver is never
-// invoked, so every event in the window — including the Steel match that
-// triggered the crash — still comes back; only the divisions for Steel
-// matches in that window come back empty (`collectDivisions` simply gets
-// `undefined` for the un-queried field, same as any match with no divisions
-// configured). Only if that fallback also fails is the whole window skipped.
+// FIXED (2026-08-20): our own code was querying SteelMatchNode's display
+// field as `get_division_display` (singular "division"), which doesn't
+// exist on that type — SSI's actual field is plural, `get_divisions_display`
+// (same name as Precision/Generic/IPSC below), and querying the nonexistent
+// field crashed server-side with "'SteelMatch' object has no attribute
+// 'get_division_display'". Because GraphQL's `events` field is doubly
+// non-null (`[EventInterface!]!`), a crash resolving ANY single event's
+// field nulls the *entire* events list for that query window — there's no
+// way to get partial per-event data back. `queryWindow`'s tiered fallback
+// (see the KNOWN RISK comment on queryWindow further down) remains in place
+// as a general safety net against any future/unknown crash-prone field, but
+// RISKY_FIELDS is currently empty since this was the only entry it ever had.
 //
 // Also note: IPSC's own `categories`/`get_categories_display` GraphQL field
 // (SSI's own naming) is intentionally NOT included here — it's an unrelated
@@ -439,8 +436,7 @@ export function parseDivisions(str) {
 // (NordicSerieNode, 3 events) had 100% empty divisions, while their
 // individual-match counterparts (22, 110, 91) had 0% empty.
 const DIVISION_FIELDS = [
-  'get_divisions_display',           // Precision, Generic, IPSC, PrecisionSerie
-  'get_division_display',            // Steel (misnamed resolver, see above)
+  'get_divisions_display',           // Steel, Precision, Generic, IPSC, PrecisionSerie
   'get_handgun_divs_display',        // IDPA
   'get_rifle_divs_display',          // CMP, IDPA
   'get_shotgun_divs_display',        // IDPA
@@ -456,12 +452,10 @@ const DIVISION_FIELDS = [
 export function collectDivisions(raw) {
   const all = DIVISION_FIELDS.flatMap(field => parseDivisions(raw[field]));
   if (all.length > 0) return [...new Set(all)];
-  // Fallback for the known SteelMatchNode.get_division_display crash: when
-  // that field errors, queryWindow's fallback tier drops it but still
-  // queries the raw underlying `divisions` field (a plain model attribute,
-  // not a dynamically-generated Django method, so it isn't subject to the
-  // same misnamed-resolver crash). Only used when no display field produced
-  // anything, so it never overrides good display data.
+  // Fallback to the raw underlying `divisions` field (e.g. for Steel, when
+  // queryWindow's fallback tier drops a crashing display field entirely).
+  // Only used when no display field produced anything, so it never
+  // overrides good display data.
   return parseDivisions(raw.divisions);
 }
 

@@ -112,15 +112,15 @@ test('parseDivisions returns an empty array for missing/blank input', () => {
   assert.deepEqual(parseDivisions(undefined), []);
 });
 
-test('collectDivisions merges a Steel match\'s get_division_display field', () => {
-  const raw = { get_division_display: 'Rimfire Open, Rimfire Iron, PCC Open, PCC Iron, Open, Standard, Optics, Production' };
+test('collectDivisions merges a Steel match\'s get_divisions_display field', () => {
+  const raw = { get_divisions_display: 'Rimfire Open, Rimfire Iron, PCC Open, PCC Iron, Open, Standard, Optics, Production' };
   assert.deepEqual(
     collectDivisions(raw),
     ['Rimfire Open', 'Rimfire Iron', 'PCC Open', 'PCC Iron', 'Open', 'Standard', 'Optics', 'Production'],
   );
 });
 
-test('collectDivisions falls back to Steel\'s raw divisions field when get_division_display is absent (its known-crash fallback query tier)', () => {
+test('collectDivisions falls back to Steel\'s raw divisions field when get_divisions_display is absent (its crash-fallback query tier)', () => {
   const raw = { divisions: 'Rimfire Open, Rimfire Iron, PCC Open, PCC Iron, Open, Standard, Optics, Production' };
   assert.deepEqual(
     collectDivisions(raw),
@@ -128,8 +128,8 @@ test('collectDivisions falls back to Steel\'s raw divisions field when get_divis
   );
 });
 
-test('collectDivisions prefers get_division_display over the raw divisions field when both are present', () => {
-  const raw = { get_division_display: 'Open, Standard', divisions: 'unrelated-raw-value' };
+test('collectDivisions prefers get_divisions_display over the raw divisions field when both are present', () => {
+  const raw = { get_divisions_display: 'Open, Standard', divisions: 'unrelated-raw-value' };
   assert.deepEqual(collectDivisions(raw), ['Open', 'Standard']);
 });
 
@@ -202,7 +202,7 @@ test('collectDivisions no longer needs a code-translation step — *_display fie
   // Previously this required a hardcoded DIVISION_CODE_LABELS table mapping
   // raw codes (rio, DOS, BGX, ...) to labels. Querying *_display fields
   // directly means whatever SSI's API returns is used as-is.
-  const raw = { get_division_display: 'rio,ris,pco,pci,opp,std,opt,prd,pro,cls,rvl,rlo,rli' };
+  const raw = { get_divisions_display: 'rio,ris,pco,pci,opp,std,opt,prd,pro,cls,rvl,rlo,rli' };
   assert.deepEqual(collectDivisions(raw), [
     'rio', 'ris', 'pco', 'pci', 'opp', 'std', 'opt', 'prd', 'pro', 'cls', 'rvl', 'rlo', 'rli',
   ]);
@@ -213,7 +213,7 @@ test('normalizeMatch exposes merged equipment divisions without duplicating the 
     id: 1190,
     name: 'NM Steel Challenge 2026',
     rule: 'Steel',
-    get_division_display: 'Rimfire Open, Rimfire Iron, PCC Open, PCC Iron, Open, Standard, Optics, Production',
+    get_divisions_display: 'Rimfire Open, Rimfire Iron, PCC Open, PCC Iron, Open, Standard, Optics, Production',
     organizer: { name: 'NOP' },
   };
   const m = normalizeMatch(raw);
@@ -473,7 +473,7 @@ test('fetchAllMatches aborts the run when refresh-token authentication fails', a
   }
 });
 
-test('fetchAllMatches recovers a window via a fallback query (dropping just get_division_display, keeping Steel\'s raw divisions field) when the full query errors, e.g. the known SteelMatchNode resolver crash', async () => {
+test('fetchAllMatches recovers a window via the minimal fallback query (dropping all division fields) when both the full and no-risky-field queries error', async () => {
   let eventsCalls = 0;
   const originalExit = process.exit;
   process.exit = (code) => { throw new Error(`PROCESS_EXIT_${code}`); };
@@ -483,24 +483,26 @@ test('fetchAllMatches recovers a window via a fallback query (dropping just get_
       return { body: { data: { refresh_token: { success: true, token: { token: 'JWT123' } } } } };
     }
     eventsCalls++;
-    // Simulate the known SteelMatchNode.get_division_display naming-mismatch
-    // crash: the full query (tier 1, includes get_division_display) fails for
-    // the very first window; the fallback query without just that field
-    // (tier 2) succeeds, while still keeping Steel's raw `divisions` field.
+    // RISKY_FIELDS is currently empty, so tier 1 (full query) and tier 2
+    // (no-risky-fields query) are identical and both crash the same way;
+    // only tier 3 (minimal, no division fields at all) recovers the window.
     if (eventsCalls === 1) {
-      assert.ok(body.query.includes('get_division_display'));
-      return { body: { errors: [{ message: "'SteelMatch' object has no attribute 'get_division_display'" }] } };
+      assert.ok(body.query.includes('get_divisions_display'));
+      return { body: { errors: [{ message: "'SteelMatch' object has no attribute 'get_divisions_display'" }] } };
     }
     if (eventsCalls === 2) {
-      assert.ok(!body.query.includes('get_division_display'));
-      assert.ok(body.query.includes('divisions'));
+      assert.ok(body.query.includes('get_divisions_display'));
+      return { body: { errors: [{ message: "'SteelMatch' object has no attribute 'get_divisions_display'" }] } };
+    }
+    if (eventsCalls === 3) {
+      assert.ok(!body.query.includes('get_divisions_display'));
     }
     return { body: { data: { events: [{ id: 1, name: 'Event One' }] } } };
   });
   try {
     const events = await fetchAllMatches();
-    // The window recovered via the fallback query rather than being skipped
-    // entirely — its (non-Steel) events are still present.
+    // The window recovered via the minimal fallback query rather than being
+    // skipped entirely — its (non-Steel) events are still present.
     assert.ok(events.length > 0);
     assert.ok(events.every(e => e.id === 1));
   } finally {
