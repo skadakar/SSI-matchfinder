@@ -2470,5 +2470,9 @@
   "70.00000,23.00000": {
     "country": "NOR",
     "county": "Finnmark"
+  },
+  "63.71898,28.98498": {
+    "country": "FIN",
+    "county": "Pohjois-Karjala"
   }
 }
