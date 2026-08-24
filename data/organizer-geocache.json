@@ -987,5 +987,10 @@
   "hevonpään ampumarata, salo": {
     "lat": null,
     "lng": null
+  },
+  "skjutbanevägen 50 höganäs": {
+    "lat": 56.2174311,
+    "lng": 12.5535457,
+    "display": "Skjutbanevägen, Strandbaden, Måarp, Höganäs, Höganäs kommun, Skåne län, 263 39, Sverige"
   }
 }
