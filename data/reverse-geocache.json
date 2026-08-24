@@ -2478,5 +2478,9 @@
   "67.20100,14.71239": {
     "country": "NOR",
     "county": "Nordland"
+  },
+  "56.63000,15.54000": {
+    "country": "SWE",
+    "county": "Kalmar län"
   }
 }
