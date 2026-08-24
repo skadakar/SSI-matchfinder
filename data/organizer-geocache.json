@@ -992,5 +992,9 @@
     "lat": 56.2174311,
     "lng": 12.5535457,
     "display": "Skjutbanevägen, Strandbaden, Måarp, Höganäs, Höganäs kommun, Skåne län, 263 39, Sverige"
+  },
+  "sallan reserviläiset": {
+    "lat": null,
+    "lng": null
   }
 }
