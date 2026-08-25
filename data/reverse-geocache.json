@@ -2490,5 +2490,13 @@
   "56.21752,12.55630": {
     "country": "SWE",
     "county": "Skåne län"
+  },
+  "61.83583,27.67988": {
+    "country": "FIN",
+    "county": "Etelä-Savo"
+  },
+  "66.42793,14.47869": {
+    "country": "NOR",
+    "county": "Nordland"
   }
 }
