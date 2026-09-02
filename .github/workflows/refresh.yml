@@ -21,6 +21,10 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
+    # Safety net: without this, a hung request (no per-call timeout further
+    # down would normally prevent this, but belt-and-suspenders) could block
+    # the job for GitHub's 360-minute default instead of failing fast.
+    timeout-minutes: 45
 
     steps:
       - name: Checkout
@@ -90,6 +94,7 @@ jobs:
                 'Accept': 'application/json',
               },
               body: JSON.stringify({ query, variables: { rt } }),
+              signal: AbortSignal.timeout(20000),
             });
 
             if (!res.ok) {
@@ -192,6 +197,7 @@ jobs:
                       "Accept": "application/json",
                     },
                     body: JSON.stringify({ query, variables: { email, password } }),
+                    signal: AbortSignal.timeout(20000),
                   });
 
                   if (!res.ok) {

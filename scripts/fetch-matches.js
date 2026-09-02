@@ -94,8 +94,33 @@ function sleep(ms) {
   return new Promise(res => setTimeout(res, ms));
 }
 
+// Guards against a stalled connection hanging the whole job indefinitely.
+// Overridable via env for tests/local tuning.
+const FETCH_TIMEOUT_MS = Number(process.env.FETCH_TIMEOUT_MS ?? 20000);
+// Retries are only for network-level failures (timeout/abort/DNS/reset) —
+// an HTTP error response (e.g. 500) is not retried here since it already
+// completed a full round trip and retrying instantly rarely helps.
+const FETCH_RETRIES = 2;
+const FETCH_RETRY_DELAY_MS = 1000;
+
+async function fetchWithRetry(url, options) {
+  let lastErr;
+  for (let attempt = 0; attempt <= FETCH_RETRIES; attempt++) {
+    try {
+      return await fetch(url, { ...options, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
+    } catch (err) {
+      lastErr = err;
+      if (attempt < FETCH_RETRIES) {
+        console.warn(`  Network error calling ${url} (attempt ${attempt + 1}/${FETCH_RETRIES + 1}): ${err.message}; retrying...`);
+        await sleep(FETCH_RETRY_DELAY_MS * (attempt + 1));
+      }
+    }
+  }
+  throw lastErr;
+}
+
 export async function postGql(query, variables, auth, apiKey) {
-  const res = await fetch(GQL_ENDPOINT, {
+  const res = await fetchWithRetry(GQL_ENDPOINT, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -113,7 +138,7 @@ export async function postGql(query, variables, auth, apiKey) {
 }
 
 async function getJson(url, headers = {}) {
-  const res = await fetch(url, { headers });
+  const res = await fetchWithRetry(url, { headers });
   if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText} → ${url}`);
   return res.json();
 }
@@ -220,7 +245,7 @@ const EVENTS_Q          = buildEventsQuery();
 const EVENTS_Q_NO_RISKY = buildEventsQuery(RISKY_FIELDS);
 const EVENTS_Q_MINIMAL  = buildEventsQuery(ALL_DIVISION_FIELD_NAMES);
 
-export async function fetchAllMatches() {
+export async function fetchAllMatches({ lookbackDays = LOOKBACK_DAYS } = {}) {
   console.log('Authenticating via refresh token...');
   const jwt = await getJwt();
   let auth = `JWT ${jwt}`;
@@ -312,7 +337,7 @@ export async function fetchAllMatches() {
   console.log(`  Future ${LOOKAHEAD_DAYS}d (${futureChunks} 3-day chunks): ${allEvents.size} events`);
 
   // 2. Past events in 3-day chunks to stay under the API result cap (~100/query)
-  const lookBackStart = new Date(today); lookBackStart.setDate(lookBackStart.getDate() - LOOKBACK_DAYS);
+  const lookBackStart = new Date(today); lookBackStart.setDate(lookBackStart.getDate() - lookbackDays);
   let chunkEnd = new Date(today);
   let pastChunks = 0;
   while (chunkEnd > lookBackStart) {
@@ -323,7 +348,7 @@ export async function fetchAllMatches() {
     pastChunks++;
     chunkEnd = chunkStart;
   }
-  console.log(`  Past ${LOOKBACK_DAYS}d (${pastChunks} 3-day chunks): ${allEvents.size} unique events total`);
+  console.log(`  Past ${lookbackDays}d (${pastChunks} 3-day chunks): ${allEvents.size} unique events total`);
 
   const events = [...allEvents.values()];
   console.log(`Fetched ${events.length} events`);
@@ -523,6 +548,7 @@ export async function geocodeOrganizer(name, country, cache, manual) {
   try {
     const res = await fetch(`${NOMINATIM_BASE}?${params}`, {
       headers: { 'User-Agent': 'SSI-MatchFinder/1.0 (https://github.com/your-username/SSI-matchfinder)' },
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
     });
     if (res.status === 429) {
       console.warn(`  Geocoding rate-limited for "${name}", will retry next run`);
@@ -594,6 +620,7 @@ export async function reverseGeocode(lat, lng, cache) {
   try {
     const res = await fetch(url, {
       headers: { 'User-Agent': 'SSI-MatchFinder/1.0 (https://github.com/your-username/SSI-matchfinder)' },
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
     });
     if (res.status === 429) {
       console.warn(`  Reverse-geocode rate-limited for (${lat.toFixed(4)}, ${lng.toFixed(4)}), will retry`);
@@ -665,8 +692,25 @@ async function enrichWithCounty(matches, cache) {
 async function main() {
   const dump = process.argv.includes('--dump');
 
+  // Past events rarely change once they're more than a few days old
+  // (participant counts/results settle quickly), so re-querying the full
+  // LOOKBACK_DAYS window every run wastes API calls. Once a full sweep is on
+  // record, only a small recent slice is re-queried each run; older past
+  // matches are carried over from the previous output instead (see the
+  // carry-over block below). If runs have been interrupted for longer than
+  // that recent slice, fall back to a full sweep so no gap goes unqueried.
+  const existingOutput = existsSync(OUTPUT_PATH) ? loadJson(OUTPUT_PATH, null) : null;
+  const RECENT_PAST_DAYS = Number(process.env.PAST_REFRESH_DAYS ?? 7);
+  let lookbackDays = LOOKBACK_DAYS;
+  if (existingOutput?.generated) {
+    const hoursSinceLastRun = (Date.now() - new Date(existingOutput.generated).getTime()) / 3600000;
+    if (hoursSinceLastRun >= 0 && hoursSinceLastRun <= RECENT_PAST_DAYS * 24) {
+      lookbackDays = Math.min(RECENT_PAST_DAYS, LOOKBACK_DAYS);
+    }
+  }
+
   console.log('Fetching events...');
-  const raw = await fetchAllMatches();
+  const raw = await fetchAllMatches({ lookbackDays });
 
   if (dump) {
     console.log('\n--- RAW API RESPONSE (first 3 events) ---');
@@ -681,13 +725,10 @@ async function main() {
   // Load existing output to preserve firstSeen dates for known events
   const today = new Date().toISOString().slice(0, 10);
   const firstSeenMap = {};
-  if (existsSync(OUTPUT_PATH)) {
-    try {
-      const existing = JSON.parse(readFileSync(OUTPUT_PATH, 'utf8'));
-      for (const m of (existing.matches || [])) {
-        if (m.id && m.firstSeen) firstSeenMap[m.id] = m.firstSeen;
-      }
-    } catch { /* ignore parse errors */ }
+  if (existingOutput) {
+    for (const m of (existingOutput.matches || [])) {
+      if (m.id && m.firstSeen) firstSeenMap[m.id] = m.firstSeen;
+    }
   }
   for (const m of matches) {
     m.firstSeen = firstSeenMap[m.id] || today;
@@ -727,6 +768,29 @@ async function main() {
     const before = matches.length;
     matches = matches.filter(m => COUNTRIES.has(m.country.toUpperCase()));
     console.log(`Country filter (${[...COUNTRIES].sort().join(', ')}): ${matches.length} of ${before} kept`);
+  }
+
+  // Carry over older past matches skipped by the reduced lookback above —
+  // they're already fully processed (geocoded, country-filtered) from a
+  // previous run, so they're added back as-is rather than re-fetched/
+  // re-enriched (which would also risk relabeling their geocodeSource, since
+  // enrichWithCoordinates() treats any non-null lat/lng as 'api').
+  if (existingOutput && lookbackDays < LOOKBACK_DAYS) {
+    const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - lookbackDays);
+    const cutoffStr = cutoff.toISOString().slice(0, 10);
+    const floor = new Date(); floor.setDate(floor.getDate() - LOOKBACK_DAYS);
+    const floorStr = floor.toISOString().slice(0, 10);
+    const seenIds = new Set(matches.map(m => m.id));
+    let carried = 0;
+    for (const m of (existingOutput.matches || [])) {
+      if (seenIds.has(m.id)) continue;
+      if (!m.date || m.date < floorStr || m.date >= cutoffStr) continue;
+      matches.push(m);
+      carried++;
+    }
+    if (carried > 0) {
+      console.log(`Carried over ${carried} older past match(es) from previous run (outside the ${lookbackDays}d refresh window)`);
+    }
   }
 
   const output = {
