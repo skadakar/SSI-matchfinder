@@ -2522,5 +2522,17 @@
   "60.38246,25.10182": {
     "country": "FIN",
     "county": "Uusimaa"
+  },
+  "60.38242,25.10161": {
+    "country": "FIN",
+    "county": "Uusimaa"
+  },
+  "63.46117,27.80538": {
+    "country": "FIN",
+    "county": "Pohjois-Savo"
+  },
+  "59.74221,18.69624": {
+    "country": "SWE",
+    "county": "Stockholms län"
   }
 }
