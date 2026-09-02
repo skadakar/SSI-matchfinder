@@ -38,12 +38,14 @@ jobs:
       - name: Prepare SSI refresh token
         env:
           SSI_REFRESH_TOKEN: ${{ secrets.SSI_REFRESH_TOKEN }}
+          SSI_API_KEY: ${{ secrets.SSI_API_KEY }}
           SSI_EMAIL: ${{ secrets.SSI_EMAIL }}
           SSI_PASSWORD: ${{ secrets.SSI_PASSWORD }}
           GH_TOKEN: ${{ secrets.SSI_REPO_ADMIN_TOKEN }}
           REPO: ${{ github.repository }}
         run: |
           echo "prepare: SSI_REFRESH_TOKEN present=$([ -n \"$SSI_REFRESH_TOKEN\" ] && echo yes || echo no)"
+          echo "prepare: SSI_API_KEY present=$([ -n \"$SSI_API_KEY\" ] && echo yes || echo no)"
           echo "prepare: SSI_REPO_ADMIN_TOKEN present=$([ -n \"$GH_TOKEN\" ] && echo yes || echo no)"
 
           if [ -z "$SSI_REFRESH_TOKEN" ]; then
@@ -72,8 +74,13 @@ jobs:
           (async () => {
             const endpoint = 'https://shootnscoreit.com/graphql/';
             const rt = process.env.SSI_REFRESH_TOKEN;
+            const apiKey = process.env.SSI_API_KEY;
             if (!rt) {
               console.error('rotation: SSI_REFRESH_TOKEN input is empty');
+              process.exit(3);
+            }
+            if (!apiKey) {
+              console.error('rotation: SSI_API_KEY input is empty');
               process.exit(3);
             }
 
@@ -92,6 +99,7 @@ jobs:
               headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
+                'x-api-key': apiKey,
               },
               body: JSON.stringify({ query, variables: { rt } }),
               signal: AbortSignal.timeout(20000),
@@ -183,8 +191,13 @@ jobs:
                   const endpoint = "https://shootnscoreit.com/graphql/";
                   const email = process.env.SSI_EMAIL;
                   const password = process.env.SSI_PASSWORD;
+                  const apiKey = process.env.SSI_API_KEY;
                   if (!email || !password) {
                     console.error("fallback: SSI_EMAIL/SSI_PASSWORD not provided");
+                    process.exit(7);
+                  }
+                  if (!apiKey) {
+                    console.error("fallback: SSI_API_KEY not provided");
                     process.exit(7);
                   }
 
@@ -195,6 +208,7 @@ jobs:
                     headers: {
                       "Content-Type": "application/json",
                       "Accept": "application/json",
+                      "x-api-key": apiKey,
                     },
                     body: JSON.stringify({ query, variables: { email, password } }),
                     signal: AbortSignal.timeout(20000),
