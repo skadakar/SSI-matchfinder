@@ -156,7 +156,7 @@ const REFRESH_Q = `
 `;
 
 async function getJwt() {
-  const data = await postGql(REFRESH_Q, { rt: REFRESH_TOKEN });
+  const data = await postGql(REFRESH_Q, { rt: REFRESH_TOKEN }, null, API_KEY);
   if (data.errors) {
     console.error('Auth error:', data.errors.map(e => e.message));
     process.exit(1);
