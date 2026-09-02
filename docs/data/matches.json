@@ -1,5 +1,5 @@
 {
-  "generated": "2026-09-02T14:25:55.474Z",
+  "generated": "2026-09-02T14:28:49.811Z",
   "count": 1150,
   "matches": [
     {
@@ -5152,7 +5152,7 @@
       "participants": 124,
       "mainMatchParticipants": 119,
       "maxParticipants": 120,
-      "waitingCount": 35,
+      "waitingCount": 34,
       "url": "https://shootnscoreit.com/event/22/27307/",
       "county": "",
       "geocodeSource": "unknown",
@@ -8591,7 +8591,7 @@
       "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/22/29415/",
       "county": "Stockholms län",
-      "geocodeSource": "nominatim",
+      "geocodeSource": "cache",
       "firstSeen": "2026-09-02"
     },
     {
