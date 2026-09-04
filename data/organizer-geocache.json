@@ -1025,5 +1025,10 @@
   "liperin reserviläiset ry": {
     "lat": null,
     "lng": null
+  },
+  "torup pk": {
+    "lat": 56.9535425,
+    "lng": 13.074462,
+    "display": "Torup, Hylte kommun, Hallands län, 314 41, Sverige"
   }
 }
