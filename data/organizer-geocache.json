@@ -1030,5 +1030,10 @@
     "lat": 56.9535425,
     "lng": 13.074462,
     "display": "Torup, Hylte kommun, Hallands län, 314 41, Sverige"
+  },
+  "pihlajamäentie 57, 62200 kauhava": {
+    "lat": 63.0659894,
+    "lng": 23.0582599,
+    "display": "57, Pihlajamäentie, Tornimäki, Kauhava, Seinäjoen seutukunta, Etelä-Pohjanmaa, Manner-Suomi, 62200, Suomi / Finland"
   }
 }
