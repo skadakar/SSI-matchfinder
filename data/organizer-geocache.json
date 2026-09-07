@@ -1035,5 +1035,9 @@
     "lat": 63.0659894,
     "lng": 23.0582599,
     "display": "57, Pihlajamäentie, Tornimäki, Kauhava, Seinäjoen seutukunta, Etelä-Pohjanmaa, Manner-Suomi, 62200, Suomi / Finland"
+  },
+  "skien sportsskyttere": {
+    "lat": null,
+    "lng": null
   }
 }
