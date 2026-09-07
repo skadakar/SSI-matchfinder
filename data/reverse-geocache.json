@@ -2550,5 +2550,13 @@
   "63.06599,23.05826": {
     "country": "FIN",
     "county": "Etelä-Pohjanmaa"
+  },
+  "60.91123,24.36526": {
+    "country": "FIN",
+    "county": "Kanta-Häme"
+  },
+  "59.54055,17.78377": {
+    "country": "SWE",
+    "county": "Stockholms län"
   }
 }
