@@ -1043,5 +1043,10 @@
   "nac geldermalsen": {
     "lat": null,
     "lng": null
+  },
+  "fmj shooting range": {
+    "lat": 59.3585865,
+    "lng": 18.0142174,
+    "display": "FMJ Shooting Range, 8, Fabriksvägen, Hagalunds industriområde, Hagalund, Solna, Solna kommun, Stockholms län, 171 48, Sverige"
   }
 }

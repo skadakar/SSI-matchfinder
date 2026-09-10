@@ -2578,5 +2578,13 @@
   "60.88619,26.90621": {
     "country": "FIN",
     "county": "Kymenlaakso"
+  },
+  "61.45048,21.77746": {
+    "country": "FIN",
+    "county": "Satakunta"
+  },
+  "59.35859,18.01422": {
+    "country": "SWE",
+    "county": "Stockholms län"
   }
 }
