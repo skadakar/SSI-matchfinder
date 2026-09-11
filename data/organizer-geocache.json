@@ -1057,5 +1057,9 @@
     "lat": 64.0728903,
     "lng": 24.5327326,
     "display": "Ylivieska, Ylivieskan seutukunta, Pohjois-Pohjanmaa, Manner-Suomi, Suomi / Finland"
+  },
+  "akaan reservupseerikerho": {
+    "lat": null,
+    "lng": null
   }
 }
