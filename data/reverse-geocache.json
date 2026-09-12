@@ -2590,5 +2590,9 @@
   "64.07289,24.53273": {
     "country": "FIN",
     "county": "Pohjois-Pohjanmaa"
+  },
+  "59.89890,17.50892": {
+    "country": "SWE",
+    "county": "Uppsala län"
   }
 }
