@@ -2594,5 +2594,21 @@
   "59.89890,17.50892": {
     "country": "SWE",
     "county": "Uppsala län"
+  },
+  "58.05584,12.36592": {
+    "country": "SWE",
+    "county": "Västra Götalands län"
+  },
+  "61.66071,17.09194": {
+    "country": "SWE",
+    "county": "Gävleborgs län"
+  },
+  "58.61000,5.65000": {
+    "country": "NOR",
+    "county": "Rogaland"
+  },
+  "59.95782,10.75409": {
+    "country": "NOR",
+    "county": ""
   }
 }
