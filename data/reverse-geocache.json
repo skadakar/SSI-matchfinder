@@ -2618,5 +2618,9 @@
   "59.59021,17.83783": {
     "country": "SWE",
     "county": "Stockholms län"
+  },
+  "59.78000,5.51000": {
+    "country": "NOR",
+    "county": "Vestland"
   }
 }
