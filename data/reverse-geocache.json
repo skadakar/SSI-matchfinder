@@ -2634,5 +2634,9 @@
   "68.23000,14.57000": {
     "country": "NOR",
     "county": "Nordland"
+  },
+  "58.05587,12.36598": {
+    "country": "SWE",
+    "county": "Västra Götalands län"
   }
 }
