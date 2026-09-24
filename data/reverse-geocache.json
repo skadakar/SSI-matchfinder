@@ -2642,5 +2642,9 @@
   "59.40115,10.14421": {
     "country": "NOR",
     "county": "Vestfold"
+  },
+  "59.43000,13.37000": {
+    "country": "SWE",
+    "county": "Värmlands län"
   }
 }
