@@ -2654,5 +2654,17 @@
   "62.90723,29.02273": {
     "country": "FIN",
     "county": "Pohjois-Karjala"
+  },
+  "59.60896,15.12574": {
+    "country": "SWE",
+    "county": "Örebro län"
+  },
+  "62.97984,7.22081": {
+    "country": "NOR",
+    "county": "Møre og Romsdal"
+  },
+  "62.97983,7.22083": {
+    "country": "NOR",
+    "county": "Møre og Romsdal"
   }
 }
