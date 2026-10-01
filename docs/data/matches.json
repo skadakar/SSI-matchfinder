@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-01T18:58:29.027Z",
+  "generated": "2026-10-01T19:01:34.515Z",
   "count": 1084,
   "matches": [
     {
@@ -1502,7 +1502,7 @@
       "registrationOpen": true,
       "registrationStarts": "2026-09-06",
       "registrationDeadline": "",
-      "participants": 148,
+      "participants": 146,
       "mainMatchParticipants": 101,
       "maxParticipants": 108,
       "waitingCount": 18,
@@ -1757,7 +1757,7 @@
       "venue": "",
       "lat": null,
       "lng": null,
-      "registrationOpen": false,
+      "registrationOpen": true,
       "registrationStarts": "2026-10-01",
       "registrationDeadline": "",
       "participants": 0,
@@ -11458,7 +11458,7 @@
       "registrationStarts": "2027-01-18",
       "registrationDeadline": "2027-05-03",
       "participants": 0,
-      "mainMatchParticipants": 0,
+      "mainMatchParticipants": 2,
       "maxParticipants": 120,
       "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/22/29936/",
