@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-01T18:33:39.504Z",
+  "generated": "2026-10-01T18:43:24.377Z",
   "count": 1083,
   "matches": [
     {
@@ -1437,8 +1437,8 @@
       "registrationOpen": true,
       "registrationStarts": "2026-09-17",
       "registrationDeadline": "",
-      "participants": 27,
-      "mainMatchParticipants": 11,
+      "participants": 26,
+      "mainMatchParticipants": 10,
       "maxParticipants": 40,
       "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/22/29781/",
@@ -4075,7 +4075,7 @@
       "registrationOpen": true,
       "registrationStarts": "2026-09-30",
       "registrationDeadline": "2026-10-16",
-      "participants": 42,
+      "participants": 43,
       "mainMatchParticipants": 37,
       "maxParticipants": 65,
       "waitingCount": 0,
@@ -9614,7 +9614,7 @@
       "participants": 200,
       "mainMatchParticipants": 234,
       "maxParticipants": 180,
-      "waitingCount": 0,
+      "waitingCount": 1,
       "url": "https://shootnscoreit.com/event/22/29592/",
       "county": "Stockholms län",
       "geocodeSource": "cache",
