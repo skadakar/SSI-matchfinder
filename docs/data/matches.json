@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-01T18:43:24.377Z",
+  "generated": "2026-10-01T18:50:52.718Z",
   "count": 1083,
   "matches": [
     {
@@ -9799,8 +9799,8 @@
       "registrationOpen": true,
       "registrationStarts": "2026-10-01",
       "registrationDeadline": "2027-01-07",
-      "participants": 0,
-      "mainMatchParticipants": 73,
+      "participants": 14,
+      "mainMatchParticipants": 74,
       "maxParticipants": 160,
       "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/22/29551/",
@@ -11932,7 +11932,7 @@
       "participants": 50,
       "mainMatchParticipants": 149,
       "maxParticipants": 150,
-      "waitingCount": 48,
+      "waitingCount": 49,
       "url": "https://shootnscoreit.com/event/22/29693/",
       "county": "Rogaland",
       "geocodeSource": "api",
