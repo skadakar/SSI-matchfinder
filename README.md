@@ -37,6 +37,7 @@ Go to **Settings → Secrets and variables → Actions** and create:
 | Variable | `SSI_COUNTRIES` | Comma-separated ISO-3 country codes to fetch, e.g. `NOR,SWE` |
 | Secret | `DISCORD_NOTIFY_CONFIG` | Optional: overrides [data/discord-notify-config.json](data/discord-notify-config.json) with a JSON string for the notifier |
 | Secret | `DISCORD_NOTIFY_WEBHOOKS` | Optional: JSON object mapping webhook names to URLs, e.g. `{"DISCORD_WEBHOOK_SWEDEN":"https://..."}` |
+| Secret | `CARTO_API_KEY` | Required for map tiles. CARTO basemap API key, written into the generated `docs/data/config.json` and used by the frontend for the CartoDB tile layers |
 
 Notes:
 
@@ -69,6 +70,14 @@ SSI_REFRESH_TOKEN=your_token SSI_API_KEY=your_key SSI_COUNTRIES=NOR,SWE python3 
 python3 -m http.server 8000 --directory docs
 # → open http://localhost:8000
 ```
+
+Map tiles need a CARTO API key in production (see `CARTO_API_KEY` secret above); the generated `docs/data/config.json` that supplies it to the frontend is not committed to the repo. For local testing, create it yourself:
+
+```bash
+echo '{"cartoApiKey": "your_key"}' > docs/data/config.json
+```
+
+Without this file the map still loads, just requesting tiles without an `api_key` param.
 
 ### 5. Run tests
 
@@ -157,6 +166,7 @@ data/organizer-geocache.json    Nominatim forward-geocode cache
 data/reverse-geocache.json      Nominatim reverse-geocode cache (lat/lng → country + county)
 docs/                           GitHub Pages root
   data/matches.json             generated match data (committed by Actions)
+  data/config.json              generated frontend config (CARTO API key, committed by Actions)
   index.html                    single-page app
   app.js                        frontend logic
   style.css                     styles (light / dark / gruvbox themes)

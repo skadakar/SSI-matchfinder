@@ -56,6 +56,7 @@ function countyToRegion(m) {
 // ─── APP STATE ────────────────────────────────────────────────────────────────
 
 let allMatches   = [];
+let cartoApiKey  = '';
 let map          = null;
 let markerLayer  = null;
 let tileLayerRef = null;
@@ -230,11 +231,24 @@ const TILE_LAYERS = {
   gruvbox: { url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', attr: CARTO_ATTR },
 };
 
+/** Fetches the generated config.json for the CARTO API key (absent in local dev). */
+async function loadConfig() {
+  try {
+    const res = await fetch('data/config.json');
+    if (!res.ok) return;
+    const data = await res.json();
+    cartoApiKey = data.cartoApiKey || '';
+  } catch {
+    // no config.json locally — tiles still render, just unauthenticated
+  }
+}
+
 function setMapThemeTiles(theme) {
   if (!map) return;
   const cfg = TILE_LAYERS[theme] || TILE_LAYERS.light;
+  const url = cartoApiKey ? `${cfg.url}?api_key=${cartoApiKey}` : cfg.url;
   if (tileLayerRef) map.removeLayer(tileLayerRef);
-  tileLayerRef = L.tileLayer(cfg.url, { attribution: cfg.attr, maxZoom: 19, detectRetina: true });
+  tileLayerRef = L.tileLayer(url, { attribution: cfg.attr, maxZoom: 19, detectRetina: true });
   tileLayerRef.addTo(map);
   // Move tile layer behind markers
   tileLayerRef.bringToBack();
@@ -1065,6 +1079,7 @@ async function init() {
   state = readStateFromURL();
 
   initTheme();
+  await loadConfig();
   initMap();
   bindFilterEvents();
   bindTabEvents();

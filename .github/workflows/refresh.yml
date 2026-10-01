@@ -303,6 +303,15 @@ jobs:
           sed -i "s|app\.js[^\"]*|app.js?v=${HASH}|" docs/index.html
           sed -i "s|style\.css[^\"]*|style.css?v=${HASH}|" docs/index.html
 
+      - name: Write frontend config
+        env:
+          CARTO_API_KEY: ${{ secrets.CARTO_API_KEY }}
+        run: |
+          node -e '
+            const fs = require("fs");
+            fs.writeFileSync("docs/data/config.json", JSON.stringify({ cartoApiKey: process.env.CARTO_API_KEY || "" }, null, 2) + "\n");
+          '
+
       - name: Notify Discord
         env:
           DISCORD_NOTIFY_CONFIG: ${{ secrets.DISCORD_NOTIFY_CONFIG != '' && secrets.DISCORD_NOTIFY_CONFIG || vars.DISCORD_NOTIFY_CONFIG }}
@@ -338,7 +347,7 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -f docs/data/matches.json docs/index.html data/organizer-geocache.json data/reverse-geocache.json data/discord-notify-state.json data/discord-notify-config.json
+          git add -f docs/data/matches.json docs/data/config.json docs/index.html data/organizer-geocache.json data/reverse-geocache.json data/discord-notify-state.json data/discord-notify-config.json
           # Only commit if something actually changed
           if git diff --cached --quiet; then
             echo "No changes to commit."
@@ -352,7 +361,7 @@ jobs:
               HASH=$(git rev-parse --short HEAD)
               sed -i "s|app\.js[^\"]*|app.js?v=${HASH}|" docs/index.html
               sed -i "s|style\.css[^\"]*|style.css?v=${HASH}|" docs/index.html
-              git add -f docs/data/matches.json docs/index.html data/organizer-geocache.json data/reverse-geocache.json
+              git add -f docs/data/matches.json docs/data/config.json docs/index.html data/organizer-geocache.json data/reverse-geocache.json
               git rebase --continue
             fi
             git push
