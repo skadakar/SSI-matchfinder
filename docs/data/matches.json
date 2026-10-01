@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-01T18:24:06.548Z",
+  "generated": "2026-10-01T18:33:39.504Z",
   "count": 1083,
   "matches": [
     {
@@ -5058,7 +5058,7 @@
       "maxParticipants": 50,
       "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/22/29927/",
-      "county": "",
+      "county": "Oslo",
       "geocodeSource": "api",
       "firstSeen": "2026-10-01"
     },
@@ -5537,7 +5537,7 @@
       "participants": 44,
       "mainMatchParticipants": 40,
       "maxParticipants": 39,
-      "waitingCount": 25,
+      "waitingCount": 24,
       "url": "https://shootnscoreit.com/event/22/27980/",
       "county": "Østfold",
       "geocodeSource": "api",
@@ -7466,7 +7466,7 @@
       "participants": 83,
       "mainMatchParticipants": 72,
       "maxParticipants": 72,
-      "waitingCount": 15,
+      "waitingCount": 16,
       "url": "https://shootnscoreit.com/event/22/28887/",
       "county": "Skåne län",
       "geocodeSource": "api",
@@ -9800,7 +9800,7 @@
       "registrationStarts": "2026-10-01",
       "registrationDeadline": "2027-01-07",
       "participants": 0,
-      "mainMatchParticipants": 72,
+      "mainMatchParticipants": 73,
       "maxParticipants": 160,
       "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/22/29551/",
