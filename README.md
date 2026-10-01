@@ -77,7 +77,7 @@ Map tiles need a CARTO API key in production (see `CARTO_API_KEY` secret above);
 echo '{"cartoApiKey": "your_key"}' > docs/data/config.json
 ```
 
-Without this file the map still loads, just requesting tiles without an `api_key` param.
+Without this file the map still loads, just requesting tiles without a `key` param.
 
 ### 5. Run tests
 

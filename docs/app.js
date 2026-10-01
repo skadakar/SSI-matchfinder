@@ -246,7 +246,7 @@ async function loadConfig() {
 function setMapThemeTiles(theme) {
   if (!map) return;
   const cfg = TILE_LAYERS[theme] || TILE_LAYERS.light;
-  const url = cartoApiKey ? `${cfg.url}?api_key=${cartoApiKey}` : cfg.url;
+  const url = cartoApiKey ? `${cfg.url}?key=${cartoApiKey}` : cfg.url;
   if (tileLayerRef) map.removeLayer(tileLayerRef);
   tileLayerRef = L.tileLayer(url, { attribution: cfg.attr, maxZoom: 19, detectRetina: true });
   tileLayerRef.addTo(map);
