@@ -631,7 +631,9 @@ export async function reverseGeocode(lat, lng, cache) {
     const addr   = result?.address ?? {};
     const cc2    = (addr.country_code ?? '').toUpperCase();
     const cc3    = ISO2_TO_3[cc2] ?? (cc2 || '');
-    const county = addr.state || addr.county || addr.municipality || '';
+    // Oslo is Norway's only municipality that is also its own county; Nominatim
+    // omits state/county/municipality for it and only sets `city`.
+    const county = addr.state || addr.county || addr.municipality || addr.city || '';
     cache[key] = { country: cc3, county };
     return cache[key];
   } catch (err) {

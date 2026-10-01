@@ -2607,10 +2607,6 @@
     "country": "NOR",
     "county": "Rogaland"
   },
-  "59.95782,10.75409": {
-    "country": "NOR",
-    "county": ""
-  },
   "57.14546,12.29087": {
     "country": "SWE",
     "county": "Hallands län"
@@ -2678,9 +2674,5 @@
   "59.65635,17.14074": {
     "country": "SWE",
     "county": "Uppsala län"
-  },
-  "59.92737,10.73928": {
-    "country": "NOR",
-    "county": ""
   }
 }

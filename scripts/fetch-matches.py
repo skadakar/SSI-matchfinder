@@ -339,7 +339,10 @@ def reverse_geocode(lat, lng, cache):
         addr = result.get('address', {})
         cc2  = addr.get('country_code', '').upper()
         cc3  = _ISO2_TO_3.get(cc2, cc2 or '')
-        county = addr.get('state', '') or addr.get('county', '') or addr.get('municipality', '')
+        # Oslo is Norway's only municipality that is also its own county; Nominatim
+        # omits state/county/municipality for it and only sets `city`.
+        county = (addr.get('state', '') or addr.get('county', '') or
+                  addr.get('municipality', '') or addr.get('city', ''))
         cache[key] = {'country': cc3, 'county': county}
         return cache[key]
     except HTTPError as e:
