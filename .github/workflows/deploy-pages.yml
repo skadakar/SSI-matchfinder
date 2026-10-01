@@ -10,6 +10,7 @@ on:
     branches: [master]
     paths:
       - 'docs/**'
+      - '.github/workflows/deploy-pages.yml'
   workflow_run:
     workflows: ['Refresh Match Data']
     types: [completed]
@@ -43,6 +44,8 @@ jobs:
             const fs = require("fs");
             fs.writeFileSync("docs/data/config.json", JSON.stringify({ cartoApiKey: process.env.CARTO_API_KEY || "" }) + "\n");
           '
+          echo "config.json byte count: $(wc -c < docs/data/config.json)"
+          ls -la docs/data/
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
