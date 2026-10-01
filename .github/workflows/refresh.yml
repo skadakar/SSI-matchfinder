@@ -325,6 +325,19 @@ jobs:
               const fs = require("fs");
               try {
                 const cfg = JSON.parse(process.env.DISCORD_NOTIFY_CONFIG);
+                // This file is committed to the (public) repo — never persist
+                // a literal webhook URL into it. Reject direct-URL webhook
+                // values so a misconfigured secret cannot leak a real webhook
+                // into git history; rules must reference a named env var /
+                // DISCORD_NOTIFY_WEBHOOKS map entry instead.
+                const leaked = (cfg.rules || [])
+                  .filter(r => /^https?:\/\//i.test(r.webhook || ""))
+                  .map(r => r.name || "(unnamed rule)");
+                if (leaked.length) {
+                  console.error("DISCORD_NOTIFY_CONFIG has rule(s) with a literal webhook URL, which would leak into committed data/discord-notify-config.json: " + leaked.join(", "));
+                  console.error("Use a named env var or DISCORD_NOTIFY_WEBHOOKS map entry for \"webhook\" instead of a raw URL.");
+                  process.exit(1);
+                }
                 fs.writeFileSync("data/discord-notify-config.json", JSON.stringify(cfg, null, 2) + "\n");
               } catch (err) {
                 console.error("DISCORD_NOTIFY_CONFIG secret is not valid JSON:", err.message);
