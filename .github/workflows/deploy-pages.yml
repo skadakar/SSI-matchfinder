@@ -1,0 +1,57 @@
+name: Deploy Pages
+
+# Builds docs/ into a Pages artifact and deploys it via GitHub's Pages
+# deployment action. The CARTO_API_KEY secret is injected into config.json
+# only inside this ephemeral runner/artifact — it is never written to a
+# file that gets committed to git, unlike the data refresh workflow's
+# generated files.
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'docs/**'
+  workflow_run:
+    workflows: ['Refresh Match Data']
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Write frontend config (not committed)
+        env:
+          CARTO_API_KEY: ${{ secrets.CARTO_API_KEY }}
+        run: |
+          node -e '
+            const fs = require("fs");
+            fs.writeFileSync("docs/data/config.json", JSON.stringify({ cartoApiKey: process.env.CARTO_API_KEY || "" }) + "\n");
+          '
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

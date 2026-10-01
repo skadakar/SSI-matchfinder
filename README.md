@@ -37,7 +37,7 @@ Go to **Settings → Secrets and variables → Actions** and create:
 | Variable | `SSI_COUNTRIES` | Comma-separated ISO-3 country codes to fetch, e.g. `NOR,SWE` |
 | Secret | `DISCORD_NOTIFY_CONFIG` | Optional: overrides [data/discord-notify-config.json](data/discord-notify-config.json) with a JSON string for the notifier |
 | Secret | `DISCORD_NOTIFY_WEBHOOKS` | Optional: JSON object mapping webhook names to URLs, e.g. `{"DISCORD_WEBHOOK_SWEDEN":"https://..."}` |
-| Secret | `CARTO_API_KEY` | Required for map tiles. CARTO basemap API key, written into the generated `docs/data/config.json` and used by the frontend for the CartoDB tile layers |
+| Secret | `CARTO_API_KEY` | Required for map tiles. CARTO basemap API key, injected into `docs/data/config.json` at deploy time only (see below) — never committed to the repo |
 
 Notes:
 
@@ -47,9 +47,9 @@ Notes:
 ### 3. Enable GitHub Pages
 
 1. Go to **Settings → Pages**.
-2. Set **Source** to `Deploy from a branch`, branch `main`, folder `/docs`.
+2. Set **Source** to `GitHub Actions` (not `Deploy from a branch`).
 
-The workflow runs every 4 hours and pushes updated data; Pages re-deploys automatically.
+[.github/workflows/deploy-pages.yml](.github/workflows/deploy-pages.yml) builds and deploys `docs/` after every successful data refresh, on pushes that touch `docs/**`, and on manual dispatch. It writes `docs/data/config.json` (containing `CARTO_API_KEY`) directly into the uploaded Pages artifact — that file is never written to a tracked path or committed to git, so the key never ends up in git history.
 
 If `SSI_REPO_ADMIN_TOKEN` is set, each workflow run first attempts to rotate `SSI_REFRESH_TOKEN`, stores the new value back into repository Actions secrets, and then uses the effective token for the fetch step.
 
@@ -160,13 +160,14 @@ The key is the organizer name in lowercase. `data/organizer-geocache.json` is co
 ## Project structure
 
 ```
-.github/workflows/refresh.yml   GitHub Actions cron job (every 4 h)
+.github/workflows/refresh.yml       GitHub Actions cron job (every 4 h) — fetches data, commits it
+.github/workflows/deploy-pages.yml  Deploys docs/ to GitHub Pages, injecting CARTO_API_KEY at deploy time
 data/manual-coords.json         highest-priority coordinate overrides (~135 NOR/SWE clubs)
 data/organizer-geocache.json    Nominatim forward-geocode cache
 data/reverse-geocache.json      Nominatim reverse-geocode cache (lat/lng → country + county)
 docs/                           GitHub Pages root
   data/matches.json             generated match data (committed by Actions)
-  data/config.json              generated frontend config (CARTO API key, committed by Actions)
+  data/config.json              generated frontend config (CARTO API key) — deploy-artifact only, NEVER committed
   index.html                    single-page app
   app.js                        frontend logic
   style.css                     styles (light / dark / gruvbox themes)
