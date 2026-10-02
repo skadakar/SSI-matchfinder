@@ -1133,5 +1133,9 @@
   "black box training": {
     "lat": null,
     "lng": null
+  },
+  "pspa": {
+    "lat": null,
+    "lng": null
   }
 }
