@@ -2682,5 +2682,9 @@
   "59.96000,11.05000": {
     "country": "NOR",
     "county": "Akershus"
+  },
+  "56.20000,15.74000": {
+    "country": "SWE",
+    "county": "Blekinge län"
   }
 }
