@@ -2714,5 +2714,9 @@
   "62.30722,17.37352": {
     "country": "SWE",
     "county": "Västernorrlands län"
+  },
+  "60.80000,11.07000": {
+    "country": "NOR",
+    "county": "Innlandet"
   }
 }
