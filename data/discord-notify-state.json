@@ -1,7 +1,7 @@
 {
   "seen": [
-    "Høkk riflematch:30009",
     "Høkk riflematch:30034",
+    "Høkk riflematch:30009",
     "Høkk riflematch:29938",
     "Høkk riflematch:29145",
     "Høkk riflematch:27983",
@@ -24,8 +24,8 @@
     "Høkk pistol:29762",
     "Høkk pistol:29935",
     "Høkk pistol:30011",
-    "Høkk pistol:29804",
     "Høkk pistol:29927",
+    "Høkk pistol:29804",
     "Høkk pistol:30164",
     "Høkk pistol:29140",
     "Høkk pistol:30081",
@@ -99,5 +99,5 @@
     "Høkk PCC:29967"
   ],
   "firstRunAt": "2026-07-23T22:29:01.740Z",
-  "updatedAt": "2026-10-22T09:13:42.124Z"
+  "updatedAt": "2026-10-22T16:46:38.358Z"
 }
