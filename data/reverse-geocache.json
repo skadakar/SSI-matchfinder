@@ -2742,5 +2742,9 @@
   "56.63990,15.54534": {
     "country": "SWE",
     "county": "Kalmar län"
+  },
+  "60.79000,10.69000": {
+    "country": "NOR",
+    "county": "Innlandet"
   }
 }
