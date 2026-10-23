@@ -2754,5 +2754,13 @@
   "60.36910,5.30843": {
     "country": "NOR",
     "county": "Vestland"
+  },
+  "59.95789,10.75368": {
+    "country": "NOR",
+    "county": "Oslo"
+  },
+  "59.34759,11.08442": {
+    "country": "NOR",
+    "county": "Østfold"
   }
 }
