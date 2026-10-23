@@ -2746,5 +2746,13 @@
   "60.79000,10.69000": {
     "country": "NOR",
     "county": "Innlandet"
+  },
+  "66.41148,23.94576": {
+    "country": "FIN",
+    "county": "Lappi"
+  },
+  "60.36910,5.30843": {
+    "country": "NOR",
+    "county": "Vestland"
   }
 }
