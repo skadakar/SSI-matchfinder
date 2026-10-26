@@ -2762,5 +2762,13 @@
   "59.34759,11.08442": {
     "country": "NOR",
     "county": "Østfold"
+  },
+  "60.91121,24.36482": {
+    "country": "FIN",
+    "county": "Kanta-Häme"
+  },
+  "62.88363,27.63229": {
+    "country": "FIN",
+    "county": "Pohjois-Savo"
   }
 }
