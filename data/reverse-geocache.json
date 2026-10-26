@@ -2770,5 +2770,13 @@
   "62.88363,27.63229": {
     "country": "FIN",
     "county": "Pohjois-Savo"
+  },
+  "59.84501,10.37942": {
+    "country": "NOR",
+    "county": "Akershus"
+  },
+  "55.67319,9.38161": {
+    "country": "DNK",
+    "county": "Region Syddanmark"
   }
 }
