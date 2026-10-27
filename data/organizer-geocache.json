@@ -1190,5 +1190,10 @@
   "sogn og fjordane sportsskyttarklubb": {
     "lat": null,
     "lng": null
+  },
+  "engesvang skyttekreds": {
+    "lat": 56.1789204,
+    "lng": 9.3497713,
+    "display": "Engesvang Skyttekreds, Kragelundvej, Engesvang, Ikast-Brande Kommune, Region Midtjylland, 7442, Danmark"
   }
 }
