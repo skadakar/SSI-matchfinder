@@ -2786,5 +2786,13 @@
   "56.17892,9.34977": {
     "country": "DNK",
     "county": "Region Midtjylland"
+  },
+  "56.41000,13.43000": {
+    "country": "SWE",
+    "county": "Skåne län"
+  },
+  "55.92606,-4.67190": {
+    "country": "GBR",
+    "county": "Alba / Scotland"
   }
 }
