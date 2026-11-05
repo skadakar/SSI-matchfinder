@@ -11,6 +11,6 @@
     "test": "NOMINATIM_DELAY_MS=0 node --test test/*.test.js"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=24"
   }
 }
