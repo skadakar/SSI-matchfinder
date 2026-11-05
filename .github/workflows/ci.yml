@@ -9,6 +9,9 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    # Safety net so a hung test run fails fast instead of consuming
+    # GitHub's 360-minute default job timeout.
+    timeout-minutes: 15
 
     steps:
       - name: Checkout

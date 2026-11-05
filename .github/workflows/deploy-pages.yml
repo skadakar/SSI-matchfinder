@@ -20,6 +20,7 @@ permissions:
   contents: read
   pages: write
   id-token: write
+  actions: write   # needed to delete a stale "github-pages" artifact on re-runs (see below)
 
 concurrency:
   group: pages
@@ -29,9 +30,12 @@ jobs:
   deploy:
     if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
+    # Safety net in case a step hangs unexpectedly; the deploy step itself
+    # has its own (shorter, retried) internal timeout below.
+    timeout-minutes: 30
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url || steps.deployment-retry.outputs.page_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -50,11 +54,47 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
+      # actions/upload-pages-artifact always names its artifact "github-pages"
+      # and isn't idempotent: if this job is re-run after a previous attempt
+      # already uploaded one (e.g. after the deploy step below timed out),
+      # the re-upload collides with the old artifact and deploy-pages fails
+      # immediately with "Multiple artifacts named 'github-pages' were
+      # unexpectedly found". Clear out any leftover artifact first so re-runs
+      # are safe.
+      - name: Remove stale Pages artifact from a previous attempt
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ids=$(gh api "repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts" \
+            --jq '.artifacts[] | select(.name=="github-pages") | .id')
+          for id in $ids; do
+            echo "Deleting stale github-pages artifact id=$id"
+            gh api -X DELETE "repos/${{ github.repository }}/actions/artifacts/$id" || true
+          done
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: docs
 
+      # GitHub's Pages deployment backend occasionally stalls in
+      # "updating_pages" for longer than the action's 10-minute default
+      # timeout (this is what happened in run #139). Give it more headroom
+      # and retry once automatically instead of requiring a manual re-run,
+      # since a manual re-run would re-trigger the artifact-collision issue
+      # above.
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+        continue-on-error: true
+        with:
+          timeout: 900000     # 15 minutes (default: 10)
+          error_count: 20     # default: 10
+
+      - name: Retry deploy to GitHub Pages
+        if: steps.deployment.outcome == 'failure'
+        id: deployment-retry
+        uses: actions/deploy-pages@v4
+        with:
+          timeout: 900000
+          error_count: 20
