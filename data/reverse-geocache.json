@@ -2806,5 +2806,13 @@
   "58.94452,25.83502": {
     "country": "EST",
     "county": "Järva maakond"
+  },
+  "58.78166,17.02636": {
+    "country": "SWE",
+    "county": "Södermanlands län"
+  },
+  "59.84000,17.76000": {
+    "country": "SWE",
+    "county": "Uppsala län"
   }
 }
