@@ -2822,5 +2822,13 @@
   "57.78230,11.89542": {
     "country": "SWE",
     "county": "Västra Götalands län"
+  },
+  "60.80347,11.39396": {
+    "country": "NOR",
+    "county": "Innlandet"
+  },
+  "68.78929,16.50454": {
+    "country": "NOR",
+    "county": "Troms"
   }
 }
