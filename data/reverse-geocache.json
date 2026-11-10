@@ -2834,5 +2834,9 @@
   "61.21058,22.78227": {
     "country": "FIN",
     "county": "Satakunta"
+  },
+  "59.22656,25.88808": {
+    "country": "EST",
+    "county": "Lääne-Viru maakond"
   }
 }
