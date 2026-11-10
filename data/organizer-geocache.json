@@ -1207,5 +1207,9 @@
   "lahden ampumaseura ry": {
     "lat": null,
     "lng": null
+  },
+  "skipp": {
+    "lat": null,
+    "lng": null
   }
 }
