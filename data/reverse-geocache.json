@@ -2838,5 +2838,13 @@
   "59.22656,25.88808": {
     "country": "EST",
     "county": "Lääne-Viru maakond"
+  },
+  "60.88521,26.89947": {
+    "country": "FIN",
+    "county": "Kymenlaakso"
+  },
+  "55.87810,12.23804": {
+    "country": "DNK",
+    "county": "Region Hovedstaden"
   }
 }
