@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-28T00:22:18.381Z",
+  "generated": "2026-11-28T04:10:12.526Z",
   "count": 902,
   "matches": [
     {
@@ -620,7 +620,7 @@
       "participants": 44,
       "mainMatchParticipants": 34,
       "maxParticipants": 60,
-      "waitingCount": 0,
+      "waitingCount": 1,
       "url": "https://shootnscoreit.com/event/22/30413/",
       "county": "",
       "geocodeSource": "unknown",
@@ -1079,8 +1079,8 @@
       "registrationOpen": true,
       "registrationStarts": "2026-11-08",
       "registrationDeadline": "",
-      "participants": 48,
-      "mainMatchParticipants": 48,
+      "participants": 47,
+      "mainMatchParticipants": 47,
       "maxParticipants": 60,
       "waitingCount": 0,
       "url": "https://shootnscoreit.com/event/22/30346/",
